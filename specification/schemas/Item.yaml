@@ -1,0 +1,65 @@
+#
+# OpenAPI 3.x Schema for the 'Item' Data Model
+#
+# This file defines the schema for the 'Item' object, which represents a timeless,
+# structural entity within the SAT-Graph. An 'Item' is the abstract representation
+# of a document (like a legal norm) or one of its hierarchical components, corresponding to the 'Work'
+# or 'Component Work' concepts in the underlying LRMoo-inspired ontology.
+#
+# It is intentionally atemporal and does not contain textual content itself; that
+# is handled by the 'Version' and 'TextUnit' models.
+#
+
+type: object
+description: >
+  Represents a timeless, structural entity, corresponding to the abstract
+  'Work' layer in the LRMoo ontology. It is instantiated as one of two concrete subtypes
+  defined by the 'category' field: 'Work' (the document as a whole) or 'Work Component'
+  (a hierarchical part like a chapter, article, or paragraph).
+required:
+  - id
+  - category
+  - type
+  - label
+properties:
+  id:
+    $ref: './ID.yaml'
+  category:
+    type: string
+    description: >-
+      The architectural class of the item, distinguishing a whole document from its parts.
+    enum:
+      - Work
+      - Work Component
+    example: "Work Component"
+  type:
+    type: string
+    description: >-
+      The specific semantic type of the item, describing its role in business domain.
+    example: "Constitution"
+  label:
+    type: string
+    description: "The human-readable label or title for the item."
+    example: "Brazilian Constitution of 1988"
+  parent:
+    $ref: './ID.yaml'
+    nullable: true
+    description: >-
+      The optional canonical ID of the single structural parent of this item.
+      A root 'Item' (category: 'Work') has no parent.
+  children:
+    type: array
+    nullable: true
+    description: >-
+      An optional list of canonical IDs for the immediate structural children of this item.
+      Leaf nodes (e.g., some paragraphs or sub-items) have no children.
+    items:
+      # Each item in the children array is also an ID.
+      $ref: './ID.yaml'
+  metadata:
+    $ref: './JSON.yaml'
+    nullable: true
+    description: >-
+      A flexible field for any valid JSON data. Used for storing structured,
+      atemporal properties of the item, such as jurisdiction, publication data,
+      or other domain-specific attributes that don't fit into the other fields.

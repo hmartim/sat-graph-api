@@ -21,7 +21,7 @@ Standard Retrieval-Augmented Generation (RAG) systems, while powerful, treat com
 
 The SAT-Graph RAG framework addresses these challenges with a two-layer architecture:
 
-1.  **[The SAT-Graph (The Knowledge Substrate)](https://arxiv.org/abs/2505.00039):** A verifiable knowledge graph that explicitly models the hierarchy, diachronic evolution, and causal events of legal norms.
+1.  **[The SAT-Graph (The Knowledge Substrate)](https://arxiv.org/abs/2505.00039):** A verifiable knowledge graph that explicitly models the hierarchy, diachronic evolution, and causal events of documents (like legal norms)--based on this [LRMoo Ontology](https://arxiv.org/abs/2506.07853).
 2.  **The Canonical Action API (The Interaction Protocol):** This API. It serves as the single, secure, and auditable bridge between a reasoning agent (like an LLM) and the SAT-Graph.
 
 This repository specifies this critical second layer. Instead of a monolithic query engine, this API provides a library of **atomic, composable, and auditable actions** that serve as the fundamental building blocks for constructing reliable retrieval plans.

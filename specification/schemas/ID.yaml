@@ -1,0 +1,14 @@
+#
+# OpenAPI 3.x Schema for the generic 'ID' Type
+#
+# This schema defines a generic, unique identifier for an entity within the
+# SAT-Graph. It serves as the primary key for the entity.
+#
+type: string
+description: >-
+  A generic, unique identifier for an entity within the SAT-Graph.
+  This ID serves as the primary key for the entity. It is typically a
+  formally structured string, such as a URN or URI, but is not strictly
+  limited to those formats. It must be unique within the knowledge graph.
+minLength: 1
+example: "urn:lex:br:federal:constituicao:1988-10-05"

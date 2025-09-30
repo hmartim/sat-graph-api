@@ -1,0 +1,19 @@
+#
+# OpenAPI 3.x Schema for a generic JSON value
+#
+# This schema allows for any valid JSON structure: object, array,
+# string, number, boolean, or null. It provides maximum flexibility
+# for storing unstructured or semi-structured data where the schema
+# is not known in advance.
+#
+description: >-
+  Represents any valid JSON value (e.g., an object, array, string, number, boolean, or null).
+example:
+  publicationDetails:
+    date: "1988-10-05"
+    gazette: "D.O.U."
+    page: 1
+  sponsors:
+    - "Ulysses Guimarães"
+    - "Bernardo Cabral"
+  isConstituent: true
