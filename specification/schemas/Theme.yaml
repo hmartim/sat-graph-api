@@ -1,0 +1,53 @@
+#
+# OpenAPI 3.x Schema for the 'Theme' Data Model
+#
+# This file defines the schema for the 'Theme' object, which represents an
+# atemporal, conceptual entity used to classify 'Item's and to organize
+# knowledge within the SAT-Graph. Themes can be arranged in their own
+# taxonomy via parent-child relationships.
+#
+type: object
+description: >
+  Represents an atemporal, conceptual entity used to classify Items and organize
+  knowledge. Themes form a taxonomy (e.g., "Social Security" is a child of
+  "Public Law") and serve as entry points for curated, topic-based searches.
+required:
+  - id
+  - label
+properties:
+  id:
+    $ref: './ID.yaml'
+  label:
+    type: string
+    description: "The human-readable name or label for the theme."
+    example: "Social Security"
+  parent:
+    type: array
+    nullable: true
+    description: >-
+      An optional list of IDs of broader themes in the taxonomy. A theme can have
+      multiple parents to support poly-hierarchical classification.
+    items:
+      $ref: './ID.yaml'
+    example:
+      - "urn:lex:br:federal:tema:direito.publico"
+  children:
+    type: array
+    nullable: true
+    description: "An optional list of IDs of more specific themes in the taxonomy."
+    items:
+      $ref: './ID.yaml'
+    example:
+      - "urn:lex:br:federal:tema:pensoes"
+      - "urn:lex:br:federal:tema:saude"
+  members:
+    type: array
+    description: >-
+      A list of IDs of the 'Item's that are classified under this theme. The list
+      can be empty if the theme serves only as a structural node in the taxonomy.
+    items:
+      $ref: './ID.yaml'
+    example:
+      - "urn:lex:br:federal:constituicao:1988-10-05!artX"
+      - "urn:lex:br:federal:lei:2025-05-14;abc"
+
