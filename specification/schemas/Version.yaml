@@ -1,0 +1,57 @@
+#
+# OpenAPI 3.x Schema for the 'Version' Data Model
+#
+# This file defines the schema for the 'Version' object, which represents a
+# specific, time-bound, and language-agnostic version of an 'Item'.
+#
+# In the SAT-Graph ontology, this corresponds to the 'Temporal Version' (TV)
+# or 'Component Temporal Version' (CTV). It acts as a "temporal snapshot" of
+# an item's semantic state and its hierarchical position, but it does not
+# contain the textual content itself. The text is provided by one or more
+# 'TextUnit' objects that link to this Version.
+#
+type: object
+description: >
+  Represents a specific, time-bound version of an Item (a TV/CTV). It captures
+  the semantic state and structural position of an item at a specific point in time,
+  but is language-agnostic and contains no direct textual content.
+required:
+  - id
+  - item_id
+  - validity_interval
+properties:
+  id:
+    $ref: './ID.yaml'
+    description: "A unique identifier for this specific version instance."
+    example: "urn:lex:br:federal:constituicao:1988@1988-10-05"
+  item_id:
+    $ref: './ID.yaml'
+    description: "The ID of the timeless 'Item' this object is a version of."
+    example: "urn:lex:br:federal:constituicao:1988"
+  validity_interval:
+    $ref: './TimeInterval.yaml'
+    description: "The time interval during which this version was legally valid."
+  parent:
+    type: array
+    nullable: true
+    description: >-
+      A list of IDs for the parent 'Version'(s) that include this Version as a component.
+      A Version can have multiple parents because, under the SAT-Graph's aggregation model,
+      an unchanged child Version is reused across multiple subsequent parent Versions.
+      A 'Work' version has no parents.
+    items:
+      $ref: './ID.yaml'
+  children:
+    type: array
+    nullable: true
+    description: >-
+      A list of IDs for the children 'Version's. It is composed by
+      aggregating the most recent valid versions of all its child components, some
+      of which may be newly created while others are reused from previous states.
+    items:
+      $ref: './ID.yaml'
+  metadata:
+    $ref: './JSON.yaml'
+    nullable: true
+    description: >-
+      A flexible field for any valid JSON data specific to this version.

@@ -1,0 +1,30 @@
+#
+# OpenAPI 3.x Schema for the 'TimeInterval' Data Model
+#
+# This schema defines a generic time interval using a start time and an
+# optional end time. It supports full date-time precision.
+#
+type: array
+description: >
+  Represents a time interval defined by a start date-time and an optional end date-time.
+  All values must conform to the RFC 3339 'date-time' format (e.g., 'YYYY-MM-DDTHH:mm:ssZ').
+
+  **To represent a whole day, use the beginning of that day in UTC.** For example,
+  the date '1988-10-05' should be represented as '1988-10-05T00:00:00Z'.
+minItems: 2
+maxItems: 2
+items:
+  type: string
+  format: date-time
+  nullable: true # Allows the second element (end time) to be null
+examples:
+  closedInterval:
+    summary: A closed interval with a start and end time
+    description: Used for a version that has been superseded by another.
+    value: ["1988-10-05T00:00:00Z", "2000-02-13T23:59:59Z"]
+  openEndedInterval:
+    summary: An open-ended interval for a current version
+    description: >-
+      The end time is explicitly null, indicating the version is still legally
+      valid. This is the recommended representation for open intervals.
+    value: ["2000-02-14T00:00:00Z", null]

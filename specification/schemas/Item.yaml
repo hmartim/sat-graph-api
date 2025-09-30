@@ -3,8 +3,8 @@
 #
 # This file defines the schema for the 'Item' object, which represents a timeless,
 # structural entity within the SAT-Graph. An 'Item' is the abstract representation
-# of a document (like a legal norm) or one of its hierarchical components, corresponding to the 'Work'
-# or 'Component Work' concepts in the underlying LRMoo-inspired ontology.
+# of a document (like a legal norm) or one of its hierarchical components.
+# In the SAT-Graph ontology, it corresponds to the 'Work' or 'Component Work' concepts.
 #
 # It is intentionally atemporal and does not contain textual content itself; that
 # is handled by the 'Version' and 'TextUnit' models.
@@ -63,3 +63,6 @@ properties:
       A flexible field for any valid JSON data. Used for storing structured,
       atemporal properties of the item, such as jurisdiction, publication data,
       or other domain-specific attributes that don't fit into the other fields.
+      This approach is exemplified in this paper, that proposes a structured 
+      metadata description for legal norm's "Work":
+      [Legal Knowledge Graph Foundations, Part I: URI-Addressable Abstract Works (LRMoo F1 to schema.org)](https://arxiv.org/abs/2508.00827).
