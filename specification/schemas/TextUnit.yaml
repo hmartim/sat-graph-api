@@ -1,0 +1,83 @@
+#
+# OpenAPI 3.x Schema for the 'TextUnit' Data Model
+#
+# This file defines the schema for the 'TextUnit' object, which is the
+# fundamental, retrievable unit of textual content in the SAT-Graph.
+#
+# It incorporates the concepts of Language Version (LV) and Component Language
+# Version (CLV) from the SAT-Graph ontology and supports the "multi-aspect retrieval"
+# strategy by associating any piece of text with a source node and a specific
+# semantic 'aspect'.
+#
+type: object
+description: >
+  Represents a concrete piece of textual information. It is a flexible object
+  used to hold any aspect of text associated with a primary entity in the graph.
+required:
+  - id
+  - source_node_type
+  - source_node_id
+  - language
+  - aspect
+  - content
+properties:
+  id:
+    $ref: './ID.yaml'
+    description: "A unique identifier for this specific piece of text."
+    example: "urn:lex:br:federal:constituicao:1988@1988-10-05~text;pt!art1_par1"
+  source_node_type:
+    type: string
+    description: >-
+      The type of the source node in the graph to which this text is attached.
+      This provides essential context for the retrieved text.
+    enum:
+      - Item
+      - Version
+      - Action
+      - Theme
+    example: "Version"
+  source_node_id:
+    $ref: './ID.yaml'
+    description: "The unique ID of the source node."
+    example: "urn:lex:br:federal:constituicao:1988@1988-10-05!art1_par1"
+  language:
+    type: string
+    description: "The language of the content, specified as an IETF BCP 47 tag."
+    example: "pt-BR"
+  aspect:
+    type: string
+    description: >-
+      The semantic role of the text relative to its source node, forming the core
+      of the multi-aspect retrieval model. The `canonical` aspect is special; it
+      represents a segment of the official text of a document (e.g. legal provision, 
+      i.e., the content of a legal norm's component). It is associated with a `Version`.
+      Other aspects represent secondary or descriptive texts about a node.
+      `textual_metadata` is a representation in natural language of object's metadata and
+      allow semantic filters in their contents (structured metadata can also be declared 
+      in `Item` and `Version`, to ensure deterministic filters).
+      `textual_relation` is a representation in natural language of object's relation and
+      allow semantic filters in their contents--this approach is described in the:
+            [SAT Graph RAG paper)](https://arxiv.org/abs/2505.00039).
+      `indexical` is a alterative identifier or name (surname) that can be used in semantic
+      reference search--this approach is proposed in:
+            [Poly-Vector Retrieval: Reference and Content Embeddings for Legal Documents)](https://arxiv.org/abs/2504.10508).
+      
+      The enumerated values represent a baseline set of common aspects. A concrete
+      implementation of the SAT-Graph may extend this list with additional,
+      domain-specific aspects.
+    enum:
+      - canonical
+      - description
+      - summary
+      - textual_metadata
+      - textual_relation
+      - indexical
+    example: "canonical"
+  content:
+    type: string
+    description: >-
+      The raw textual content of this unit. This content can be a direct
+      segment from the raw document or a segment with complete semantics--
+      this approach is proposed in:
+            [Unlocking Legal Knowledge with Multi-Layered Embedding-Based Retrieval](https://arxiv.org/abs/2411.07739).
+    example: "Todo o poder emana do povo, que o exerce por meio de representantes eleitos ou diretamente, nos termos desta Constituição."
