@@ -12,10 +12,18 @@
 
 type: object
 description: >
-  Represents a timeless, structural entity, corresponding to the abstract
-  'Work' layer in the LRMoo ontology. It is instantiated as one of two concrete subtypes
-  defined by the 'category' field: 'Work' (the document as a whole) or 'Work Component'
-  (a hierarchical part like a chapter, article, or paragraph).
+  Represents a timeless, foundational entity within the SAT Graph. An 'Item'
+  acts as a stable, version-agnostic anchor for a specific concept.
+
+  While its primary role is to model the formal structure of a document (as a 'Work' or
+  'Work Component'), it is flexible enough to represent other key entities, such as:
+  - **Defined Terms:** A specific term (e.g., 'Complementary Law').
+  - **Abstract Concepts:** A legal or procedural concept (e.g., 'Revocation', 'Due Process').
+  - **Named Entities:** A real-world entity like an organization or location (e.g., 'National Congress').
+
+  The 'Item' itself is just a structural and conceptual anchor. Its semantic meaning and
+  textual content are provided by associated 'TextUnit' objects, typically with an
+  aspect like 'description', 'summary'.
 required:
   - id
   - category
@@ -27,15 +35,20 @@ properties:
   category:
     type: string
     description: >-
-      The architectural class of the item, distinguishing a whole document from its parts.
+      The architectural class of the item, which defines its fundamental nature.
+      This list can be extended by a concrete implementation.
     enum:
       - Work
       - Work Component
-    example: "Work Component"
+      - Term
+      - Concept
+      - NamedEntity
+    example: "Work"
   type:
     type: string
     description: >-
-      The specific semantic type of the item, describing its role in business domain.
+      The specific semantic type of the item. For a 'NamedEntity', this could be
+      'Organization', 'Person', etc. For a 'Work', it could be 'Constitution', 'Statute', etc.
     example: "Constitution"
   label:
     type: string
@@ -45,16 +58,16 @@ properties:
     $ref: './ID.yaml'
     nullable: true
     description: >-
-      The optional canonical ID of the single structural parent of this item.
-      A root 'Item' (category: 'Work') has no parent.
+      The canonical ID of the single structural parent of this item. This field is
+      primarily relevant for 'Work Component' items to define the document hierarchy.
+      For other categories like 'Concept' or 'Term', it may be used to build a taxonomy.
   children:
     type: array
     nullable: true
     description: >-
-      An optional list of canonical IDs for the immediate structural children of this item.
-      Leaf nodes (e.g., some paragraphs or sub-items) have no children.
+      An optional list of canonical IDs for the immediate children of this item.
+      Primarily used to define the document hierarchy for 'Work' and 'Work Component' items.
     items:
-      # Each item in the children array is also an ID.
       $ref: './ID.yaml'
   metadata:
     $ref: './JSON.yaml'
