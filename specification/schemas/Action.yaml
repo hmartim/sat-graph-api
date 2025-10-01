@@ -60,4 +60,9 @@ properties:
     description: >-
       The ID of the specific 'Version' that is **created** by this action.
     example: "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
-
+  metadata:
+    $ref: './JSON.yaml'
+    nullable: true
+    description: >-
+      A flexible field for any valid JSON data providing more context about the
+      action, such as its source of the assertion.
