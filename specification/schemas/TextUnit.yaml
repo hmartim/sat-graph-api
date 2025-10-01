@@ -15,8 +15,8 @@ description: >
   used to hold any aspect of text associated with a primary entity in the graph.
 required:
   - id
-  - source_node_type
-  - source_node_id
+  - source_type
+  - source_id
   - language
   - aspect
   - content
@@ -25,18 +25,19 @@ properties:
     $ref: './ID.yaml'
     description: "A unique identifier for this specific piece of text."
     example: "urn:lex:br:federal:constituicao:1988@1988-10-05~text;pt!art1_par1"
-  source_node_type:
+  source_type:
     type: string
     description: >-
       The type of the source node in the graph to which this text is attached.
       This provides essential context for the retrieved text.
     enum:
+      - Theme
       - Item
       - Version
       - Action
-      - Theme
+      - Relation
     example: "Version"
-  source_node_id:
+  source_id:
     $ref: './ID.yaml'
     description: "The unique ID of the source node."
     example: "urn:lex:br:federal:constituicao:1988@1988-10-05!art1_par1"

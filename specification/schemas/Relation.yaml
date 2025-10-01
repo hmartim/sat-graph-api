@@ -1,0 +1,69 @@
+#
+# OpenAPI 3.x Schema for the 'Relation' Data Model
+#
+# This file defines the schema for the 'Relation' object, which models a
+# directed, typed, and deterministic link between two 'Item' entities.
+#
+type: object
+description: >
+  Represents a directed, typed, and potentially time-bound link between two
+  entities in the graph (Items or Versions). This polymorphic design allows
+  for modeling a rich web of interactions, distinguishing between timeless
+  conceptual links and time-bound references embedded in text.
+  The optional 'validity_interval' allows for modeling temporal
+  relationships that are only true for a specific period.
+required:
+  - id
+  - source_type
+  - source_id
+  - predicate
+  - target_type
+  - target_id
+properties:
+  id:
+    $ref: './ID.yaml'
+    description: "A unique identifier for this specific relation instance."
+  source_type:
+    type: string
+    description: "The type of the entity at the source of the relation."
+    enum: [ Item, Version ]
+    example: "Item"
+  source_id:
+    $ref: './ID.yaml'
+    description: "The ID of the source entity."
+    example: "urn:lex:br:federal:constituicao:1988-10-05;1988"
+  predicate:
+    type: string
+    description: >-
+      The type of the relationship. This defines the semantics of the link. The
+      enumerated values represent a baseline set; a concrete implementation may
+      extend this list with a more detailed vocabulary or ontology.
+    enum:
+      - succeeds
+      - related_to
+      - applies_to
+      - cites
+      - defined_in
+    example: "succeeds"
+  target_type:
+    type: string
+    description: "The type of the entity at the target of the relation."
+    enum: [ Item, Version ]
+    example: "Item"
+  target_id:
+    $ref: './ID.yaml'
+    description: "The ID of the target entity."
+    example: "urn:lex:br:federal:constituicao:1967-01-24;1967"
+  validity_interval:
+      $ref: './TimeInterval.yaml'
+      nullable: true
+      description: >-
+        The time interval during which this relation is valid.
+        If null, the relation is considered atemporal.
+      example: [ "2020-03-15T00:00:00Z", "2020-09-15T23:59:59Z" ]
+  metadata:
+    $ref: './JSON.yaml'
+    nullable: true
+    description: >-
+      A flexible field for any valid JSON data providing more context about the
+      relation, such as its own validity interval or source of the assertion.
