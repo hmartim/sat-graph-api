@@ -37,22 +37,25 @@ properties:
     description: >-
       The architectural class of the item, which defines its fundamental nature.
       This list can be extended by a concrete implementation.
+    minLength: 1
     enum:
-      - Work
-      - Work Component
-      - Term
-      - Concept
-      - NamedEntity
+      - "Work"
+      - "Work Component"
+      - "Term"
+      - "Concept"
+      - "NamedEntity"
     example: "Work"
   type:
     type: string
     description: >-
       The specific semantic type of the item. For a 'NamedEntity', this could be
       'Organization', 'Person', etc. For a 'Work', it could be 'Constitution', 'Statute', etc.
+    minLength: 1
     example: "Constitution"
   label:
     type: string
     description: "The human-readable label or title for the item."
+    minLength: 1
     example: "Brazilian Constitution of 1988"
   parent:
     $ref: './ID.yaml'

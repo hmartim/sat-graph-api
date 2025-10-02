@@ -1,19 +1,41 @@
 #
 # OpenAPI 3.x Schema for a generic JSON value
 #
-# This schema allows for any valid JSON structure: object, array,
-# string, number, boolean, or null. It provides maximum flexibility
-# for storing unstructured or semi-structured data where the schema
-# is not known in advance.
+# This schema explicitly defines that a value can be any valid JSON structure
+# by using a 'oneOf' construct. This ensures compatibility with strict
+# OpenAPI and JSON Schema validators.
 #
 description: >-
-  Represents any valid JSON value (e.g., an object, array, string, number, boolean, or null).
-example:
-  publicationDetails:
-    date: "1988-10-05"
-    gazette: "D.O.U."
-    page: 1
-  sponsors:
-    - "Ulysses Guimarães"
-    - "Bernardo Cabral"
-  isConstituent: true
+  Represents any valid JSON value. This can be a structured object, an array,
+  a simple string, a number, a boolean, or null.
+oneOf:
+  - type: object
+    additionalProperties: true
+  - type: array
+    items: {}
+  - type: string
+  - type: number
+  - type: boolean
+  - type: "null"
+
+examples:
+  objectExample:
+    summary: A complex JSON object
+    value:
+      publicationDetails:
+        date: "1988-10-05"
+        gazette: "D.O.U."
+  arrayExample:
+    summary: A JSON array of tags
+    value:
+      - tag: "social_rights"
+      - tag: "constitution"
+  stringExample:
+    summary: A simple JSON string
+    value: "Initial version as promulgated."
+  numberExample:
+    summary: A simple JSON number
+    value: 1988
+  booleanExample:
+    summary: A simple JSON boolean
+    value: true

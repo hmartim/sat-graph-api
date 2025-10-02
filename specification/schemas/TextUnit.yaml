@@ -31,11 +31,11 @@ properties:
       The type of the source node in the graph to which this text is attached.
       This provides essential context for the retrieved text.
     enum:
-      - Theme
-      - Item
-      - Version
-      - Action
-      - Relation
+      - "Theme"
+      - "Item"
+      - "Version"
+      - "Action"
+      - "Relation"
     example: "Version"
   source_id:
     $ref: './ID.yaml'
@@ -44,6 +44,7 @@ properties:
   language:
     type: string
     description: "The language of the content, specified as an IETF BCP 47 tag."
+    pattern: "^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$"
     example: "pt-BR"
   aspect:
     type: string
@@ -66,16 +67,18 @@ properties:
       The enumerated values represent a baseline set of common aspects. A concrete
       implementation of the SAT-Graph may extend this list with additional,
       domain-specific aspects.
+    pattern: "^[a-z_]+$"
     enum:
-      - canonical
-      - description
-      - summary
-      - textual_metadata
-      - textual_relation
-      - indexical
+      - "canonical"
+      - "description"
+      - "summary"
+      - "textual_metadata"
+      - "textual_relation"
+      - "indexical"
     example: "canonical"
   content:
     type: string
+    minLength: 1
     description: >-
       The raw textual content of this unit. This content can be a direct
       segment from the raw document or a segment with complete semantics--

@@ -32,10 +32,10 @@ properties:
       The type of legislative action. The enumerated values represent a baseline
       set; a concrete implementation may extend this list.
     enum:
-      - Amendment
-      - Revocation
-      - Creation
-      - Repeal
+      - "Amendment"
+      - "Revocation"
+      - "Creation"
+      - "Repeal"
     example: "Amendment"
   date:
     type: string

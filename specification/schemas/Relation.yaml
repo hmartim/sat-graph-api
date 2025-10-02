@@ -26,7 +26,7 @@ properties:
   source_type:
     type: string
     description: "The type of the entity at the source of the relation."
-    enum: [ Item, Version ]
+    enum: [ "Item", "Version" ]
     example: "Item"
   source_id:
     $ref: './ID.yaml'
@@ -39,16 +39,16 @@ properties:
       enumerated values represent a baseline set; a concrete implementation may
       extend this list with a more detailed vocabulary or ontology.
     enum:
-      - succeeds
-      - related_to
-      - applies_to
-      - cites
-      - defined_in
+      - "succeeds"
+      - "related_to"
+      - "applies_to"
+      - "cites"
+      - "defined_in"
     example: "succeeds"
   target_type:
     type: string
     description: "The type of the entity at the target of the relation."
-    enum: [ Item, Version ]
+    enum: [ "Item", "Version" ]
     example: "Item"
   target_id:
     $ref: './ID.yaml'
