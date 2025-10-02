@@ -36,7 +36,23 @@ The API design is guided by three principles to ensure trustworthiness:
 - **2. Composability:** Actions are atomic "building blocks." A higher-level agent can chain them together to construct complex, flexible query workflows.
 - **3. Verifiability through Auditability:** Every action returns a structured output, including confidence scores where applicable. The sequence of calls and responses forms a complete, human-readable audit trail, making the agent's entire reasoning process transparent and verifiable.
 
-## Getting Started
+#### Core Data Models
+
+The following diagram provides a comprehensive overview of the core data models that constitute the SAT-Graph entities and their relationships.
+At the heart of this architecture is a strict separation of concerns that distinguishes the timeless structural layer from the temporal, causal, and textual layers:
+
+* **Theme**: A classification system for discovery.
+* **Item**: The timeless, conceptual anchor. It represents the abstract identity of any entity in the knowledge graph, from a whole document (Work) to a single paragraph (Work Component) or a concept (Concept) or a concrete entity.
+* **Version**: The temporal snapshot. Each Version represents the state and structure of an Item during a specific time interval.
+* **Action**: The causal engine. A first-class entity that represents the event that causes state transitions, terminating an old Version and producing a new one.
+* **Relation**: It models the rich, deterministic domain interactions between entities (the "cites" or "succeeds" links).
+* **TextUnit**: The concrete textual content. This flexible object holds the text for any entity in any language, enabling the "multi-aspect retrieval" strategy where even metadata and descriptions are searchable.
+
+* ![Data Models](./imgs/SATGraphModel.png)
+
+For a detailed definition of each field and property, please refer to the individual schema files in the /specification/schemas/ directory.
+
+### Getting Started
 
 The complete API specification is located in the `specification/` directory.
 
