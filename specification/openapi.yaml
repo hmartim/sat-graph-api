@@ -1,0 +1,208 @@
+openapi: 3.0.3
+
+info:
+  title: "Canonical Action API for SAT-Graph RAG"
+  version: "1.0.0"
+  description: |
+    This is the official OpenAPI 3.x specification for the **Canonical Action API**, 
+    a formal, auditable interface for querying the Structure-Aware Temporal Graph (SAT-Graph).
+
+    The complete architectural framework is proposed in the paper:
+    - **[An Ontology-Driven Graph RAG for Legal Norms: A Structural, Temporal, and Deterministic Approach](https://arxiv.org/abs/2508.00827)**
+
+    This API provides a library of atomic and composable actions that serve as the 
+    fundamental building blocks for constructing reliable legal retrieval plans.
+
+    **Authentication Note:** All endpoints in this API are protected. A valid API Key
+    must be sent in the `Authorization` header on every request. Please refer to the
+    'securitySchemes' section below for details.
+
+    **Data Scoping Note:** The API serves data from multiple providers, called **Datasources**.
+    All requests are automatically scoped to the Datasources granted to your API key.
+    Many search functions also provide an optional `datasources` parameter for more granular filtering.
+
+components:
+  schemas:
+    ID:
+      $ref: './schemas/ID.yaml'
+    JSON:
+      $ref: './schemas/JSON.yaml'
+    TimeInterval:
+      $ref: './schemas/TimeInterval.yaml'
+    Theme:
+      $ref: './schemas/Theme.yaml'
+    Item:
+      $ref: './schemas/Item.yaml'
+    Version:
+      $ref: './schemas/Version.yaml'
+    TextUnit:
+      $ref: './schemas/TextUnit.yaml'
+    Action:
+      $ref: './schemas/Action.yaml'
+    Relation:
+      $ref: './schemas/Relation.yaml'
+
+    ResolvedEntityCandidate:
+      type: object
+      description: "Represents a single candidate match for a resolved entity (e.g., an Item or a Theme)."
+      required:
+        - id
+        - confidence
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+          description: "The probable canonical ID of the matched entity."
+        confidence:
+          type: number
+          format: float
+          description: "A score from 0.0 to 1.0 indicating the certainty of the match."
+          minimum: 0.0
+          maximum: 1.0
+          example: 0.95
+
+    ErrorResponse:
+      type: object
+      description: A standard format for error responses.
+      properties:
+        code:
+          type: string
+          description: "An internal, machine-readable error code."
+          example: "FORBIDDEN_DATASOURCE"
+        message:
+          type: string
+          description: "A human-readable description of the error."
+          example: "The provided API Key does not have access to the 'datasource_STF' datasource."
+
+    MetadataFilter:
+      type: object
+      description: "A structured object for applying metadata-based filters."
+      properties:
+        item_metadata_filter:
+          type: object
+          additionalProperties: true
+          description: "Key-value pairs to filter against the metadata of the parent 'Item'."
+          example:
+            jurisdiction: "federal"
+        version_metadata_filter:
+          type: object
+          additionalProperties: true
+          description: "Key-value pairs to filter against the metadata of the 'Version'."
+          example:
+            publication_date: { ">=": "2010-01-01T00:00:00Z" }
+
+    SearchRequest:
+      type: object
+      description: "The request body for the searchTextUnits operation."
+      properties:
+        version_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/ID'
+          description: >-
+            Explicit Version Scope. A list of specific 'Version' IDs. Mutually
+            exclusive with the combination of 'item_ids'/'theme_ids' and 'timestamp'.
+        item_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/ID'
+          description: "Conceptual Scope. A list of 'Item' IDs to define the structural scope."
+        theme_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/ID'
+          description: "Conceptual Scope. A list of 'Theme' IDs to define the thematic scope."
+        metadata_filter:
+          $ref: '#/components/schemas/MetadataFilter'
+        timestamp:
+          type: string
+          format: date-time
+          description: >-
+            Conceptual Scope. A UTC date-time to constrain the search. Defaults to 'now' if omitted.
+            Ignored if 'version_ids' is provided.
+        semantic_query:
+          type: string
+          description: "The natural language query string for vector search."
+        lexical_query:
+          type: string
+          description: "Keywords or phrases for a full-text syntactic search."
+        language:
+          type: string
+          description: "The IETF BCP 47 language code for the content."
+          example: "pt-BR"
+        aspects:
+          type: array
+          items:
+            type: string
+          default: ["canonical"]
+          description: "A list of textual aspects to search within (e.g., 'canonical', 'summary')."
+        top_k:
+          type: integer
+          format: int32
+          default: 10
+          minimum: 1
+          description: "The maximum number of results to return."
+        datasources:
+          $ref: '#/components/schemas/DatasourcesSchema'
+          description: "Optional. Scopes the search to a specific list of granted datasources."
+
+    SearchResultUnit:
+      type: object
+      description: "Represents a single search result, containing a TextUnit and its relevance score."
+      required:
+        - text_unit
+        - score
+      properties:
+        text_unit:
+          $ref: '#/components/schemas/TextUnit'
+        score:
+          type: number
+          format: float
+          description: "The relevance score of the result, typically between 0.0 and 1.0."
+          minimum: 0.0
+          maximum: 1.0
+
+    DatasourcesSchema:
+      type: array
+      description: |
+        A list of datasource identifiers. A datasource is the system or provider
+        where an entity originates (e.g., 'datasource_Senate').
+      items:
+        type: string
+      uniqueItems: true
+      example: ["datasource_A"]
+
+  parameters:
+    DatasourcesParameter:
+      name: datasources
+      in: query
+      required: false
+      description: |
+        **Optional.** A list of identifiers for the Datasources to scope the search.
+
+        A Datasource is the system or provider where an entity originates (e.g., 'datasource_Senate'). This parameter allows you to narrow a search to a specific subset of the Datasources you have access to.
+
+        The API will only return results from Datasources that are both *requested* in this parameter and *granted* to your API key. If this parameter is omitted, the search will run against all Datasources your key is granted to.
+      schema:
+        type: array
+        items:
+          type: string
+        uniqueItems: true
+      example: ["datasource_A"]
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        API Key-based authentication. Each consumer must provide their unique API Key
+        directly in the `Authorization` header for every request.
+
+        **Example:** `Authorization: YOUR_API_KEY`
+
+        API Keys can be obtained by contacting the system administrator.
+
+security:
+  - ApiKeyAuth: []
+
+paths:

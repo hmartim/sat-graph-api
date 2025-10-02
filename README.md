@@ -52,6 +52,36 @@ At the heart of this architecture is a strict separation of concerns that distin
 
 For a detailed definition of each field and property, please refer to the individual schema files in the /specification/schemas/ directory.
 
+#### Data Scoping and Datasources
+
+This API is designed to serve data from multiple, distinct providers in a unified manner. Each provider is referred to as a **Datasource**.
+
+###### What is a Datasource?
+
+A Datasource represents the system or institution where an entity (`Item`, `Theme`, etc.) originates. For example, in a legal context, datasources could include:
+
+*   `datasource_Senate`: Data curated and provided by the Federal Senate.
+*   `datasource_Chamber`: Data from the Chamber of Deputies.
+*   `datasource_SupremeCourt`: Jurisprudence data from the Supreme Federal Court.
+
+Or it can be an internal system of each institution.
+
+##### Access Control
+
+Access to the API is governed by these Datasources. Each consumer's API Key is granted access to a specific set of one or more Datasources. This has two major implications for how you use the API:
+
+1.  **Implicit Filtering (Security):** Every request you make is automatically and securely filtered to only include results from the Datasources your API Key has been granted. It is impossible to access data from a Datasource you are not authorized for.
+2.  **Explicit Filtering (Flexibility):** For consumers with access to multiple Datasources, most search functions include an optional `datasources` parameter. You can use this to narrow your search to a specific subset of your granted Datasources, providing more targeted results.
+
+#### Authentication
+
+All endpoints in this API are protected and require authentication. You must include a valid API Key in the `Authorization` header of every request.
+
+Requests made without a valid API Key will fail with a `401 Unauthorized` status code.
+
+**Header Format:**
+Authorization: YOUR_API_KEY
+
 ### Getting Started
 
 The complete API specification is located in the `specification/` directory.
