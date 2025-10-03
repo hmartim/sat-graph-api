@@ -42,6 +42,45 @@ components:
     Relation:
       $ref: './schemas/Relation.yaml'
 
+    TemporalPolicy:
+      type: string
+      description: |
+        Specifies the temporal resolution logic for finding a valid version.
+        This is essential for guaranteeing determinism when multiple events occur on the same day.
+
+        - `PointInTime`: (Strict) Finds the version whose validity interval strictly contains the exact timestamp.
+        - `SnapshotLast`: (Common) Finds the last version that was valid at any point during the day of the given timestamp. Treats the query as "what was the state of the law at the end of this day?".
+      enum:
+        - "PointInTime"
+        - "SnapshotLast"
+      default: "SnapshotLast"
+
+    StructuralContext:
+      type: object
+      description: "Contains the complete, immediate structural context of a single Item."
+      required:
+        - target
+      properties:
+        target:
+          $ref: '#/components/schemas/Item'
+          description: "The full object of the item in question."
+        parent:
+          $ref: '#/components/schemas/Item'
+          nullable: true
+          description: "The full object of the item's immediate parent."
+        siblings:
+          type: array
+          nullable: true
+          description: "A list of full objects for the item's siblings (other items with the same parent)."
+          items:
+            $ref: '#/components/schemas/Item'
+        children:
+          type: array
+          nullable: true
+          description: "A list of full objects for the item's immediate children."
+          items:
+            $ref: '#/components/schemas/Item'
+
     ResolvedEntityCandidate:
       type: object
       description: "Represents a single candidate match for a resolved entity (e.g., an Item or a Theme)."
@@ -193,6 +232,64 @@ components:
         type: string
       uniqueItems: true
       example: ["datasource_A"]
+
+    EnumerateItemsRequest:
+      type: object
+      description: "Specifies the scope for enumerating Item objects."
+      properties:
+        item_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/ID'
+          description: "Optional. A list of 'Item' IDs to define a structural scope. The function will return these items and/or their descendants."
+        theme_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/ID'
+          description: "Optional. A list of 'Theme' IDs to define a thematic scope. The function will return all member items of these themes."
+        depth:
+          type: integer
+          description: >
+            Controls traversal depth for 'item_ids' scopes. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively. This parameter is ignored for 'theme_ids' scopes.
+          default: -1
+        datasources:
+          $ref: '#/components/schemas/DatasourcesSchema'
+
+    GetRelationsRequest:
+      type: object
+      description: "Specifies the criteria for querying Relation objects. If 'entity_id' is omitted, the query runs against the entire corpus of relations."
+      properties:
+        entity_id:
+          $ref: '#/components/schemas/ID'
+          description: "Optional. The ID of an anchor entity. If provided, 'entity_type' is required."
+        entity_type:
+          type: string
+          description: "Optional. The type of the anchor entity. Required only if 'entity_id' is provided."
+          enum: [ "Item", "Version" ]
+        predicate:
+          type: string
+          description: "Optional. Filters relations by a specific predicate (e.g., 'cites')."
+        direction:
+          type: string
+          description: "Specifies the direction of the relations to retrieve relative to the 'entity_id'."
+          enum: [ "forward", "backward", "both" ]
+          default: "both"
+        validity_interval_filter:
+          type: object
+          description: "Optional. Filters relations to those whose validity interval overlaps with the specified interval."
+          properties:
+            start_time:
+              type: string
+              format: date-time
+            end_time:
+              type: string
+              format: date-time
+        metadata_filter:
+          type: object
+          additionalProperties: true
+          description: "Optional. Key-value pairs to filter against the 'metadata' of the Relation."
+        datasources:
+          $ref: '#/components/schemas/DatasourcesSchema'
 
   parameters:
     DatasourcesParameter:
@@ -554,3 +651,318 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+
+  /items/{itemId}:
+    get:
+      tags:
+        - "Deterministic Fetch Actions"
+      summary: "Get a single Item by its canonical ID."
+      operationId: "getItem"
+      description: |
+        Retrieves the full `Item` object given its unique, canonical ID.
+
+        ### Discussion
+        This is a core deterministic action. Unlike search functions, which are probabilistic, this is a direct, primary-key-based lookup. It either finds exactly one `Item` or returns a `404 Not Found` error. It is the primary way to "hydrate" an ID obtained from another function (like `searchItems` or `resolveItemReference`) into a full object.
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          description: "The canonical ID of the Item to retrieve."
+          schema:
+            $ref: '#/components/schemas/ID'
+
+      responses:
+        '200':
+          description: "Successfully retrieved the Item object."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /themes/{themeId}:
+    get:
+      tags:
+        - "Deterministic Fetch Actions"
+      summary: "Get a single Theme by its canonical ID."
+      operationId: "getTheme"
+      description: |
+        Retrieves the full `Theme` object given its unique, canonical ID.
+
+        ### Discussion
+        This is a core deterministic action for retrieving a specific node from the classification ontology. It is a direct, primary-key-based lookup.
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: themeId
+          in: path
+          required: true
+          description: "The canonical ID of the Theme to retrieve."
+          schema:
+            $ref: '#/components/schemas/ID'
+
+      responses:
+        '200':
+          description: "Successfully retrieved the Theme object."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /actions/{actionId}:
+    get:
+      tags:
+        - "Deterministic Fetch Actions"
+      summary: "Get a single Action by its unique ID."
+      operationId: "getAction"
+      description: |
+        Retrieves the full `Action` data object given its unique identifier. This provides direct access to the details of a specific action, including its precise `source_version_id`, and the `Version`s it terminates and produces.
+        
+        ### Discussion
+        This is a core deterministic action used for auditing and causal analysis. It allows an agent to inspect the exact event that caused a change in a legal norm's version history.
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: actionId
+          in: path
+          required: true
+          description: "The unique identifier of the Action to retrieve."
+          schema:
+            $ref: '#/components/schemas/ID'
+
+      responses:
+        '200':
+          description: "Successfully retrieved the Action object."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Action'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /versions/{versionId}:
+    get:
+      tags:
+        - "Deterministic Fetch Actions"
+      summary: "Get a single Version by its unique ID."
+      operationId: "getVersion"
+      description: "Retrieves the full `Version` object given its unique identifier. This is the primary way to inspect the details of a specific temporal snapshot of an Item."
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: versionId
+          in: path
+          required: true
+          description: "The unique identifier of the Version to retrieve."
+          schema:
+            $ref: '#/components/schemas/ID'
+      responses:
+        '200':
+          description: "Successfully retrieved the Version object."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Version'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /relations/{relationId}:
+    get:
+      tags:
+        - "Deterministic Fetch Actions"
+      summary: "Get a single Relation by its unique ID."
+      operationId: "getRelation"
+      description: "Retrieves the full `Relation` object given its unique identifier. Useful for inspecting the details of a specific link between entities."
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: relationId
+          in: path
+          required: true
+          description: "The unique identifier of the Relation to retrieve."
+          schema:
+            $ref: '#/components/schemas/ID'
+      responses:
+        '200':
+          description: "Successfully retrieved the Relation object."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Relation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /text-units/{textUnitId}:
+    get:
+      tags:
+        - "Deterministic Fetch Actions"
+      summary: "Get a single TextUnit by its unique ID."
+      operationId: "getTextUnit"
+      description: |
+        Retrieves the full `TextUnit` object given its unique identifier, including its content and all associated metadata.
+
+        ### Discussion
+        While the primary method for discovering `TextUnit`s is through the `searchTextUnits` function, this deterministic endpoint provides direct, primary-key-based access. It ensures API completeness, allowing a client to retrieve a specific text snippet if it only has its ID, which might occur in advanced logging or auditing workflows.
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: textUnitId
+          in: path
+          required: true
+          description: "The unique identifier of the TextUnit to retrieve."
+          schema:
+            $ref: '#/components/schemas/ID'
+
+      responses:
+        '200':
+          description: "Successfully retrieved the TextUnit object."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TextUnit'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /items/{itemId}/valid-version:
+    get:
+      tags:
+        - "Deterministic Fetch Actions"
+      summary: "Gets the single Version of an Item that was valid at a specific time."
+      operationId: "getValidVersion"
+      description: |
+        The core temporal resolution function. It finds the single `Version` of a given `Item` that was legally in force at a specific point in time, according to a specified temporal policy.
+
+        ### Discussion
+        The explicit `policy` parameter is essential for guaranteeing determinism. It allows the agent to specify the exact temporal logic required, such as retrieving the last valid version within a day (`SnapshotLast`) or handling boundary conditions in a predictable manner (`PointInTime`).
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          description: "The canonical ID of the Item whose valid version is being requested."
+          schema:
+            $ref: '#/components/schemas/ID'
+        - name: timestamp
+          in: query
+          required: true
+          description: "The specific UTC date-time for which to check validity."
+          schema:
+            type: string
+            format: date-time
+          example: "1999-06-01T12:00:00Z"
+        - name: policy
+          in: query
+          required: false
+          description: "The temporal resolution policy to apply."
+          schema:
+            $ref: '#/components/schemas/TemporalPolicy'
+
+      responses:
+        '200':
+          description: "Successfully retrieved the unique Version object valid at the specified time."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Version'
+        '404':
+          description: "Not Found - Either the Item with the given ID does not exist, or it existed but had no version that was valid at the specified timestamp."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /versions/{versionId}/text-unit:
+    get:
+      tags:
+        - "Deterministic Fetch Actions"
+      summary: "Gets the specific TextUnit for a Version in a given language."
+      operationId: "getTextForVersion"
+      description: |
+        Deterministically retrieves a specific textual representation (a `TextUnit`) for a single, known `Version` in a given language. This is a direct-access, primary-key-based lookup, not a search operation.
+
+        ### Discussion
+        This action is fundamentally different from `searchTextUnits`. While the latter is a probabilistic discovery tool, `getTextForVersion` is a deterministic fetch. It serves the critical use case where an agent has already identified a specific `Version` (e.g., via `getValidVersion`) and requires its exact textual content.
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: versionId
+          in: path
+          required: true
+          description: "The unique identifier of the Version whose text is requested."
+          schema:
+            $ref: '#/components/schemas/ID'
+        - name: language
+          in: query
+          required: true
+          description: "The IETF BCP 47 language code for the desired text."
+          schema:
+            type: string
+            pattern: "^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$" # Validação BCP 47
+          example: "pt-BR"
+
+      responses:
+        '200':
+          description: "Successfully retrieved the TextUnit object."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TextUnit'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: "Not Found - Either the Version with the given ID does not exist, or it does not have a textual representation in the requested language."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'

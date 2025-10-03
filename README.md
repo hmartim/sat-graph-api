@@ -48,7 +48,7 @@ At the heart of this architecture is a strict separation of concerns that distin
 * **Relation**: It models the rich, deterministic domain interactions between entities (the "cites" or "succeeds" links).
 * **TextUnit**: The concrete textual content. This flexible object holds the text for any entity in any language, enabling the "multi-aspect retrieval" strategy where even metadata and descriptions are searchable.
 
-* ![Data Models](./imgs/SATGraphModel.png)
+* ![Data Models](imgs/SATGraphModels.png)
 
 For a detailed definition of each field and property, please refer to the individual schema files in the /specification/schemas/ directory.
 
