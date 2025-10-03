@@ -73,16 +73,23 @@ components:
           description: "A human-readable description of the error."
           example: "The provided API Key does not have access to the 'datasource_STF' datasource."
 
+    ItemMetadataFilterSchema:
+      type: object
+      additionalProperties: true
+      description: >-
+        A set of key-value pairs to filter against the atemporal metadata of an 'Item'.
+        The exact query capabilities (e.g., range queries, existence checks) depend on
+        the backend implementation.
+      example:
+        jurisdiction: "federal"
+        type: "Statute"
+
     MetadataFilter:
       type: object
       description: "A structured object for applying metadata-based filters."
       properties:
         item_metadata_filter:
-          type: object
-          additionalProperties: true
-          description: "Key-value pairs to filter against the metadata of the parent 'Item'."
-          example:
-            jurisdiction: "federal"
+          $ref: '#/components/schemas/ItemMetadataFilterSchema'
         version_metadata_filter:
           type: object
           additionalProperties: true
@@ -161,6 +168,22 @@ components:
           minimum: 0.0
           maximum: 1.0
 
+    SearchedItemResult:
+      type: object
+      description: "Represents a single search result, containing an Item and its relevance score."
+      required:
+        - item
+        - score
+      properties:
+        item:
+          $ref: '#/components/schemas/Item'
+        score:
+          type: number
+          format: float
+          description: "The relevance score of the result, typically between 0.0 and 1.0."
+          minimum: 0.0
+          maximum: 1.0
+
     DatasourcesSchema:
       type: array
       description: |
@@ -202,7 +225,332 @@ components:
 
         API Keys can be obtained by contacting the system administrator.
 
+  responses:
+    BadRequest:
+      description: "Bad Request - The request is missing a required parameter, includes an invalid parameter value, or is otherwise malformed."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: "INVALID_PARAMETER"
+            message: "The 'top_k' parameter must be a positive integer."
+
+    Unauthorized:
+      description: "Unauthorized - The request lacks valid authentication credentials. The API Key is missing or invalid."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: "UNAUTHORIZED"
+            message: "Authentication credentials were not provided or are invalid."
+
+    Forbidden:
+      description: "Forbidden - The server understood the request, but is refusing to fulfill it. The API Key is valid but lacks permission for the requested resource or datasource."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: "FORBIDDEN_DATASOURCE"
+            message: "The provided API Key does not have access to the 'datasource_STF' datasource."
+
+    NotFound:
+      description: "Not Found - The requested resource could not be found."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: "RESOURCE_NOT_FOUND"
+            message: "No Item found with the specified ID."```
+
 security:
   - ApiKeyAuth: []
 
 paths:
+  /resolve-item-reference:
+    get:
+      tags:
+        - "Discovery and Search Actions"
+      summary: "Resolve a text reference to a ranked list of Item IDs."
+      operationId: "resolveItemReference"
+      description: |
+        Translates an ambiguous, natural-language reference to an entity into a **ranked list of candidate** `Item` IDs.
+        This is the critical first step for any query that names a specific entity (a document component, a concept, a named entity, etc.), acting as the bridge between user language and the graph's formal identifiers.
+
+        ### Discussion
+        This action is indispensable for grounding agentic workflows. References are often highly ambiguous ("Article 1") or relative ("the following paragraph").
+        This function handles this by returning a ranked list of candidates rather than forcing a single, potentially incorrect guess.
+        The optional `context_id` parameter significantly enhances its precision for context-aware interactions.
+
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: reference_text
+          in: query
+          required: true
+          description: >-
+            A string such as "Article 5 of the Constitution", "the Civil Code",
+            or a relative reference like "the previous section".
+          schema:
+            type: string
+          example: "Article 5 of the Constitution"
+        - name: context_id
+          in: query
+          required: false
+          description: >-
+            Optional. The ID of an 'Item' to provide structural context. This helps
+            resolve relative or ambiguous references.
+          schema:
+            $ref: '#/components/schemas/ID'
+          example: "urn:lex:br:federal:constituicao:1988-10-05;1988"
+        - name: top_k
+          in: query
+          required: false
+          description: "The maximum number of candidate matches to return."
+          schema:
+            type: integer
+            format: int32
+            default: 3
+            minimum: 1
+
+        - $ref: '#/components/parameters/DatasourcesParameter'
+
+      responses:
+        '200':
+          description: "A ranked list of probable Item matches was successfully returned."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResolvedEntityCandidate'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /resolve-theme-reference:
+    get:
+      tags:
+        - "Discovery and Search Actions"
+      summary: "Resolve a text reference to a ranked list of Theme IDs."
+      operationId: "resolveThemeReference"
+      description: |
+        Translates a natural-language name or label for a legal theme into a **ranked list of candidate** `Theme` ids.
+        This is the primary entry point for grounding a query in a specific conceptual category.
+        
+        ### Discussion
+        This action is the conceptual counterpart to `resolveItemReference`. It performs entity linking for thematic nodes, allowing an agent to deterministically identify a theme mentioned by name before using it as a scope in other actions.
+
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: reference_text
+          in: query
+          required: true
+          description: >-
+            A string representing the name of a theme, such as "Social Security"
+            or "Environmental Law".
+          schema:
+            type: string
+          example: "Environmental Law"
+        - name: top_k
+          in: query
+          required: false
+          description: "The maximum number of candidate matches to return."
+          schema:
+            type: integer
+            format: int32
+            default: 3
+            minimum: 1
+
+        - $ref: '#/components/parameters/DatasourcesParameter'
+
+      responses:
+        '200':
+          description: "A ranked list of probable Theme matches was successfully returned."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResolvedEntityCandidate'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /search-text-units:
+    post:
+      tags:
+        - "Discovery and Search Actions"
+      summary: "Performs a hybrid search for TextUnits."
+      operationId: "searchTextUnits"
+      description: |
+        Performs a hybrid search to discover `TextUnit` nodes by combining semantic, lexical, and structured criteria, returning a ranked list of the most relevant results. This is the primary, optimized entry point for all standard RAG queries.
+
+        ### Discussion
+        This action's dual-mode design for scoping provides maximum flexibility.
+        - **Conceptual Scope:** The most common mode. The agent defines the "what" (`item_ids`/`theme_ids`) and the "when" (`timestamp`), and the API handles the temporal resolution.
+        - **Explicit Version Scope:** A powerful mode for programmatic workflows where an agent has already identified a specific set of `Version`s and needs to perform a semantic search exclusively within that curated set.
+
+        The `aspects` parameter enables a truly holistic search, allowing a query to match a `Work`'s 'textual_metadata' just as easily as an `Version`'s 'canonical' text.
+
+      security:
+        - ApiKeyAuth: []
+
+      requestBody:
+        description: "The search criteria."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+
+      responses:
+        '200':
+          description: "Search executed successfully. Returns a ranked list of TextUnits."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SearchResultUnit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /search-items:
+    post:
+      tags:
+        - "Discovery and Search Actions"
+      summary: "Performs a hybrid search for Items across their entire version history."
+      operationId: "searchItems"
+      description: |
+        Performs a hybrid search to discover `Item` nodes by combining semantic, lexical, and structured criteria.
+        This action is intentionally **time-agnostic**, searching across the entire version history of each item's text to ensure comprehensive discovery of the conceptual locus.
+
+        ### Discussion
+        This action's purpose is **structural discovery**, not content retrieval. It is used to find the *item* that, at any point in its history, has dealt with a concept. This is fundamentally different from `searchTextUnits`, which finds the specific *text* that was valid at a specific point in time.
+      security:
+        - ApiKeyAuth: []
+
+      requestBody:
+        description: "The search criteria for finding Items."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                item_ids:
+                  type: array
+                  items: { $ref: '#/components/schemas/ID' }
+                  description: "Optional. A list of 'Item' IDs to define the search scope."
+                theme_ids:
+                  type: array
+                  items: { $ref: '#/components/schemas/ID' }
+                  description: "Optional. A list of 'Theme' IDs to expand the search scope."
+                item_metadata_filter:
+                  $ref: '#/components/schemas/ItemMetadataFilterSchema'
+                semantic_query:
+                  type: string
+                  description: "The natural language query string for vector search."
+                lexical_query:
+                  type: string
+                  description: "Keywords or phrases for a full-text syntactic search."
+                top_k:
+                  type: integer
+                  format: int32
+                  default: 10
+                  minimum: 1
+                  description: "The maximum number of results to return."
+                datasources:
+                  $ref: '#/components/schemas/DatasourcesSchema'
+
+      responses:
+        '200':
+          description: "Search executed successfully. Returns a ranked list of Items."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SearchedItemResult'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /search-themes:
+    get:
+      tags:
+        - "Discovery and Search Actions"
+      summary: "Performs a hybrid search for Themes based on their descriptions."
+      operationId: "searchThemes"
+      description: |
+        Performs a hybrid (semantic and/or lexical) search to discover `Theme` nodes based on a descriptive query. 
+        This action **searches exclusively on the textual descriptions associated with the themes themselves**.
+        
+        At least one of `semantic_query` or `lexical_query` must be provided.
+        
+        ### Discussion
+        This action's purpose is to map a user's description of a topic to the most appropriate formal concept in the graph. 
+        The design allows for both broad conceptual matching (via `semantic_query`) and high-precision keyword filtering (via `lexical_query`).
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: semantic_query
+          in: query
+          required: false
+          description: "The natural language query string for vector-based semantic search."
+          schema:
+            type: string
+            minLength: 1
+          example: "laws about consumer protection"
+        - name: lexical_query
+          in: query
+          required: false
+          description: "Keywords or a specific phrase for a full-text syntactic search."
+          schema:
+            type: string
+            minLength: 1
+          example: "\"environmental impact report\""
+        - name: top_k
+          in: query
+          required: false
+          description: "The maximum number of candidate themes to return."
+          schema:
+            type: integer
+            format: int32
+            default: 5
+            minimum: 1
+        - $ref: '#/components/parameters/DatasourcesParameter'
+
+      responses:
+        '200':
+          description: "A ranked list of matching Theme candidates was successfully returned."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResolvedEntityCandidate'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
