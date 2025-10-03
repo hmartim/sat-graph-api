@@ -966,3 +966,165 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /enumerate-items:
+    post:
+      tags:
+        - "Structural Navigation Actions"
+      summary: "Enumerates Items within a structural or thematic scope."
+      operationId: "enumerateItems"
+      description: |
+        Enumerates and returns full `Item` objects based on a specified structural or thematic scope. At least one of `item_ids` or `theme_ids` must be provided.
+
+        ### Scope Logic
+        - If both `item_ids` and `theme_ids` are provided, the function returns the **union** of all items found in both scopes (without duplicates).
+        - The `depth` parameter applies exclusively to scopes defined by `item_ids`.
+
+        ### Discussion
+        This action's purpose is **structural enumeration and navigation**, not search filtering. It is the correct tool for tasks like building a table of contents or programmatically exploring the members of a conceptual theme. For performing content-based searches within a scope, agents should pass the scope's ID directly to the search functions (`searchTextUnits`, `searchItems`), as this is significantly more performant.
+      security:
+        - ApiKeyAuth: []
+
+      requestBody:
+        description: "The scope definition for the enumeration."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnumerateItemsRequest'
+
+      responses:
+        '200':
+          description: "A list of Item objects within the specified scope."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /items/{itemId}/ancestors:
+    get:
+      tags:
+        - "Structural Navigation Actions"
+      summary: "Retrieves the hierarchical ancestors of a single Item."
+      operationId: "getAncestors"
+      description: |
+        Navigates the hierarchy upwards from a specific structural `Item` to its parent, grandparent, and so on, up to the root `Work`. This is crucial for retrieving the full contextual path ("breadcrumb") of any given provision.
+        
+        The returned list is **ordered** from the highest-level ancestor (e.g., a `Title`) down to the immediate parent of the input item. The root `Work` and the item itself are excluded from the list.
+        
+        ### Discussion
+        This action is the fundamental tool for contextualization. After a search identifies a relevant item, an agent should use `getAncestors` to retrieve its structural path. This allows the generation of richer, context-aware responses, significantly improving the quality and explainability of the final answer.
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          description: "The canonical ID of the Item whose ancestors are to be retrieved."
+          schema:
+            $ref: '#/components/schemas/ID'
+
+      responses:
+        '200':
+          description: "An ordered list of the ancestor Item objects."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /items/{itemId}/themes:
+    get:
+      tags:
+        - "Structural Navigation Actions"
+      summary: "Retrieves all Themes associated with a single Item."
+      operationId: "getThemesForItem"
+      description: |
+        Retrieves a list of all `Theme`s that are directly associated with a specific `Item`. This provides a direct inverse navigation from a structural entity to its classifications in the conceptual ontology.
+        
+        ### Discussion
+        This action is the essential counterpart to using a `Theme` as a scope in `enumerateItems`. It makes the relationship between items and themes fully bidirectional, enabling an agent to efficiently answer questions like "What topics does this article cover?". Without this primitive, an agent would need to resort to a highly inefficient brute-force search across the entire thematic ontology.
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          description: "The canonical ID of the Item whose thematic classifications are requested."
+          schema:
+            $ref: '#/components/schemas/ID'
+
+      responses:
+        '200':
+          description: "A list of Theme objects associated with the Item. The list may be empty if the Item has no thematic classifications."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Theme'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /items/{itemId}/context:
+    get:
+      tags:
+        - "Structural Navigation Actions"
+      summary: "Retrieves the immediate structural context of an Item in a single call."
+      operationId: "getItemContext"
+      description: |
+        Retrieves the complete, immediate structural context of a single `Item` in one efficient call. This includes its parent, siblings, and direct children.
+        
+        ### Discussion
+        This is a high-utility, performance-oriented action designed for applications that need to render a contextual view of an item (e.g., a document browser or a table of contents). Replicating this functionality would require multiple, less efficient API calls (`getAncestors`, `enumerateItems`). By providing this as a single, atomic operation, the API dramatically simplifies the logic for common UI and agentic navigation tasks.
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          description: "The canonical ID of the Item for which to retrieve the context."
+          schema:
+            $ref: '#/components/schemas/ID'
+
+      responses:
+        '200':
+          description: "Successfully retrieved the structural context."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuralContext'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
