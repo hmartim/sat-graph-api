@@ -1128,3 +1128,109 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /relations/query: # we use "query" to be more explicit in a post operation
+    post:
+      tags:
+        - "Graph Traversal Actions"
+      summary: "Queries for full Relation objects based on complex criteria."
+      operationId: "getRelations"
+      description: |
+        A powerful action to query and retrieve complete `Relation` objects based on a variety of criteria, including the anchor entity, predicate, direction, temporal validity, and metadata.
+        
+        ### Discussion
+        This is a low-level, high-precision tool for advanced use cases where the details of the graph's connections are paramount. It allows for complex temporal and structural queries on the relationships themselves.
+      security:
+        - ApiKeyAuth: []
+
+      requestBody:
+        description: "The criteria for the Relation query."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetRelationsRequest'
+
+      responses:
+        '200':
+          description: "A list of full Relation objects matching the criteria. The list may be empty if no relations are found."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Relation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /entities/{entityId}/related:
+    get:
+      tags:
+        - "Graph Traversal Actions"
+      summary: "Finds related entities by traversing a specific relationship."
+      operationId: "findRelatedEntities"
+      description: |
+        A powerful and flexible action to query and retrieve complete `Relation` objects based on a variety of criteria.
+
+        This function supports two primary modes:
+        1.  **Local Traversal:** By providing an `entity_id` and `entity_type`, the query is anchored to a specific entity, finding its connections.
+        2.  **Corpus-Level Analysis:** By omitting `entity_id`, the query runs against the entire set of relations in the graph, allowing for aggregate, system-wide analysis filtered by predicate, time, or metadata.
+
+        ### Discussion
+        This is a low-level, high-precision tool for advanced use cases. It allows for both detailed graph navigation starting from a node and broad, analytical queries over the entire relational fabric.
+      security:
+        - ApiKeyAuth: []
+
+      parameters:
+        - name: entityId
+          in: path
+          required: true
+          description: "The ID of the starting entity (Item or Version) for the traversal."
+          schema:
+            $ref: '#/components/schemas/ID'
+        - name: entity_type
+          in: query
+          required: true
+          description: "The type of the starting entity."
+          schema:
+            type: string
+            enum: [ "Item", "Version" ]
+        - name: predicate
+          in: query
+          required: true
+          description: "The type of relation to traverse (e.g., 'cites', 'succeeded_by')."
+          schema:
+            type: string
+        - name: direction
+          in: query
+          required: true
+          description: "Direction of traversal: 'forward' (from subject to object) or 'backward' (from object to subject)."
+          schema:
+            type: string
+            enum: [ "forward", "backward" ]
+        - $ref: '#/components/parameters/DatasourcesParameter'
+
+      responses:
+        '200':
+          description: "A list of the related entities found. The list may be empty if no related entities match the criteria."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  # Esta resposta polimórfica é a chave para a flexibilidade.
+                  oneOf:
+                    - $ref: '#/components/schemas/Item'
+                    - $ref: '#/components/schemas/Version'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
