@@ -1,0 +1,380 @@
+/items/{itemId}:
+  get:
+    tags:
+      - "Deterministic Fetch Actions"
+    summary: "Get a single Item by its canonical ID."
+    operationId: "getItem"
+    description: |
+      Retrieves the full `Item` object given its unique, canonical ID.
+      
+      ### Discussion
+      This is a core deterministic action. Unlike search functions, which are probabilistic, this is a direct, primary-key-based lookup. It either finds exactly one `Item` or returns a `404 Not Found` error. It is the primary way to "hydrate" an ID obtained from another function (like `searchItems` or `resolveItemReference`) into a full object.
+    security:
+      - ApiKeyAuth: []
+
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        description: "The canonical ID of the Item to retrieve."
+        schema:
+          $ref: '#/components/schemas/ID'
+
+    responses:
+      '200':
+        description: "Successfully retrieved the Item object."
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/items/{itemId}/ancestors:
+  get:
+    tags:
+      - "Structural Navigation Actions"
+    summary: "Retrieves the hierarchical ancestors of a single Item."
+    operationId: "getAncestors"
+    description: |
+      Navigates the hierarchy upwards from a specific structural `Item` to its parent, grandparent, and so on, up to the root `Work`. This is crucial for retrieving the full contextual path ("breadcrumb") of any given provision.
+
+      The returned list is **ordered** from the highest-level ancestor (e.g., a `Title`) down to the immediate parent of the input item. The root `Work` and the item itself are excluded from the list.
+
+      ### Discussion
+      This action is the fundamental tool for contextualization. After a search identifies a relevant item, an agent should use `getAncestors` to retrieve its structural path. This allows the generation of richer, context-aware responses, significantly improving the quality and explainability of the final answer.
+    security:
+      - ApiKeyAuth: [ ]
+
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        description: "The canonical ID of the Item whose ancestors are to be retrieved."
+        schema:
+          $ref: '#/components/schemas/ID'
+
+    responses:
+      '200':
+        description: "An ordered list of the ancestor Item objects."
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Item'
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/items/{itemId}/context:
+  get:
+    tags:
+      - "Structural Navigation Actions"
+    summary: "Retrieves the immediate structural context of an Item in a single call."
+    operationId: "getItemContext"
+    description: |
+      Retrieves the complete, immediate structural context of a single `Item` in one efficient call. This includes its parent, siblings, and direct children.
+
+      ### Discussion
+      This is a high-utility, performance-oriented action designed for applications that need to render a contextual view of an item (e.g., a document browser or a table of contents). Replicating this functionality would require multiple, less efficient API calls (`getAncestors`, `enumerateItems`). By providing this as a single, atomic operation, the API dramatically simplifies the logic for common UI and agentic navigation tasks.
+    security:
+      - ApiKeyAuth: [ ]
+
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        description: "The canonical ID of the Item for which to retrieve the context."
+        schema:
+          $ref: '#/components/schemas/ID'
+
+    responses:
+      '200':
+        description: "Successfully retrieved the structural context."
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StructuralContext'
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/items/{itemId}/themes:
+  get:
+    tags:
+      - "Structural Navigation Actions"
+    summary: "Retrieves all Themes associated with a single Item."
+    operationId: "getThemesForItem"
+    description: |
+      Retrieves a list of all `Theme`s that are directly associated with a specific `Item`. This provides a direct inverse navigation from a structural entity to its classifications in the conceptual ontology.
+      
+      ### Discussion
+      This action is the essential counterpart to using a `Theme` as a scope in `enumerateItems`. It makes the relationship between items and themes fully bidirectional, enabling an agent to efficiently answer questions like "What topics does this article cover?". Without this primitive, an agent would need to resort to a highly inefficient brute-force search across the entire thematic ontology.
+    security:
+      - ApiKeyAuth: []
+
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        description: "The canonical ID of the Item whose thematic classifications are requested."
+        schema:
+          $ref: '#/components/schemas/ID'
+
+    responses:
+      '200':
+        description: "A list of Theme objects associated with the Item. The list may be empty if the Item has no thematic classifications."
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Theme'
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/items/{itemId}/valid-version:
+  get:
+    tags:
+      - "Deterministic Fetch Actions"
+    summary: "Gets the single Version of an Item that was valid at a specific time."
+    operationId: "getValidVersion"
+    description: |
+      The core temporal resolution function. It finds the single `Version` of a given `Item` that was legally in force at a specific point in time, according to a specified temporal policy.
+
+      ### Discussion
+      The explicit `policy` parameter is essential for guaranteeing determinism. It allows the agent to specify the exact temporal logic required, such as retrieving the last valid version within a day (`SnapshotLast`) or handling boundary conditions in a predictable manner (`PointInTime`).
+    security:
+      - ApiKeyAuth: []
+
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        description: "The canonical ID of the Item whose valid version is being requested."
+        schema:
+          $ref: '#/components/schemas/ID'
+      - name: timestamp
+        in: query
+        required: true
+        description: "The specific UTC date-time for which to check validity."
+        schema:
+          type: string
+          format: date-time
+        example: "1999-06-01T12:00:00Z"
+      - name: policy
+        in: query
+        required: false
+        description: "The temporal resolution policy to apply."
+        schema:
+          $ref: '#/components/schemas/TemporalPolicy'
+
+    responses:
+      '200':
+        description: "Successfully retrieved the unique Version object valid at the specified time."
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Version'
+      '404':
+        description: "Not Found - Either the Item with the given ID does not exist, or it existed but had no version that was valid at the specified timestamp."
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+
+/enumerate-items:
+  post:
+    tags:
+      - "Structural Navigation Actions"
+    summary: "Enumerates Items within a structural or thematic scope."
+    operationId: "enumerateItems"
+    description: |
+      Enumerates and returns full `Item` objects based on a specified structural or thematic scope. At least one of `item_ids` or `theme_ids` must be provided.
+
+      ### Scope Logic
+      - If both `item_ids` and `theme_ids` are provided, the function returns the **union** of all items found in both scopes (without duplicates).
+      - The `depth` parameter applies exclusively to scopes defined by `item_ids`.
+
+      ### Discussion
+      This action's purpose is **structural enumeration and navigation**, not search filtering. It is the correct tool for tasks like building a table of contents or programmatically exploring the members of a conceptual theme. For performing content-based searches within a scope, agents should pass the scope's ID directly to the search functions (`searchTextUnits`, `searchItems`), as this is significantly more performant.
+    security:
+      - ApiKeyAuth: []
+
+    requestBody:
+      description: "The scope definition for the enumeration."
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnumerateItemsRequest'
+
+    responses:
+      '200':
+        description: "A list of Item objects within the specified scope."
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Item'
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+
+/resolve-item-reference:
+  get:
+    tags:
+      - "Discovery and Search Actions"
+    summary: "Resolve a text reference to a ranked list of Item IDs."
+    operationId: "resolveItemReference"
+    description: |
+      Translates an ambiguous, natural-language reference to an entity into a **ranked list of candidate** `Item` IDs.
+      This is the critical first step for any query that names a specific entity (a document component, a concept, a named entity, etc.), acting as the bridge between user language and the graph's formal identifiers.
+
+      ### Discussion
+      This action is indispensable for grounding agentic workflows. References are often highly ambiguous ("Article 1") or relative ("the following paragraph").
+      This function handles this by returning a ranked list of candidates rather than forcing a single, potentially incorrect guess.
+      The optional `context_id` parameter significantly enhances its precision for context-aware interactions.
+
+    security:
+      - ApiKeyAuth: []
+
+    parameters:
+      - name: reference_text
+        in: query
+        required: true
+        description: >-
+          A string such as "Article 5 of the Constitution", "the Civil Code",
+          or a relative reference like "the previous section".
+        schema:
+          type: string
+        example: "Article 5 of the Constitution"
+      - name: context_id
+        in: query
+        required: false
+        description: >-
+          Optional. The ID of an 'Item' to provide structural context. This helps
+          resolve relative or ambiguous references.
+        schema:
+          $ref: '#/components/schemas/ID'
+        example: "urn:lex:br:federal:constituicao:1988-10-05;1988"
+      - name: top_k
+        in: query
+        required: false
+        description: "The maximum number of candidate matches to return."
+        schema:
+          type: integer
+          format: int32
+          default: 3
+          minimum: 1
+
+      - $ref: '#/components/parameters/DatasourcesParameter'
+
+    responses:
+      '200':
+        description: "A ranked list of probable Item matches was successfully returned."
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ResolvedEntityCandidate'
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+
+/search-items:
+  post:
+    tags:
+      - "Discovery and Search Actions"
+    summary: "Performs a hybrid search for Items across their entire version history."
+    operationId: "searchItems"
+    description: |
+      Performs a hybrid search to discover `Item` nodes by combining semantic, lexical, and structured criteria.
+      This action is intentionally **time-agnostic**, searching across the entire version history of each item's text to ensure comprehensive discovery of the conceptual locus.
+
+      ### Discussion
+      This action's purpose is **structural discovery**, not content retrieval. It is used to find the *item* that, at any point in its history, has dealt with a concept. This is fundamentally different from `searchTextUnits`, which finds the specific *text* that was valid at a specific point in time.
+    security:
+      - ApiKeyAuth: []
+
+    requestBody:
+      description: "The search criteria for finding Items."
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              item_ids:
+                type: array
+                items: { $ref: '#/components/schemas/ID' }
+                description: "Optional. A list of 'Item' IDs to define the search scope."
+              theme_ids:
+                type: array
+                items: { $ref: '#/components/schemas/ID' }
+                description: "Optional. A list of 'Theme' IDs to expand the search scope."
+              item_metadata_filter:
+                $ref: '#/components/schemas/ItemMetadataFilterSchema'
+              semantic_query:
+                type: string
+                description: "The natural language query string for vector search."
+              lexical_query:
+                type: string
+                description: "Keywords or phrases for a full-text syntactic search."
+              top_k:
+                type: integer
+                format: int32
+                default: 10
+                minimum: 1
+                description: "The maximum number of results to return."
+              datasources:
+                $ref: '#/components/schemas/DatasourcesSchema'
+
+    responses:
+      '200':
+        description: "Search executed successfully. Returns a ranked list of Items."
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SearchedItemResult'
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '403': { $ref: '#/components/responses/Forbidden' }

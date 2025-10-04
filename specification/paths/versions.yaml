@@ -1,0 +1,80 @@
+/versions/{versionId}:
+  get:
+    tags:
+      - "Deterministic Fetch Actions"
+    summary: "Get a single Version by its unique ID."
+    operationId: "getVersion"
+    description: "Retrieves the full `Version` object given its unique identifier. This is the primary way to inspect the details of a specific temporal snapshot of an Item."
+    security:
+      - ApiKeyAuth: []
+    parameters:
+      - name: versionId
+        in: path
+        required: true
+        description: "The unique identifier of the Version to retrieve."
+        schema:
+          $ref: '#/components/schemas/ID'
+    responses:
+      '200':
+        description: "Successfully retrieved the Version object."
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Version'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/versions/{versionId}/text-unit:
+  get:
+    tags:
+      - "Deterministic Fetch Actions"
+    summary: "Gets the specific TextUnit for a Version in a given language."
+    operationId: "getTextForVersion"
+    description: |
+      Deterministically retrieves a specific textual representation (a `TextUnit`) for a single, known `Version` in a given language. This is a direct-access, primary-key-based lookup, not a search operation.
+
+      ### Discussion
+      This action is fundamentally different from `searchTextUnits`. While the latter is a probabilistic discovery tool, `getTextForVersion` is a deterministic fetch. It serves the critical use case where an agent has already identified a specific `Version` (e.g., via `getValidVersion`) and requires its exact textual content.
+    security:
+      - ApiKeyAuth: []
+
+    parameters:
+      - name: versionId
+        in: path
+        required: true
+        description: "The unique identifier of the Version whose text is requested."
+        schema:
+          $ref: '#/components/schemas/ID'
+      - name: language
+        in: query
+        required: true
+        description: "The IETF BCP 47 language code for the desired text."
+        schema:
+          type: string
+          pattern: "^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$" # BCP 47
+        example: "pt-BR"
+
+    responses:
+      '200':
+        description: "Successfully retrieved the TextUnit object."
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TextUnit'
+
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '404':
+        description: "Not Found - Either the Version with the given ID does not exist, or it does not have a textual representation in the requested language."
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
