@@ -22,7 +22,7 @@ required:
   - content
 properties:
   id:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
     description: "A unique identifier for this specific piece of text."
     example: "urn:lex:br:federal:constituicao:1988@1988-10-05~text;pt!art1_par1"
   source_type:
@@ -38,7 +38,7 @@ properties:
       - "Relation"
     example: "Version"
   source_id:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
     description: "The unique ID of the source node."
     example: "urn:lex:br:federal:constituicao:1988@1988-10-05!art1_par1"
   language:

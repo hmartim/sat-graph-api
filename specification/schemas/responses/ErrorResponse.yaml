@@ -1,0 +1,11 @@
+type: object
+description: A standard format for error responses.
+properties:
+  code:
+    type: string
+    description: "An internal, machine-readable error code."
+    example: "FORBIDDEN_DATASOURCE"
+  message:
+    type: string
+    description: "A human-readable description of the error."
+    example: "The provided API Key does not have access to the 'datasource_STF' datasource."

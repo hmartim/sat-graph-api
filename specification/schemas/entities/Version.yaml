@@ -21,15 +21,15 @@ required:
   - validity_interval
 properties:
   id:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
     description: "A unique identifier for this specific version instance."
     example: "urn:lex:br:federal:constituicao:1988@1988-10-05"
   item_id:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
     description: "The ID of the timeless 'Item' this object is a version of."
     example: "urn:lex:br:federal:constituicao:1988"
   validity_interval:
-    $ref: './TimeInterval.yaml'
+    $ref: '../core/TimeInterval.yaml'
     description: "The time interval during which this version was legally valid."
   parent:
     type: array
@@ -40,7 +40,7 @@ properties:
       an unchanged child Version is reused across multiple subsequent parent Versions.
       A 'Work' version has no parents.
     items:
-      $ref: './ID.yaml'
+      $ref: '../core/ID.yaml'
   children:
     type: array
     nullable: true
@@ -49,9 +49,9 @@ properties:
       aggregating the most recent valid versions of all its child components, some
       of which may be newly created while others are reused from previous states.
     items:
-      $ref: './ID.yaml'
+      $ref: '../core/ID.yaml'
   metadata:
-    $ref: './JSON.yaml'
+    $ref: '../core/JSON.yaml'
     nullable: true
     description: >-
       A flexible field for any valid JSON data specific to this version.

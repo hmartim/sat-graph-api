@@ -31,7 +31,7 @@ required:
   - label
 properties:
   id:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
   category:
     type: string
     description: >-
@@ -58,7 +58,7 @@ properties:
     minLength: 1
     example: "Brazilian Constitution of 1988"
   parent:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
     nullable: true
     description: >-
       The canonical ID of the single structural parent of this item. This field is
@@ -71,9 +71,9 @@ properties:
       An optional list of canonical IDs for the immediate children of this item.
       Primarily used to define the document hierarchy for 'Work' and 'Work Component' items.
     items:
-      $ref: './ID.yaml'
+      $ref: '../core/ID.yaml'
   metadata:
-    $ref: './JSON.yaml'
+    $ref: '../core/JSON.yaml'
     nullable: true
     description: >-
       A flexible field for any valid JSON data. Used for storing structured,

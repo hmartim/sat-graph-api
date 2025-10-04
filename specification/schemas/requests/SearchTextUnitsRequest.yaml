@@ -1,0 +1,53 @@
+type: object
+description: "The request body for the searchTextUnits operation."
+properties:
+  version_ids:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: >-
+      Explicit Version Scope. A list of specific 'Version' IDs. Mutually
+      exclusive with the combination of 'item_ids'/'theme_ids' and 'timestamp'.
+  item_ids:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: "Conceptual Scope. A list of 'Item' IDs to define the structural scope."
+  theme_ids:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: "Conceptual Scope. A list of 'Theme' IDs to define the thematic scope."
+  metadata_filter:
+    $ref: '../responses/MetadataFilter.yaml'
+  timestamp:
+    type: string
+    format: date-time
+    description: >-
+      Conceptual Scope. A UTC date-time to constrain the search. Defaults to 'now' if omitted.
+      Ignored if 'version_ids' is provided.
+  semantic_query:
+    type: string
+    description: "The natural language query string for vector search."
+  lexical_query:
+    type: string
+    description: "Keywords or phrases for a full-text syntactic search."
+  language:
+    type: string
+    description: "The IETF BCP 47 language code for the content."
+    example: "pt-BR"
+  aspects:
+    type: array
+    items:
+      type: string
+    default: ["canonical"]
+    description: "A list of textual aspects to search within (e.g., 'canonical', 'summary')."
+  top_k:
+    type: integer
+    format: int32
+    default: 10
+    minimum: 1
+    description: "The maximum number of results to return."
+  datasources:
+    $ref: '../responses/DatasourcesSchema.yaml'
+    description: "Optional. Scopes the search to a specific list of granted datasources."

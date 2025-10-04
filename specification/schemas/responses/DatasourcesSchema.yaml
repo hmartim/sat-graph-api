@@ -1,0 +1,8 @@
+type: array
+description: |
+  A list of datasource identifiers. A datasource is the system or provider
+  where an entity originates (e.g., 'datasource_Senate').
+items:
+  type: string
+uniqueItems: true
+example: ["datasource_A"]

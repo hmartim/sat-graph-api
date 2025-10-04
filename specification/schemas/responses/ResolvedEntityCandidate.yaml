@@ -1,0 +1,16 @@
+type: object
+description: "Represents a single candidate match for a resolved entity (e.g., an Item or a Theme)."
+required:
+  - id
+  - confidence
+properties:
+  id:
+    $ref: '../core/ID.yaml'
+    description: "The probable canonical ID of the matched entity."
+  confidence:
+    type: number
+    format: float
+    description: "A score from 0.0 to 1.0 indicating the certainty of the match."
+    minimum: 0.0
+    maximum: 1.0
+    example: 0.95

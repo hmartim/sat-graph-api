@@ -1,0 +1,36 @@
+/items/{itemId}:
+  get:
+    tags:
+      - "Deterministic Fetch Actions"
+    summary: "Get a single Item by its canonical ID."
+    operationId: "getItem"
+    description: |
+      Retrieves the full `Item` object given its unique, canonical ID.
+      
+      ### Discussion
+      This is a core deterministic action for retrieving a specific structural node from the graph. It is a direct, primary-key-based lookup.
+    security:
+      - ApiKeyAuth: []
+
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        description: "The canonical ID of the Item to retrieve."
+        schema:
+          $ref: '#/components/schemas/ID'
+
+    responses:
+      '200':
+        description: "Successfully retrieved the Item object."
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '404':
+        $ref: '#/components/responses/NotFound'

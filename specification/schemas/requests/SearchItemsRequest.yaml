@@ -1,0 +1,29 @@
+type: object
+description: "The request body for the searchItems operation."
+properties:
+  item_ids:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: "Optional. A list of 'Item' IDs to define the search scope."
+  theme_ids:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: "Optional. A list of 'Theme' IDs to expand the search scope."
+  item_metadata_filter:
+    $ref: '../responses/ItemMetadataFilterSchema.yaml'
+  semantic_query:
+    type: string
+    description: "The natural language query string for vector search."
+  lexical_query:
+    type: string
+    description: "Keywords or phrases for a full-text syntactic search."
+  top_k:
+    type: integer
+    format: int32
+    default: 10
+    minimum: 1
+    description: "The maximum number of results to return."
+  datasources:
+    $ref: '../responses/DatasourcesSchema.yaml'

@@ -1,0 +1,14 @@
+type: object
+description: "Represents a single search result, containing an Item and its relevance score."
+required:
+  - item
+  - score
+properties:
+  item:
+    $ref: '../entities/Item.yaml'
+  score:
+    type: number
+    format: float
+    description: "The relevance score of the result, typically between 0.0 and 1.0."
+    minimum: 0.0
+    maximum: 1.0

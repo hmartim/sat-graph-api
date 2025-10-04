@@ -19,32 +19,7 @@
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              item_ids:
-                type: array
-                items: { $ref: '#/components/schemas/ID' }
-                description: "Optional. A list of 'Item' IDs to define the search scope."
-              theme_ids:
-                type: array
-                items: { $ref: '#/components/schemas/ID' }
-                description: "Optional. A list of 'Theme' IDs to expand the search scope."
-              item_metadata_filter:
-                $ref: '#/components/schemas/ItemMetadataFilterSchema'
-              semantic_query:
-                type: string
-                description: "The natural language query string for vector search."
-              lexical_query:
-                type: string
-                description: "Keywords or phrases for a full-text syntactic search."
-              top_k:
-                type: integer
-                format: int32
-                default: 10
-                minimum: 1
-                description: "The maximum number of results to return."
-              datasources:
-                $ref: '#/components/schemas/DatasourcesSchema'
+            $ref: '#/components/schemas/SearchItemsRequest'
 
     responses:
       '200':

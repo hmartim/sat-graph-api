@@ -1,0 +1,34 @@
+type: object
+description: "Specifies the criteria for querying Relation objects. If 'entity_id' is omitted, the query runs against the entire corpus of relations."
+properties:
+  entity_id:
+    $ref: '../core/ID.yaml'
+    description: "Optional. The ID of an anchor entity. If provided, 'entity_type' is required."
+  entity_type:
+    type: string
+    description: "Optional. The type of the anchor entity. Required only if 'entity_id' is provided."
+    enum: [ "Item", "Version" ]
+  predicate:
+    type: string
+    description: "Optional. Filters relations by a specific predicate (e.g., 'cites')."
+  direction:
+    type: string
+    description: "Specifies the direction of the relations to retrieve relative to the 'entity_id'."
+    enum: [ "forward", "backward", "both" ]
+    default: "both"
+  validity_interval_filter:
+    type: object
+    description: "Optional. Filters relations to those whose validity interval overlaps with the specified interval."
+    properties:
+      start_time:
+        type: string
+        format: date-time
+      end_time:
+        type: string
+        format: date-time
+  metadata_filter:
+    type: object
+    additionalProperties: true
+    description: "Optional. Key-value pairs to filter against the 'metadata' of the Relation."
+  datasources:
+    $ref: '../responses/DatasourcesSchema.yaml'

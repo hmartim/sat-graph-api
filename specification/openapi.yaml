@@ -23,273 +23,59 @@ info:
 
 components:
   schemas:
+    # Core schemas
     ID:
-      $ref: './schemas/ID.yaml'
+      $ref: './schemas/core/ID.yaml'
     JSON:
-      $ref: './schemas/JSON.yaml'
+      $ref: './schemas/core/JSON.yaml'
     TimeInterval:
-      $ref: './schemas/TimeInterval.yaml'
-    Theme:
-      $ref: './schemas/Theme.yaml'
-    Item:
-      $ref: './schemas/Item.yaml'
-    Version:
-      $ref: './schemas/Version.yaml'
-    TextUnit:
-      $ref: './schemas/TextUnit.yaml'
-    Action:
-      $ref: './schemas/Action.yaml'
-    Relation:
-      $ref: './schemas/Relation.yaml'
-
+      $ref: './schemas/core/TimeInterval.yaml'
     TemporalPolicy:
-      type: string
-      description: |
-        Specifies the temporal resolution logic for finding a valid version.
-        This is essential for guaranteeing determinism when multiple events occur on the same day.
-
-        - `PointInTime`: (Strict) Finds the version whose validity interval strictly contains the exact timestamp.
-        - `SnapshotLast`: (Common) Finds the last version that was valid at any point during the day of the given timestamp. Treats the query as "what was the state of the law at the end of this day?".
-      enum:
-        - "PointInTime"
-        - "SnapshotLast"
-      default: "SnapshotLast"
-
-    StructuralContext:
-      type: object
-      description: "Contains the complete, immediate structural context of a single Item."
-      required:
-        - target
-      properties:
-        target:
-          $ref: '#/components/schemas/Item'
-          description: "The full object of the item in question."
-        parent:
-          $ref: '#/components/schemas/Item'
-          nullable: true
-          description: "The full object of the item's immediate parent."
-        siblings:
-          type: array
-          nullable: true
-          description: "A list of full objects for the item's siblings (other items with the same parent)."
-          items:
-            $ref: '#/components/schemas/Item'
-        children:
-          type: array
-          nullable: true
-          description: "A list of full objects for the item's immediate children."
-          items:
-            $ref: '#/components/schemas/Item'
-
-    ResolvedEntityCandidate:
-      type: object
-      description: "Represents a single candidate match for a resolved entity (e.g., an Item or a Theme)."
-      required:
-        - id
-        - confidence
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-          description: "The probable canonical ID of the matched entity."
-        confidence:
-          type: number
-          format: float
-          description: "A score from 0.0 to 1.0 indicating the certainty of the match."
-          minimum: 0.0
-          maximum: 1.0
-          example: 0.95
-
-    ErrorResponse:
-      type: object
-      description: A standard format for error responses.
-      properties:
-        code:
-          type: string
-          description: "An internal, machine-readable error code."
-          example: "FORBIDDEN_DATASOURCE"
-        message:
-          type: string
-          description: "A human-readable description of the error."
-          example: "The provided API Key does not have access to the 'datasource_STF' datasource."
-
-    ItemMetadataFilterSchema:
-      type: object
-      additionalProperties: true
-      description: >-
-        A set of key-value pairs to filter against the atemporal metadata of an 'Item'.
-        The exact query capabilities (e.g., range queries, existence checks) depend on
-        the backend implementation.
-      example:
-        jurisdiction: "federal"
-        type: "Statute"
-
-    MetadataFilter:
-      type: object
-      description: "A structured object for applying metadata-based filters."
-      properties:
-        item_metadata_filter:
-          $ref: '#/components/schemas/ItemMetadataFilterSchema'
-        version_metadata_filter:
-          type: object
-          additionalProperties: true
-          description: "Key-value pairs to filter against the metadata of the 'Version'."
-          example:
-            publication_date: { ">=": "2010-01-01T00:00:00Z" }
-
-    SearchRequest:
-      type: object
-      description: "The request body for the searchTextUnits operation."
-      properties:
-        version_ids:
-          type: array
-          items:
-            $ref: '#/components/schemas/ID'
-          description: >-
-            Explicit Version Scope. A list of specific 'Version' IDs. Mutually
-            exclusive with the combination of 'item_ids'/'theme_ids' and 'timestamp'.
-        item_ids:
-          type: array
-          items:
-            $ref: '#/components/schemas/ID'
-          description: "Conceptual Scope. A list of 'Item' IDs to define the structural scope."
-        theme_ids:
-          type: array
-          items:
-            $ref: '#/components/schemas/ID'
-          description: "Conceptual Scope. A list of 'Theme' IDs to define the thematic scope."
-        metadata_filter:
-          $ref: '#/components/schemas/MetadataFilter'
-        timestamp:
-          type: string
-          format: date-time
-          description: >-
-            Conceptual Scope. A UTC date-time to constrain the search. Defaults to 'now' if omitted.
-            Ignored if 'version_ids' is provided.
-        semantic_query:
-          type: string
-          description: "The natural language query string for vector search."
-        lexical_query:
-          type: string
-          description: "Keywords or phrases for a full-text syntactic search."
-        language:
-          type: string
-          description: "The IETF BCP 47 language code for the content."
-          example: "pt-BR"
-        aspects:
-          type: array
-          items:
-            type: string
-          default: ["canonical"]
-          description: "A list of textual aspects to search within (e.g., 'canonical', 'summary')."
-        top_k:
-          type: integer
-          format: int32
-          default: 10
-          minimum: 1
-          description: "The maximum number of results to return."
-        datasources:
-          $ref: '#/components/schemas/DatasourcesSchema'
-          description: "Optional. Scopes the search to a specific list of granted datasources."
-
-    SearchResultUnit:
-      type: object
-      description: "Represents a single search result, containing a TextUnit and its relevance score."
-      required:
-        - text_unit
-        - score
-      properties:
-        text_unit:
-          $ref: '#/components/schemas/TextUnit'
-        score:
-          type: number
-          format: float
-          description: "The relevance score of the result, typically between 0.0 and 1.0."
-          minimum: 0.0
-          maximum: 1.0
-
-    SearchedItemResult:
-      type: object
-      description: "Represents a single search result, containing an Item and its relevance score."
-      required:
-        - item
-        - score
-      properties:
-        item:
-          $ref: '#/components/schemas/Item'
-        score:
-          type: number
-          format: float
-          description: "The relevance score of the result, typically between 0.0 and 1.0."
-          minimum: 0.0
-          maximum: 1.0
-
-    DatasourcesSchema:
-      type: array
-      description: |
-        A list of datasource identifiers. A datasource is the system or provider
-        where an entity originates (e.g., 'datasource_Senate').
-      items:
-        type: string
-      uniqueItems: true
-      example: ["datasource_A"]
-
+      $ref: './schemas/core/TemporalPolicy.yaml'
+    
+    # Entity schemas
+    Item:
+      $ref: './schemas/entities/Item.yaml'
+    Version:
+      $ref: './schemas/entities/Version.yaml'
+    Theme:
+      $ref: './schemas/entities/Theme.yaml'
+    TextUnit:
+      $ref: './schemas/entities/TextUnit.yaml'
+    
+    # Relationship schemas
+    Action:
+      $ref: './schemas/relationships/Action.yaml'
+    Relation:
+      $ref: './schemas/relationships/Relation.yaml'
+    
+    # Request schemas
+    SearchItemsRequest:
+      $ref: './schemas/requests/SearchItemsRequest.yaml'
+    SearchTextUnitsRequest:
+      $ref: './schemas/requests/SearchTextUnitsRequest.yaml'
     EnumerateItemsRequest:
-      type: object
-      description: "Specifies the scope for enumerating Item objects."
-      properties:
-        item_ids:
-          type: array
-          items:
-            $ref: '#/components/schemas/ID'
-          description: "Optional. A list of 'Item' IDs to define a structural scope. The function will return these items and/or their descendants."
-        theme_ids:
-          type: array
-          items:
-            $ref: '#/components/schemas/ID'
-          description: "Optional. A list of 'Theme' IDs to define a thematic scope. The function will return all member items of these themes."
-        depth:
-          type: integer
-          description: >
-            Controls traversal depth for 'item_ids' scopes. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively. This parameter is ignored for 'theme_ids' scopes.
-          default: -1
-        datasources:
-          $ref: '#/components/schemas/DatasourcesSchema'
-
+      $ref: './schemas/requests/EnumerateItemsRequest.yaml'
     GetRelationsRequest:
-      type: object
-      description: "Specifies the criteria for querying Relation objects. If 'entity_id' is omitted, the query runs against the entire corpus of relations."
-      properties:
-        entity_id:
-          $ref: '#/components/schemas/ID'
-          description: "Optional. The ID of an anchor entity. If provided, 'entity_type' is required."
-        entity_type:
-          type: string
-          description: "Optional. The type of the anchor entity. Required only if 'entity_id' is provided."
-          enum: [ "Item", "Version" ]
-        predicate:
-          type: string
-          description: "Optional. Filters relations by a specific predicate (e.g., 'cites')."
-        direction:
-          type: string
-          description: "Specifies the direction of the relations to retrieve relative to the 'entity_id'."
-          enum: [ "forward", "backward", "both" ]
-          default: "both"
-        validity_interval_filter:
-          type: object
-          description: "Optional. Filters relations to those whose validity interval overlaps with the specified interval."
-          properties:
-            start_time:
-              type: string
-              format: date-time
-            end_time:
-              type: string
-              format: date-time
-        metadata_filter:
-          type: object
-          additionalProperties: true
-          description: "Optional. Key-value pairs to filter against the 'metadata' of the Relation."
-        datasources:
-          $ref: '#/components/schemas/DatasourcesSchema'
+      $ref: './schemas/requests/GetRelationsRequest.yaml'
+    
+    # Response schemas
+    StructuralContext:
+      $ref: './schemas/responses/StructuralContext.yaml'
+    ResolvedEntityCandidate:
+      $ref: './schemas/responses/ResolvedEntityCandidate.yaml'
+    SearchResultUnit:
+      $ref: './schemas/responses/SearchResultUnit.yaml'
+    SearchedItemResult:
+      $ref: './schemas/responses/SearchedItemResult.yaml'
+    DatasourcesSchema:
+      $ref: './schemas/responses/DatasourcesSchema.yaml'
+    ItemMetadataFilterSchema:
+      $ref: './schemas/responses/ItemMetadataFilterSchema.yaml'
+    MetadataFilter:
+      $ref: './schemas/responses/MetadataFilter.yaml'
+    ErrorResponse:
+      $ref: './schemas/responses/ErrorResponse.yaml'
 
   parameters:
     DatasourcesParameter:
@@ -361,7 +147,7 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             code: "RESOURCE_NOT_FOUND"
-            message: "No Item found with the specified ID."```
+            message: "No Item found with the specified ID."
 
 security:
   - ApiKeyAuth: []
@@ -414,4 +200,3 @@ paths:
     $ref: './paths/causal-analysis/get-valid-version.yaml#~1items~1{itemId}~1valid-version'
   /versions/{versionId}/text-unit:
     $ref: './paths/causal-analysis/get-version-text-unit.yaml#~1versions~1{versionId}~1text-unit'
-

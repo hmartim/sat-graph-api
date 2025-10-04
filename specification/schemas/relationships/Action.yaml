@@ -23,7 +23,7 @@ required:
   - produces_version_id
 properties:
   id:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
     description: "A unique identifier for this specific legislative action."
     example: "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6_cpt"
   type:
@@ -43,25 +43,25 @@ properties:
     description: "The effective date and time of the action, in UTC."
     example: "2000-02-14T00:00:00Z"
   source_version_id:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
     description: >-
       The ID of the specific 'Version' of the legal text that **authorizes**
       or **commands** this single change. This is the source of the causal link.
     example: "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6_cpt"
   terminates_version_id:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
     nullable: true
     description: >-
       The ID of the specific 'Version' whose validity is **terminated** by this
       action. This is optional and will be null for original enactments (Creations).
     example: "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt"
   produces_version_id:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
     description: >-
       The ID of the specific 'Version' that is **created** by this action.
     example: "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
   metadata:
-    $ref: './JSON.yaml'
+    $ref: '../core/JSON.yaml'
     nullable: true
     description: >-
       A flexible field for any valid JSON data providing more context about the

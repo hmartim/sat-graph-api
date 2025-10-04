@@ -1,0 +1,14 @@
+type: object
+description: "Represents a single search result, containing a TextUnit and its relevance score."
+required:
+  - text_unit
+  - score
+properties:
+  text_unit:
+    $ref: '../entities/TextUnit.yaml'
+  score:
+    type: number
+    format: float
+    description: "The relevance score of the result, typically between 0.0 and 1.0."
+    minimum: 0.0
+    maximum: 1.0

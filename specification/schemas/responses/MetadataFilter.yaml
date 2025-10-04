@@ -1,0 +1,11 @@
+type: object
+description: "A structured object for applying metadata-based filters."
+properties:
+  item_metadata_filter:
+    $ref: 'ItemMetadataFilterSchema.yaml'
+  version_metadata_filter:
+    type: object
+    additionalProperties: true
+    description: "Key-value pairs to filter against the metadata of the 'Version'."
+    example:
+      publication_date: { ">=": "2010-01-01T00:00:00Z" }
