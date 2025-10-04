@@ -1,0 +1,37 @@
+/items/{itemId}/context:
+  get:
+    tags:
+      - "Structural Navigation Actions"
+    summary: "Retrieves the immediate structural context of an Item in a single call."
+    operationId: "getItemContext"
+    description: |
+      Retrieves the complete, immediate structural context of a single `Item` in one efficient call. This includes its parent, siblings, and direct children.
+
+      ### Discussion
+      This is a high-utility, performance-oriented action designed for applications that need to render a contextual view of an item (e.g., a document browser or a table of contents). Replicating this functionality would require multiple, less efficient API calls (`getAncestors`, `enumerateItems`). By providing this as a single, atomic operation, the API dramatically simplifies the logic for common UI and agentic navigation tasks.
+    security:
+      - ApiKeyAuth: [ ]
+
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        description: "The canonical ID of the Item for which to retrieve the context."
+        schema:
+          $ref: '#/components/schemas/ID'
+
+    responses:
+      '200':
+        description: "Successfully retrieved the structural context."
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StructuralContext'
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '404':
+        $ref: '#/components/responses/NotFound'

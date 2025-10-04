@@ -1,0 +1,41 @@
+/items/{itemId}/ancestors:
+  get:
+    tags:
+      - "Structural Navigation Actions"
+    summary: "Retrieves the hierarchical ancestors of a single Item."
+    operationId: "getAncestors"
+    description: |
+      Navigates the hierarchy upwards from a specific structural `Item` to its parent, grandparent, and so on, up to the root `Work`. This is crucial for retrieving the full contextual path ("breadcrumb") of any given provision.
+
+      The returned list is **ordered** from the highest-level ancestor (e.g., a `Title`) down to the immediate parent of the input item. The root `Work` and the item itself are excluded from the list.
+
+      ### Discussion
+      This action is the fundamental tool for contextualization. After a search identifies a relevant item, an agent should use `getAncestors` to retrieve its structural path. This allows the generation of richer, context-aware responses, significantly improving the quality and explainability of the final answer.
+    security:
+      - ApiKeyAuth: [ ]
+
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        description: "The canonical ID of the Item whose ancestors are to be retrieved."
+        schema:
+          $ref: '#/components/schemas/ID'
+
+    responses:
+      '200':
+        description: "An ordered list of the ancestor Item objects."
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Item'
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '404':
+        $ref: '#/components/responses/NotFound'

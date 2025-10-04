@@ -367,55 +367,51 @@ security:
   - ApiKeyAuth: []
 
 paths:
-  # --- items ---
-  /items/{itemId}:
-    $ref: './paths/items.yaml#~1items~1{itemId}'
-  /items/{itemId}/ancestors:
-    $ref: './paths/items.yaml#~1items~1{itemId}~1ancestors'
-  /items/{itemId}/context:
-    $ref: './paths/items.yaml#~1items~1{itemId}~1context'
-  /items/{itemId}/themes:
-    $ref: './paths/items.yaml#~1items~1{itemId}~1themes'
-  /items/{itemId}/valid-version:
-    $ref: './paths/items.yaml#~1items~1{itemId}~1valid-version'
-  /enumerate-items:
-    $ref: './paths/items.yaml#~1enumerate-items'
+  # --- discovery ---
   /resolve-item-reference:
-    $ref: './paths/items.yaml#~1resolve-item-reference'
-  /search-items:
-    $ref: './paths/items.yaml#~1search-items'
-
-  # --- themes ---
-  /themes/{themeId}:
-    $ref: './paths/themes.yaml#~1themes~1{themeId}'
+    $ref: './paths/discovery/resolve-item-reference.yaml#~1resolve-item-reference'
   /resolve-theme-reference:
-    $ref: './paths/themes.yaml#~1resolve-theme-reference'
+    $ref: './paths/discovery/resolve-theme-reference.yaml#~1resolve-theme-reference'
+  /search-items:
+    $ref: './paths/discovery/search-items.yaml#~1search-items'
   /search-themes:
-    $ref: './paths/themes.yaml#~1search-themes'
-
-  # --- actions ---
-  /actions/{actionId}:
-    $ref: './paths/actions.yaml#~1actions~1{actionId}'
-
-  # --- versions ---
-  /versions/{versionId}:
-    $ref: './paths/versions.yaml#~1versions~1{versionId}'
-  /versions/{versionId}/text-unit:
-    $ref: './paths/versions.yaml#~1versions~1{versionId}~1text-unit'
-
-  # --- text-units ---
-  /text-units/{textUnitId}:
-    $ref: './paths/text-units.yaml#~1text-units~1{textUnitId}'
+    $ref: './paths/discovery/search-themes.yaml#~1search-themes'
   /search-text-units:
-    $ref: './paths/text-units.yaml#~1search-text-units'
+    $ref: './paths/discovery/search-text-units.yaml#~1search-text-units'
 
-  # --- relations ---
+  # --- deterministic-fetch ---
+  /actions/{actionId}:
+    $ref: './paths/deterministic-fetch/get-action-by-id.yaml#~1actions~1{actionId}'
+  /items/{itemId}:
+    $ref: './paths/deterministic-fetch/get-item-by-id.yaml#~1items~1{itemId}'
   /relations/{relationId}:
-    $ref: './paths/relations.yaml#~1relations~1{relationId}'
-  /query-relations:
-    $ref: './paths/relations.yaml#~1query-relations'
+    $ref: './paths/deterministic-fetch/get-relation-by-id.yaml#~1relations~1{relationId}'
+  /themes/{themeId}:
+    $ref: './paths/deterministic-fetch/get-theme-by-id.yaml#~1themes~1{themeId}'
+  /text-units/{textUnitId}:
+    $ref: './paths/deterministic-fetch/get-text-unit-by-id.yaml#~1text-units~1{textUnitId}'
+  /versions/{versionId}:
+    $ref: './paths/deterministic-fetch/get-version-by-id.yaml#~1versions~1{versionId}'
 
-  # --- entities ---
+  # --- navigation ---
+  /items/{itemId}/ancestors:
+    $ref: './paths/navigation/get-ancestors.yaml#~1items~1{itemId}~1ancestors'
+  /items/{itemId}/context:
+    $ref: './paths/navigation/get-item-context.yaml#~1items~1{itemId}~1context'
+  /items/{itemId}/themes:
+    $ref: './paths/navigation/get-themes-for-item.yaml#~1items~1{itemId}~1themes'
+  /enumerate-items:
+    $ref: './paths/navigation/enumerate-items.yaml#~1enumerate-items'
+
+  # --- graph-traversal ---
   /entities/{entityId}/related:
-    $ref: './paths/entities.yaml#~1entities~1{entityId}~1related'
+    $ref: './paths/graph-traversal/find-related-entities.yaml#~1entities~1{entityId}~1related'
+  /query-relations:
+    $ref: './paths/graph-traversal/get-relations.yaml#~1query-relations'
+
+  # --- causal-analysis ---
+  /items/{itemId}/valid-version:
+    $ref: './paths/causal-analysis/get-valid-version.yaml#~1items~1{itemId}~1valid-version'
+  /versions/{versionId}/text-unit:
+    $ref: './paths/causal-analysis/get-version-text-unit.yaml#~1versions~1{versionId}~1text-unit'
 

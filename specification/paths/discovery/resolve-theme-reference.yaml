@@ -1,0 +1,53 @@
+/resolve-theme-reference:
+  get:
+    tags:
+      - "Discovery and Search Actions"
+    summary: "Resolve a text reference to a ranked list of Theme IDs."
+    operationId: "resolveThemeReference"
+    description: |
+      Translates a natural-language name or label for a legal theme into a **ranked list of candidate** `Theme` ids.
+      This is the primary entry point for grounding a query in a specific conceptual category.
+      
+      ### Discussion
+      This action is the conceptual counterpart to `resolveItemReference`. It performs entity linking for thematic nodes, allowing an agent to deterministically identify a theme mentioned by name before using it as a scope in other actions.
+
+    security:
+      - ApiKeyAuth: []
+
+    parameters:
+      - name: reference_text
+        in: query
+        required: true
+        description: >-
+          A string representing the name of a theme, such as "Social Security"
+          or "Environmental Law".
+        schema:
+          type: string
+        example: "Environmental Law"
+      - name: top_k
+        in: query
+        required: false
+        description: "The maximum number of candidate matches to return."
+        schema:
+          type: integer
+          format: int32
+          default: 3
+          minimum: 1
+
+      - $ref: '#/components/parameters/DatasourcesParameter'
+
+    responses:
+      '200':
+        description: "A ranked list of probable Theme matches was successfully returned."
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ResolvedEntityCandidate'
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'

@@ -1,33 +1,3 @@
-/versions/{versionId}:
-  get:
-    tags:
-      - "Deterministic Fetch Actions"
-    summary: "Get a single Version by its unique ID."
-    operationId: "getVersion"
-    description: "Retrieves the full `Version` object given its unique identifier. This is the primary way to inspect the details of a specific temporal snapshot of an Item."
-    security:
-      - ApiKeyAuth: []
-    parameters:
-      - name: versionId
-        in: path
-        required: true
-        description: "The unique identifier of the Version to retrieve."
-        schema:
-          $ref: '#/components/schemas/ID'
-    responses:
-      '200':
-        description: "Successfully retrieved the Version object."
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Version'
-      '401':
-        $ref: '#/components/responses/Unauthorized'
-      '403':
-        $ref: '#/components/responses/Forbidden'
-      '404':
-        $ref: '#/components/responses/NotFound'
-
 /versions/{versionId}/text-unit:
   get:
     tags:
@@ -60,21 +30,14 @@
 
     responses:
       '200':
-        description: "Successfully retrieved the TextUnit object."
+        description: "Successfully retrieved the TextUnit for the specified Version and language."
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/TextUnit'
-
-      '400':
-        $ref: '#/components/responses/BadRequest'
       '401':
         $ref: '#/components/responses/Unauthorized'
       '403':
         $ref: '#/components/responses/Forbidden'
       '404':
-        description: "Not Found - Either the Version with the given ID does not exist, or it does not have a textual representation in the requested language."
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
+        $ref: '#/components/responses/NotFound'

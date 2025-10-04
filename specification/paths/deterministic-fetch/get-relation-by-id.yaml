@@ -1,0 +1,29 @@
+/relations/{relationId}:
+  get:
+    tags:
+      - "Deterministic Fetch Actions"
+    summary: "Get a single Relation by its unique ID."
+    operationId: "getRelation"
+    description: "Retrieves the full `Relation` object given its unique identifier. Useful for inspecting the details of a specific link between entities."
+    security:
+      - ApiKeyAuth: []
+    parameters:
+      - name: relationId
+        in: path
+        required: true
+        description: "The unique identifier of the Relation to retrieve."
+        schema:
+          $ref: '#/components/schemas/ID'
+    responses:
+      '200':
+        description: "Successfully retrieved the Relation object."
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Relation'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '404':
+        $ref: '#/components/responses/NotFound'
