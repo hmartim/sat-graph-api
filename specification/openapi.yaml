@@ -1,17 +1,37 @@
 openapi: 3.0.3
 
 info:
-  title: "Canonical Action API for SAT-Graph RAG"
+  title: "SAT-Graph API"
   version: "1.0.0"
   description: |
-    This is the official OpenAPI 3.x specification for the **Canonical Action API**, 
+    This is the official OpenAPI 3.x specification for the **SAT-Graph API**,
     a formal, auditable interface for querying the Structure-Aware Temporal Graph (SAT-Graph).
 
     The complete architectural framework is proposed in the paper:
     - **[An Ontology-Driven Graph RAG for Legal Norms: A Structural, Temporal, and Deterministic Approach](https://arxiv.org/abs/2508.00827)**
 
-    This API provides a library of atomic and composable actions that serve as the 
-    fundamental building blocks for constructing reliable legal retrieval plans.
+    ## API Architecture
+
+    This specification implements a **two-layer architecture**:
+
+    ### 1. Canonical Core API (Research Paper)
+    The foundational set of actions formally specified in the research paper:
+    - SAT-Graph ontology: Item, Version, Action, Theme, TextUnit
+    - Temporal reasoning and deterministic retrieval
+    - Structural navigation and causal tracing
+    - Minimal set of composable primitives
+
+    ### 2. Extended API (Production Enhancements)
+    Additional capabilities for production use cases:
+    - **Relation System**: Semantic overlay graph for cross-document relationships
+      (citations, references, dependencies)
+    - **Convenience Operations**: Optimized endpoints for common patterns
+    - Implements "Future Directions" outlined in the research paper
+
+    **Design Principle:** Extensions maintain the same guarantees of composability,
+    auditability, and verifiability as the canonical core.
+
+    ---
 
     **Authentication Note:** All endpoints in this API are protected. A valid API Key
     must be sent in the `Authorization` header on every request. Please refer to the
