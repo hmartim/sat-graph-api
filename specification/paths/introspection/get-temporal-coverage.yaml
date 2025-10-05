@@ -1,0 +1,36 @@
+get:
+  tags:
+    - "Introspection & Metadata Actions"
+  summary: "Gets the known temporal coverage (version history) for an Item."
+  operationId: "getTemporalCoverage"
+  description: |
+    Returns the start and end dates of the known version history for a specific `Item`.
+
+    ### Discussion
+    This action enables an agent to be aware of its own knowledge boundaries. It should be used to proactively validate a user's temporal query before attempting retrieval, allowing for graceful handling of requests for dates outside the known history and improving the overall user experience.
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: itemId
+      in: path
+      required: true
+      description: "The canonical ID of the Item whose temporal coverage is requested."
+      schema:
+        $ref: '../../schemas/core/ID.yaml'
+
+  responses:
+    '200':
+      description: "Successfully retrieved the temporal coverage interval. The end date will be null if the item is still considered active."
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/core/TimeInterval.yaml'
+    '400':
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
+    '404':
+      $ref: '../../openapi.yaml#/components/responses/NotFound'

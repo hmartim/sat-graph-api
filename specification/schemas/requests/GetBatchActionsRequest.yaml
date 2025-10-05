@@ -1,0 +1,14 @@
+type: object
+description: "Specifies the criteria for retrieving a batch of Action objects."
+required:
+  - ids
+properties:
+  ids:
+    type: array
+    description: "A list of unique identifiers for the Actions to retrieve."
+    items:
+      $ref: '../core/ID.yaml'
+    minItems: 1
+    uniqueItems: true
+  datasources:
+    $ref: '../DatasourcesSchema.yaml'

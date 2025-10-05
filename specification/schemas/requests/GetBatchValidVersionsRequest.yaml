@@ -1,0 +1,22 @@
+type: object
+description: "Specifies the criteria for retrieving a batch of valid Version objects."
+required:
+  - item_ids
+  - timestamp
+properties:
+  item_ids:
+    type: array
+    description: "A list of canonical IDs for the Items whose valid versions are requested."
+    items:
+      $ref: '../core/ID.yaml'
+    minItems: 1
+    uniqueItems: true
+  timestamp:
+    type: string
+    format: date-time
+    description: "The specific UTC date-time for which to check validity for all items."
+  policy:
+    $ref: '../TemporalPolicy.yaml'
+    description: "The temporal resolution policy to apply uniformly to all items."
+  datasources:
+    $ref: '../DatasourcesSchema.yaml'

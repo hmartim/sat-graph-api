@@ -20,7 +20,6 @@ required:
   - type
   - date
   - source_version_id
-  - produces_version_id
 properties:
   id:
     $ref: '../core/ID.yaml'
@@ -57,6 +56,7 @@ properties:
     example: "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt"
   produces_version_id:
     $ref: '../core/ID.yaml'
+    nullable: true
     description: >-
       The ID of the specific 'Version' that is **created** by this action.
     example: "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"

@@ -1,61 +1,62 @@
-get:
-  tags:
-    - "Causal Analysis Actions"
-  summary: "Gets the historical timeline of actions for a single Item."
-  operationId: "getItemHistory"
-  description: |
-    Provides a complete, ordered timeline of all `Action`s that have affected a given `Item`. The returned list is ordered chronologically from the oldest to the most recent action.
+/items/{itemId}/history:
+  get:
+    tags:
+      - "Causal Analysis Actions"
+    summary: "Gets the historical timeline of actions for a single Item."
+    operationId: "getItemHistory"
+    description: |
+      Provides a complete, ordered timeline of all `Action`s that have affected a given `Item`. The returned list is ordered chronologically from the oldest to the most recent action.
 
-    ### Discussion
-    This action provides a complete, auditable narrative of an item's evolution. An agent can iterate through the returned list of `Action`s to reconstruct every state transition, accessing the "before" state via `terminates_version_id` and the "after" state via `produces_version_id` for each step.
-  security:
-    - ApiKeyAuth: []
+      ### Discussion
+      This action provides a complete, auditable narrative of an item's evolution. An agent can iterate through the returned list of `Action`s to reconstruct every state transition, accessing the "before" state via `terminates_version_id` and the "after" state via `produces_version_id` for each step.
+    security:
+      - ApiKeyAuth: []
 
-  parameters:
-    - name: itemId
-      in: path
-      required: true
-      description: "The canonical ID of the Item whose history is requested."
-      schema:
-        $ref: '../../schemas/core/ID.yaml'
-    - name: start_time
-      in: query
-      required: false
-      description: "Optional. Filters actions to those that occurred on or after this UTC date-time."
-      schema:
-        type: string
-        format: date-time
-    - name: end_time
-      in: query
-      required: false
-      description: "Optional. Filters actions to those that occurred on or before this UTC date-time."
-      schema:
-        type: string
-        format: date-time
-    - name: action_types
-      in: query
-      required: false
-      description: "Optional. Filters for specific types of actions (e.g., 'Amendment', 'Revocation')."
-      schema:
-        type: array
-        items:
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        description: "The canonical ID of the Item whose history is requested."
+        schema:
+          $ref: '../../schemas/core/ID.yaml'
+      - name: start_time
+        in: query
+        required: false
+        description: "Optional. Filters actions to those that occurred on or after this UTC date-time."
+        schema:
           type: string
-          enum: [ "Amendment", "Revocation", "Creation", "Repeal" ]
+          format: date-time
+      - name: end_time
+        in: query
+        required: false
+        description: "Optional. Filters actions to those that occurred on or before this UTC date-time."
+        schema:
+          type: string
+          format: date-time
+      - name: action_types
+        in: query
+        required: false
+        description: "Optional. Filters for specific types of actions (e.g., 'Amendment', 'Revocation')."
+        schema:
+          type: array
+          items:
+            type: string
+            enum: [ "Amendment", "Revocation", "Creation", "Repeal" ]
 
-  responses:
-    '200':
-      description: "A time-ordered list of Action objects representing the item's history. The list may be empty if the item has no recorded history."
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '../../schemas/relationships/Action.yaml'
-    '400':
-      $ref: '../../openapi.yaml#/components/responses/BadRequest'
-    '401':
-      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
-    '403':
-      $ref: '../../openapi.yaml#/components/responses/Forbidden'
-    '404':
-      $ref: '../../openapi.yaml#/components/responses/NotFound'
+    responses:
+      '200':
+        description: "A time-ordered list of Action objects representing the item's history. The list may be empty if the item has no recorded history."
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '../../schemas/relationships/Action.yaml'
+      '400':
+        $ref: '../../openapi.yaml#/components/responses/BadRequest'
+      '401':
+        $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+      '403':
+        $ref: '../../openapi.yaml#/components/responses/Forbidden'
+      '404':
+        $ref: '../../openapi.yaml#/components/responses/NotFound'

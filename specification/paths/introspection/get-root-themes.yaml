@@ -1,0 +1,27 @@
+get:
+  tags:
+    - "Introspection & Metadata Actions"
+  summary: "Gets the root nodes of the thematic taxonomy."
+  operationId: "getRootThemes"
+  description: |
+    Retrieves a list of all `Theme` objects that are at the root of the thematic taxonomy (i.e., themes that have no parents).
+
+    ### Discussion
+    This is the primary action for an agent or user interface to begin exploring the thematic ontology. It provides an efficient entry point to the taxonomy, allowing a client to render the top-level themes and then "lazy-load" sub-trees by fetching the children of each theme as needed. This approach is highly performant and scalable, avoiding the "N+1 query problem" that would arise from fetching a flat list of all themes.
+  security:
+    - ApiKeyAuth: []
+
+  responses:
+    '200':
+      description: "A list of the root Theme objects. The list will be empty if no themes are defined."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              # Retorna os objetos Theme completos, não apenas os IDs.
+              $ref: '../../schemas/entities/Theme.yaml'
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'

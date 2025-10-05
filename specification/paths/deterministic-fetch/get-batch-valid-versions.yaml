@@ -1,0 +1,41 @@
+/versions/batch-valid-at:
+  post:
+    tags:
+      - "Deterministic Fetch Actions"
+    summary: "Gets a batch of valid Versions for multiple Items at a single point in time."
+    operationId: "getBatchValidVersions"
+    description: |
+      A batch-optimized version of `getValidVersion`. Given a list of Item IDs, it efficiently retrieves all of their corresponding `Version`s that were valid on a single, specified timestamp.
+
+      ### Discussion
+      This action is essential for efficiently reconstructing the state of a complex hierarchical item at a specific point in time. It is designed to be used directly with the output of `enumerateItems` to avoid the "N+1 query problem" for temporal reconstruction.
+    security:
+      - ApiKeyAuth: []
+
+    requestBody:
+      description: "The criteria for retrieving the batch of valid versions."
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/requests/GetBatchValidVersionsRequest.yaml'
+
+    responses:
+      '200':
+        description: >
+          A list of the requested valid Version objects. The returned list may be shorter
+          than the input list if some items did not have a valid version at the given
+          timestamp or if the consumer lacked permission. The order of the returned
+          items is not guaranteed.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '../../schemas/entities/Version.yaml'
+      '400':
+        $ref: '../../openapi.yaml#/components/responses/BadRequest'
+      '401':
+        $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+      '403':
+        $ref: '../../openapi.yaml#/components/responses/Forbidden'

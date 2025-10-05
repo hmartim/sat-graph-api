@@ -1,0 +1,30 @@
+get:
+  tags:
+    - "Introspection & Metadata Actions"
+  summary: "Gets the list of all supported action types."
+  operationId: "getSupportedActionTypes"
+  description: |
+    Returns a list of all legislative action types (e.g., `Amendment`, `Revocation`) recognized by the graph's ontology.
+
+    ### Discussion
+    This action provides the canonical list of values that can be used in the `action_types` filter of other functions like `summarizeImpact` and `getItemHistory`. It allows a client application to dynamically build filtering interfaces without hardcoding ontology-specific values.
+  security:
+    - ApiKeyAuth: []
+
+  responses:
+    '200':
+      description: "A list of supported action type strings."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
+              # Adicionando um pattern para garantir a consistência do formato.
+              pattern: '^[A-Z][a-zA-Z]*$'
+              example: "Amendment"
+            example: ["Amendment", "Revocation", "Creation", "Repeal"]
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'

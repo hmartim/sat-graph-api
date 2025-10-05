@@ -1,0 +1,28 @@
+get:
+  tags:
+    - "Introspection & Metadata Actions"
+  summary: "Gets a list of all available language codes in the graph."
+  operationId: "getAvailableLanguages"
+  description: |
+    Returns a list of all language codes (IETF BCP 47 format) for which textual content is available in the knowledge graph.
+
+    ### Discussion
+    This action enables an agent or user interface to dynamically present language options to the user, ensuring that requests are only made for languages that the system actually supports.
+  security:
+    - ApiKeyAuth: []
+
+  responses:
+    '200':
+      description: "A list of available language codes (BCP 47)."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
+              pattern: "^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$"
+              example: "pt-BR"
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
