@@ -1,0 +1,57 @@
+post:
+  tags: ["Deterministic Fetch Actions"]
+  summary: "Gets a batch of TextUnit objects by the IDs of their source Versions."
+  operationId: "getBatchTexts"
+  description: |
+    A batch-optimized version of getTextForVersion. Given a list of Version identifiers,
+    it efficiently retrieves their corresponding textual content.
+
+    This action is critical for use cases that require inspecting the content of multiple
+    versions, such as finding the exact point of a textual change within a long version history.
+    It prevents the severe performance degradation that would result from iterating and calling
+    getTextForVersion individually for each version.
+  security:
+    - ApiKeyAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [version_ids, language]
+          properties:
+            version_ids:
+              type: array
+              description: "A list of identifiers for the Versions of interest."
+              items:
+                $ref: '../../schemas/core/ID.yaml'
+              minItems: 1
+              uniqueItems: true
+            language:
+              type: string
+              description: "The language code to retrieve (e.g., 'pt-br', 'en')."
+              pattern: "^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$"
+              example: "pt-br"
+            aspects:
+              type: array
+              description: |
+                Optional. A list of textual aspects to retrieve for all Versions
+                (e.g., ["canonical", "summary"]). Defaults to ["canonical"].
+              items:
+                type: string
+              default: ["canonical"]
+              example: ["canonical", "summary"]
+            datasources:
+              $ref: '../../schemas/common/DatasourcesSchema.yaml'
+  responses:
+    '200':
+      description: "A list of the requested TextUnit objects."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../../schemas/entities/TextUnit.yaml'
+    '400': { $ref: '../../openapi.yaml#/components/responses/BadRequest' }
+    '401': { $ref: '../../openapi.yaml#/components/responses/Unauthorized' }
+    '403': { $ref: '../../openapi.yaml#/components/responses/Forbidden' }

@@ -234,6 +234,8 @@ paths:
     $ref: './paths/deterministic-fetch/get-batch-valid-versions.yaml#~1versions~1batch-valid-at'
   /actions/batch-get:
     $ref: './paths/deterministic-fetch/get-batch-actions.yaml#~1actions~1batch-get'
+  /text-units/batch-get:
+    $ref: './paths/deterministic-fetch/get-batch-texts.yaml#~1text-units~1batch-get'
 
   # ---------------------------------------------------------------------------
   # Navigation Actions
