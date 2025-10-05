@@ -23,7 +23,9 @@ info:
 
 components:
   schemas:
-    # Core schemas
+    # -------------------------------------------------------------------------
+    # Core Schemas - Primitive and foundational types
+    # -------------------------------------------------------------------------
     ID:
       $ref: './schemas/core/ID.yaml'
     JSON:
@@ -33,7 +35,9 @@ components:
     TemporalPolicy:
       $ref: './schemas/core/TemporalPolicy.yaml'
 
-    # Common/Shared schemas
+    # -------------------------------------------------------------------------
+    # Common/Shared Schemas - Used in both requests and responses
+    # -------------------------------------------------------------------------
     DatasourcesSchema:
       $ref: './schemas/common/DatasourcesSchema.yaml'
     MetadataFilter:
@@ -41,7 +45,9 @@ components:
     ItemMetadataFilterSchema:
       $ref: './schemas/common/ItemMetadataFilterSchema.yaml'
 
-    # Entity schemas
+    # -------------------------------------------------------------------------
+    # Entity Schemas - Core domain models (graph nodes)
+    # -------------------------------------------------------------------------
     Item:
       $ref: './schemas/entities/Item.yaml'
     Version:
@@ -50,14 +56,18 @@ components:
       $ref: './schemas/entities/Theme.yaml'
     TextUnit:
       $ref: './schemas/entities/TextUnit.yaml'
-    
-    # Relationship schemas
+
+    # -------------------------------------------------------------------------
+    # Relationship Schemas - Graph edge models
+    # -------------------------------------------------------------------------
     Action:
       $ref: './schemas/relationships/Action.yaml'
     Relation:
       $ref: './schemas/relationships/Relation.yaml'
-    
-    # Request schemas
+
+    # -------------------------------------------------------------------------
+    # Request Schemas - Input data transfer objects
+    # -------------------------------------------------------------------------
     SearchItemsRequest:
       $ref: './schemas/requests/SearchItemsRequest.yaml'
     SearchTextUnitsRequest:
@@ -74,8 +84,10 @@ components:
       $ref: './schemas/requests/GetBatchValidVersionsRequest.yaml'
     SummarizeImpactRequest:
       $ref: './schemas/requests/SummarizeImpactRequest.yaml'
-    
-    # Response schemas
+
+    # -------------------------------------------------------------------------
+    # Response Schemas - Output data transfer objects
+    # -------------------------------------------------------------------------
     StructuralContext:
       $ref: './schemas/responses/StructuralContext.yaml'
     ResolvedEntityCandidate:
@@ -93,6 +105,9 @@ components:
     TextDiffReport:
       $ref: './schemas/responses/TextDiffReport.yaml'
 
+  # ---------------------------------------------------------------------------
+  # Reusable Parameters
+  # ---------------------------------------------------------------------------
   parameters:
     DatasourcesParameter:
       name: datasources
@@ -111,6 +126,9 @@ components:
         uniqueItems: true
       example: ["datasource_A"]
 
+  # ---------------------------------------------------------------------------
+  # Security Schemes
+  # ---------------------------------------------------------------------------
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
@@ -124,6 +142,9 @@ components:
 
         API Keys can be obtained by contacting the system administrator.
 
+  # ---------------------------------------------------------------------------
+  # Reusable Responses
+  # ---------------------------------------------------------------------------
   responses:
     BadRequest:
       description: "Bad Request - The request is missing a required parameter, includes an invalid parameter value, or is otherwise malformed."
@@ -165,11 +186,20 @@ components:
             code: "RESOURCE_NOT_FOUND"
             message: "No Item found with the specified ID."
 
+# =============================================================================
+# Security
+# =============================================================================
 security:
   - ApiKeyAuth: []
 
+# =============================================================================
+# API Endpoints
+# =============================================================================
 paths:
-  # --- discovery ---
+  # ---------------------------------------------------------------------------
+  # Discovery & Search Actions
+  # Entity resolution and hybrid search operations
+  # ---------------------------------------------------------------------------
   /resolve-item-reference:
     $ref: './paths/discovery/resolve-item-reference.yaml#~1resolve-item-reference'
   /resolve-theme-reference:
@@ -181,7 +211,10 @@ paths:
   /search-text-units:
     $ref: './paths/discovery/search-text-units.yaml#~1search-text-units'
 
-  # --- deterministic-fetch ---
+  # ---------------------------------------------------------------------------
+  # Deterministic Fetch Actions
+  # Direct retrieval of entities by unique identifiers
+  # ---------------------------------------------------------------------------
   /actions/{actionId}:
     $ref: './paths/deterministic-fetch/get-action-by-id.yaml#~1actions~1{actionId}'
   /items/{itemId}:
@@ -202,7 +235,10 @@ paths:
   /actions/batch-get:
     $ref: './paths/deterministic-fetch/get-batch-actions.yaml#~1actions~1batch-get'
 
-  # --- navigation ---
+  # ---------------------------------------------------------------------------
+  # Navigation Actions
+  # Structural hierarchy traversal operations
+  # ---------------------------------------------------------------------------
   /items/{itemId}/ancestors:
     $ref: './paths/navigation/get-ancestors.yaml#~1items~1{itemId}~1ancestors'
   /items/{itemId}/context:
@@ -212,13 +248,19 @@ paths:
   /enumerate-items:
     $ref: './paths/navigation/enumerate-items.yaml#~1enumerate-items'
 
-  # --- graph-traversal ---
+  # ---------------------------------------------------------------------------
+  # Graph Traversal Actions
+  # Relationship queries and entity connections
+  # ---------------------------------------------------------------------------
   /entities/{entityId}/related:
     $ref: './paths/graph-traversal/find-related-entities.yaml#~1entities~1{entityId}~1related'
   /query-relations:
     $ref: './paths/graph-traversal/get-relations.yaml#~1query-relations'
 
-  # --- causal-analysis ---
+  # ---------------------------------------------------------------------------
+  # Causal Analysis Actions
+  # Temporal reasoning, version tracking, and causality tracing
+  # ---------------------------------------------------------------------------
   /items/{itemId}/valid-version:
     $ref: './paths/causal-analysis/get-valid-version.yaml#~1items~1{itemId}~1valid-version'
   /versions/{versionId}/text-unit:
@@ -234,11 +276,17 @@ paths:
   /items/{sourceWorkId}/actions-caused:
     $ref: './paths/causal-analysis/get-actions-by-source.yaml#~1items~1{sourceWorkId}~1actions-caused'
 
-  # --- aggregate-analysis ---
+  # ---------------------------------------------------------------------------
+  # Aggregate Analysis Actions
+  # Summary and impact analysis operations
+  # ---------------------------------------------------------------------------
   /analysis/impact-summary:
     $ref: './paths/aggregate-analysis/summarize-impact.yaml#~1analysis~1impact-summary'
 
-  # --- introspection & metadata ---
+  # ---------------------------------------------------------------------------
+  # Introspection & Metadata Actions
+  # System metadata and configuration queries
+  # ---------------------------------------------------------------------------
   /items/{itemId}/temporal-coverage:
     $ref: './paths/introspection/get-temporal-coverage.yaml#~1items~1{itemId}~1temporal-coverage'
   /meta/languages:
