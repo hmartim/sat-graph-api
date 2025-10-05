@@ -1,13 +1,15 @@
-# Canonical Action API for the Structure-Aware Temporal Graph RAG
+# SAT-Graph API Specification
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![OpenAPI Spec](https://img.shields.io/badge/OpenAPI-3.0.3-blue.svg)](./specification/openapi.yaml)
 
-This repository contains the official OpenAPI 3.x specification for the **Canonical Action API**, a formal, auditable interface for querying the Structure-Aware Temporal Graph (SAT-Graph).
+This repository contains the official OpenAPI 3.x specification for the **SAT-Graph API**, a formal, auditable interface for querying the Structure-Aware Temporal Graph (SAT-Graph) RAG system.
 
 This API is the practical implementation of the architectural framework proposed in the paper:
 
-**[Orchestrating Deterministic Legal Retrieval: A Canonical Action API for Querying the Structure-Aware Temporal Graph RAG](https://example.com/link-to-your-paper)**
+**📄 Research Paper:** _Orchestrating Deterministic Legal Retrieval: A Canonical Action API for Querying the Structure-Aware Temporal Graph RAG_ (Forthcoming)
+
+> **Related Work:** This API builds upon the [SAT-Graph RAG](https://arxiv.org/abs/2505.00039) framework and [LRMoo Ontology](https://arxiv.org/abs/2506.07853).
 
 ## The Problem: The Limits of Standard RAG in Structured Domains
 
@@ -45,7 +47,7 @@ At the heart of this architecture is a strict separation of concerns that distin
 * **Item**: The timeless, conceptual anchor. It represents the abstract identity of any entity in the knowledge graph, from a whole document (Work) to a single paragraph (Work Component) or a concept (Concept) or a concrete entity.
 * **Version**: The temporal snapshot. Each Version represents the state and structure of an Item during a specific time interval.
 * **Action**: The causal engine. A first-class entity that represents the event that causes state transitions, terminating an old Version and producing a new one.
-* **Relation**: It models the rich, deterministic domain interactions between entities (the "cites" or "succeeds" links).
+* **Relation**: 🔷 *Extended API* - Models semantic relationships between entities (e.g., citations, references, dependencies). Part of the production extensions beyond the canonical core.
 * **TextUnit**: The concrete textual content. This flexible object holds the text for any entity in any language, enabling the "multi-aspect retrieval" strategy where even metadata and descriptions are searchable.
 
 * ![Data Models](imgs/SATGraphModels.png)
@@ -82,11 +84,20 @@ Requests made without a valid API Key will fail with a `401 Unauthorized` status
 **Header Format:**
 Authorization: YOUR_API_KEY
 
+## 📚 Documentation
+
+### Quick Links
+- **📖 [Technical Specification Documentation](./specification/README.md)** - Detailed API architecture, endpoint categories, and technical guides
+- **🚀 [Getting Started Guide](./docs/getting-started.md)** - Step-by-step guide for first-time users
+- **📋 [API Reference](./docs/api-reference.md)** - Complete endpoint reference documentation
+- **🔧 [OpenAPI Specification](./specification/openapi.yaml)** - Main specification file
+
 ### Getting Started
 
 The complete API specification is located in the `specification/` directory.
 
 - **Primary Specification File:** [`specification/openapi.yaml`](./specification/openapi.yaml)
+- **Detailed Documentation:** [`specification/README.md`](./specification/README.md)
 
 ### Exploring the API
 
