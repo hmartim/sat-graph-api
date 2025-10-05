@@ -180,11 +180,11 @@ paths:
     $ref: './paths/deterministic-fetch/get-version-by-id.yaml#~1versions~1{versionId}'
 
   /items/batch-get:
-    $ref: './paths/deterministic-fetch/get-batch-items.yaml'
+    $ref: './paths/deterministic-fetch/get-batch-items.yaml#~1items~1batch-get'
   /versions/batch-valid-at:
-    $ref: './paths/deterministic-fetch/get-batch-valid-versions.yaml'
+    $ref: './paths/deterministic-fetch/get-batch-valid-versions.yaml#~1versions~1batch-valid-at'
   /actions/batch-get:
-    $ref: './paths/deterministic-fetch/get-batch-actions.yaml'
+    $ref: './paths/deterministic-fetch/get-batch-actions.yaml#~1actions~1batch-get'
 
   # --- navigation ---
   /items/{itemId}/ancestors:
@@ -208,26 +208,26 @@ paths:
   /versions/{versionId}/text-unit:
     $ref: './paths/causal-analysis/get-version-text-unit.yaml#~1versions~1{versionId}~1text-unit'
   /items/{itemId}/history:
-    $ref: './paths/causal-analysis/get-item-history.yaml'
+    $ref: './paths/causal-analysis/get-item-history.yaml#~1items~1{itemId}~1history'
   /versions/{versionId}/causality:
-    $ref: './paths/causal-analysis/trace-causality.yaml'
+    $ref: './paths/causal-analysis/trace-causality.yaml#~1versions~1{versionId}~1causality'
   /items/{itemId}/versions:
-    $ref: './paths/causal-analysis/get-versions-in-interval.yaml'
+    $ref: './paths/causal-analysis/get-versions-in-interval.yaml#~1items~1{itemId}~1versions'
   /versions/compare:
-    $ref: './paths/causal-analysis/compare-versions.yaml'
+    $ref: './paths/causal-analysis/compare-versions.yaml#~1versions~1compare'
   /items/{sourceWorkId}/actions-caused:
-    $ref: './paths/causal-analysis/get-actions-by-source.yaml'
+    $ref: './paths/causal-analysis/get-actions-by-source.yaml#~1items~1{sourceWorkId}~1actions-caused'
 
   # --- aggregate-analysis ---
   /analysis/impact-summary:
-    $ref: './paths/aggregate-analysis/summarize-impact.yaml'
+    $ref: './paths/aggregate-analysis/summarize-impact.yaml#~1analysis~1impact-summary'
 
   # --- introspection & metadata ---
   /items/{itemId}/temporal-coverage:
-    $ref: './paths/introspection/get-temporal-coverage.yaml'
+    $ref: './paths/introspection/get-temporal-coverage.yaml#~1items~1{itemId}~1temporal-coverage'
   /meta/languages:
-    $ref: './paths/introspection/get-available-languages.yaml'
+    $ref: './paths/introspection/get-available-languages.yaml#~1meta~1languages'
   /meta/action-types:
-    $ref: './paths/introspection/get-supported-action-types.yaml'
+    $ref: './paths/introspection/get-supported-action-types.yaml#~1meta~1action-types'
   /themes/roots:
-    $ref: './paths/introspection/get-root-themes.yaml'
+    $ref: './paths/introspection/get-root-themes.yaml#~1themes~1roots'
