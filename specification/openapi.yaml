@@ -32,7 +32,15 @@ components:
       $ref: './schemas/core/TimeInterval.yaml'
     TemporalPolicy:
       $ref: './schemas/core/TemporalPolicy.yaml'
-    
+
+    # Common/Shared schemas
+    DatasourcesSchema:
+      $ref: './schemas/common/DatasourcesSchema.yaml'
+    MetadataFilter:
+      $ref: './schemas/common/MetadataFilter.yaml'
+    ItemMetadataFilterSchema:
+      $ref: './schemas/common/ItemMetadataFilterSchema.yaml'
+
     # Entity schemas
     Item:
       $ref: './schemas/entities/Item.yaml'
@@ -76,12 +84,6 @@ components:
       $ref: './schemas/responses/SearchResultUnit.yaml'
     SearchedItemResult:
       $ref: './schemas/responses/SearchedItemResult.yaml'
-    DatasourcesSchema:
-      $ref: './schemas/responses/DatasourcesSchema.yaml'
-    ItemMetadataFilterSchema:
-      $ref: './schemas/responses/ItemMetadataFilterSchema.yaml'
-    MetadataFilter:
-      $ref: './schemas/responses/MetadataFilter.yaml'
     ErrorResponse:
       $ref: './schemas/responses/ErrorResponse.yaml'
     CausalityTrace:

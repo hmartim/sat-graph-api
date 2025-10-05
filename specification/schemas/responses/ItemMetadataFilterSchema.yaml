@@ -1,9 +1,0 @@
-type: object
-additionalProperties: true
-description: >-
-  A set of key-value pairs to filter against the atemporal metadata of an 'Item'.
-  The exact query capabilities (e.g., range queries, existence checks) depend on
-  the backend implementation.
-example:
-  jurisdiction: "federal"
-  type: "Statute"

@@ -12,7 +12,7 @@ properties:
       $ref: '../core/ID.yaml'
     description: "Optional. A list of 'Theme' IDs to expand the search scope."
   item_metadata_filter:
-    $ref: '../responses/ItemMetadataFilterSchema.yaml'
+    $ref: '../common/ItemMetadataFilterSchema.yaml'
   semantic_query:
     type: string
     description: "The natural language query string for vector search."
@@ -26,4 +26,4 @@ properties:
     minimum: 1
     description: "The maximum number of results to return."
   datasources:
-    $ref: '../responses/DatasourcesSchema.yaml'
+    $ref: '../common/DatasourcesSchema.yaml'

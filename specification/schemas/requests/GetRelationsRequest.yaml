@@ -31,4 +31,4 @@ properties:
     additionalProperties: true
     description: "Optional. Key-value pairs to filter against the 'metadata' of the Relation."
   datasources:
-    $ref: '../responses/DatasourcesSchema.yaml'
+    $ref: '../common/DatasourcesSchema.yaml'

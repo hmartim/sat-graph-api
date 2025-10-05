@@ -17,4 +17,4 @@ properties:
       Controls traversal depth for 'item_ids' scopes. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively. This parameter is ignored for 'theme_ids' scopes.
     default: -1
   datasources:
-    $ref: '../responses/DatasourcesSchema.yaml'
+    $ref: '../common/DatasourcesSchema.yaml'

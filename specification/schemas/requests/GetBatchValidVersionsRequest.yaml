@@ -19,4 +19,4 @@ properties:
     $ref: '../core/TemporalPolicy.yaml'
     description: "The temporal resolution policy to apply uniformly to all items."
   datasources:
-    $ref: '../responses/DatasourcesSchema.yaml'
+    $ref: '../common/DatasourcesSchema.yaml'

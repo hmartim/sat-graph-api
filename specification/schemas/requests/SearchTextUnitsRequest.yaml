@@ -19,7 +19,7 @@ properties:
       $ref: '../core/ID.yaml'
     description: "Conceptual Scope. A list of 'Theme' IDs to define the thematic scope."
   metadata_filter:
-    $ref: '../responses/MetadataFilter.yaml'
+    $ref: '../common/MetadataFilter.yaml'
   timestamp:
     type: string
     format: date-time
@@ -49,5 +49,5 @@ properties:
     minimum: 1
     description: "The maximum number of results to return."
   datasources:
-    $ref: '../responses/DatasourcesSchema.yaml'
+    $ref: '../common/DatasourcesSchema.yaml'
     description: "Optional. Scopes the search to a specific list of granted datasources."
