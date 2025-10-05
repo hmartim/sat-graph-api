@@ -58,6 +58,14 @@ components:
       $ref: './schemas/requests/EnumerateItemsRequest.yaml'
     GetRelationsRequest:
       $ref: './schemas/requests/GetRelationsRequest.yaml'
+    GetBatchActionsRequest:
+      $ref: './schemas/requests/GetBatchActionsRequest.yaml'
+    GetBatchItemsRequest:
+      $ref: './schemas/requests/GetBatchItemsRequest.yaml'
+    GetBatchValidVersionsRequest:
+      $ref: './schemas/requests/GetBatchValidVersionsRequest.yaml'
+    SummarizeImpactRequest:
+      $ref: './schemas/requests/SummarizeImpactRequest.yaml'
     
     # Response schemas
     StructuralContext:
@@ -76,6 +84,12 @@ components:
       $ref: './schemas/responses/MetadataFilter.yaml'
     ErrorResponse:
       $ref: './schemas/responses/ErrorResponse.yaml'
+    CausalityTrace:
+      $ref: './schemas/responses/CausalityTrace.yaml'
+    ImpactReport:
+      $ref: './schemas/responses/ImpactReport.yaml'
+    TextDiffReport:
+      $ref: './schemas/responses/TextDiffReport.yaml'
 
   parameters:
     DatasourcesParameter:
