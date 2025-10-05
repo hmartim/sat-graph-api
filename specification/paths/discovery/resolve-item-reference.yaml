@@ -1,64 +1,63 @@
-/resolve-item-reference:
-  get:
-    tags:
-      - "Discovery and Search Actions"
-    summary: "Resolve a text reference to a ranked list of Item IDs."
-    operationId: "resolveItemReference"
-    description: |
-      Translates an ambiguous, natural-language reference to an entity into a **ranked list of candidate** `Item` IDs.
-      This is the critical first step for any query that names a specific entity (a document component, a concept, a named entity, etc.), acting as the bridge between user language and the graph's formal identifiers.
+get:
+  tags:
+    - "Discovery and Search Actions"
+  summary: "Resolve a text reference to a ranked list of Item IDs."
+  operationId: "resolveItemReference"
+  description: |
+    Translates an ambiguous, natural-language reference to an entity into a **ranked list of candidate** `Item` IDs.
+    This is the critical first step for any query that names a specific entity (a document component, a concept, a named entity, etc.), acting as the bridge between user language and the graph's formal identifiers.
 
-      ### Discussion
-      This action is indispensable for grounding agentic workflows. References are often highly ambiguous ("Article 1") or relative ("the following paragraph").
-      This function handles this by returning a ranked list of candidates rather than forcing a single, potentially incorrect guess.
-      The optional `context_id` parameter significantly enhances its precision for context-aware interactions.
+    ### Discussion
+    This action is indispensable for grounding agentic workflows. References are often highly ambiguous ("Article 1") or relative ("the following paragraph").
+    This function handles this by returning a ranked list of candidates rather than forcing a single, potentially incorrect guess.
+    The optional `context_id` parameter significantly enhances its precision for context-aware interactions.
 
-    security:
-      - ApiKeyAuth: []
+  security:
+    - ApiKeyAuth: []
 
-    parameters:
-      - name: reference_text
-        in: query
-        required: true
-        description: >-
-          A string such as "Article 5 of the Constitution", "the Civil Code",
-          or a relative reference like "the previous section".
-        schema:
-          type: string
-        example: "Article 5 of the Constitution"
-      - name: context_id
-        in: query
-        required: false
-        description: >-
-          Optional. The ID of an 'Item' to provide structural context. This helps
-          resolve relative or ambiguous references.
-        schema:
-          $ref: '#/components/schemas/ID'
-        example: "urn:lex:br:federal:constituicao:1988-10-05;1988"
-      - name: top_k
-        in: query
-        required: false
-        description: "The maximum number of candidate matches to return."
-        schema:
-          type: integer
-          format: int32
-          default: 3
-          minimum: 1
+  parameters:
+    - name: reference_text
+      in: query
+      required: true
+      description: >-
+        A string such as "Article 5 of the Constitution", "the Civil Code",
+        or a relative reference like "the previous section".
+      schema:
+        type: string
+      example: "Article 5 of the Constitution"
+    - name: context_id
+      in: query
+      required: false
+      description: >-
+        Optional. The ID of an 'Item' to provide structural context. This helps
+        resolve relative or ambiguous references.
+      schema:
+        $ref: '#/components/schemas/ID'
+      example: "urn:lex:br:federal:constituicao:1988-10-05;1988"
+    - name: top_k
+      in: query
+      required: false
+      description: "The maximum number of candidate matches to return."
+      schema:
+        type: integer
+        format: int32
+        default: 3
+        minimum: 1
 
-      - $ref: '#/components/parameters/DatasourcesParameter'
+    - $ref: '#/components/parameters/DatasourcesParameter'
 
-    responses:
-      '200':
-        description: "A ranked list of probable Item matches was successfully returned."
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/ResolvedEntityCandidate'
-      '400':
-        $ref: '#/components/responses/BadRequest'
-      '401':
-        $ref: '#/components/responses/Unauthorized'
-      '403':
-        $ref: '#/components/responses/Forbidden'
+  responses:
+    '200':
+      description: "A ranked list of probable Item matches was successfully returned."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ResolvedEntityCandidate'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'

@@ -1,42 +1,41 @@
-/search-text-units:
-  post:
-    tags:
-      - "Discovery and Search Actions"
-    summary: "Performs a hybrid search for TextUnits."
-    operationId: "searchTextUnits"
-    description: |
-      Performs a hybrid search to discover `TextUnit` nodes by combining semantic, lexical, and structured criteria, returning a ranked list of the most relevant results. This is the primary, optimized entry point for all standard RAG queries.
+post:
+  tags:
+    - "Discovery and Search Actions"
+  summary: "Performs a hybrid search for TextUnits."
+  operationId: "searchTextUnits"
+  description: |
+    Performs a hybrid search to discover `TextUnit` nodes by combining semantic, lexical, and structured criteria, returning a ranked list of the most relevant results. This is the primary, optimized entry point for all standard RAG queries.
 
-      ### Discussion
-      This action's dual-mode design for scoping provides maximum flexibility.
-      - **Conceptual Scope:** The most common mode. The agent defines the "what" (`item_ids`/`theme_ids`) and the "when" (`timestamp`), and the API handles the temporal resolution.
-      - **Explicit Version Scope:** A powerful mode for programmatic workflows where an agent has already identified a specific set of `Version`s and needs to perform a semantic search exclusively within that curated set.
+    ### Discussion
+    This action's dual-mode design for scoping provides maximum flexibility.
+    - **Conceptual Scope:** The most common mode. The agent defines the "what" (`item_ids`/`theme_ids`) and the "when" (`timestamp`), and the API handles the temporal resolution.
+    - **Explicit Version Scope:** A powerful mode for programmatic workflows where an agent has already identified a specific set of `Version`s and needs to perform a semantic search exclusively within that curated set.
 
-      The `aspects` parameter enables a truly holistic search, allowing a query to match a `Work`'s 'textual_metadata' just as easily as an `Version`'s 'canonical' text.
+    The `aspects` parameter enables a truly holistic search, allowing a query to match a `Work`'s 'textual_metadata' just as easily as an `Version`'s 'canonical' text.
 
-    security:
-      - ApiKeyAuth: []
+  security:
+    - ApiKeyAuth: []
 
-    requestBody:
-      description: "The search criteria."
-      required: true
+  requestBody:
+    description: "The search criteria."
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/SearchRequest'
+
+  responses:
+    '200':
+      description: "Search executed successfully. Returns a ranked list of TextUnits."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/SearchRequest'
-
-    responses:
-      '200':
-        description: "Search executed successfully. Returns a ranked list of TextUnits."
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/SearchResultUnit'
-      '400':
-        $ref: '#/components/responses/BadRequest'
-      '401':
-        $ref: '#/components/responses/Unauthorized'
-      '403':
-        $ref: '#/components/responses/Forbidden'
+            type: array
+            items:
+              $ref: '#/components/schemas/SearchResultUnit'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'

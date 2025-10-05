@@ -1,37 +1,36 @@
-/query-relations:
-  post:
-    tags:
-      - "Graph Traversal Actions"
-    summary: "Queries for full Relation objects based on complex criteria."
-    operationId: "getRelations"
-    description: |
-      A powerful action to query and retrieve complete `Relation` objects based on a variety of criteria, including the anchor entity, predicate, direction, temporal validity, and metadata.
-      
-      ### Discussion
-      This is a low-level, high-precision tool for advanced use cases where the details of the graph's connections are paramount. It allows for complex temporal and structural queries on the relationships themselves.
-    security:
-      - ApiKeyAuth: []
+post:
+  tags:
+    - "Graph Traversal Actions"
+  summary: "Queries for full Relation objects based on complex criteria."
+  operationId: "getRelations"
+  description: |
+    A powerful action to query and retrieve complete `Relation` objects based on a variety of criteria, including the anchor entity, predicate, direction, temporal validity, and metadata.
+    
+    ### Discussion
+    This is a low-level, high-precision tool for advanced use cases where the details of the graph's connections are paramount. It allows for complex temporal and structural queries on the relationships themselves.
+  security:
+    - ApiKeyAuth: []
 
-    requestBody:
-      description: "The criteria for the Relation query."
-      required: true
+  requestBody:
+    description: "The criteria for the Relation query."
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/GetRelationsRequest'
+
+  responses:
+    '200':
+      description: "A list of full Relation objects matching the criteria. The list may be empty if no relations are found."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GetRelationsRequest'
-
-    responses:
-      '200':
-        description: "A list of full Relation objects matching the criteria. The list may be empty if no relations are found."
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/Relation'
-      '400':
-        $ref: '#/components/responses/BadRequest'
-      '401':
-        $ref: '#/components/responses/Unauthorized'
-      '403':
-        $ref: '#/components/responses/Forbidden'
+            type: array
+            items:
+              $ref: '#/components/schemas/Relation'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'

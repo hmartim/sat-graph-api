@@ -1,40 +1,39 @@
-/items/batch-get:
-  post:
-    tags:
-      - "Deterministic Fetch Actions"
-    summary: "Gets a batch of Item objects by their canonical IDs."
-    operationId: "getBatchItems"
-    description: |
-      A batch-optimized version of `getItem`. Given a list of IDs, it efficiently retrieves the full data object for each corresponding `Item` in a single request.
+post:
+  tags:
+    - "Deterministic Fetch Actions"
+  summary: "Gets a batch of Item objects by their canonical IDs."
+  operationId: "getBatchItems"
+  description: |
+    A batch-optimized version of `getItem`. Given a list of IDs, it efficiently retrieves the full data object for each corresponding `Item` in a single request.
 
-      ### Discussion
-      This is a fundamental utility action used after any discovery process to hydrate references into full objects. It is the primary solution to avoid the "N+1 query problem," where a client would otherwise need to make one API call per ID.
-    security:
-      - ApiKeyAuth: []
+    ### Discussion
+    This is a fundamental utility action used after any discovery process to hydrate references into full objects. It is the primary solution to avoid the "N+1 query problem," where a client would otherwise need to make one API call per ID.
+  security:
+    - ApiKeyAuth: []
 
-    requestBody:
-      description: "The list of Item IDs to retrieve."
-      required: true
+  requestBody:
+    description: "The list of Item IDs to retrieve."
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/requests/GetBatchItemsRequest.yaml'
+
+  responses:
+    '200':
+      description: >
+        A list of the requested Item objects. The returned list may be shorter than the
+        input list if some IDs were not found or if the consumer lacked permission.
+        The order of the returned items is not guaranteed to match the input order.
       content:
         application/json:
           schema:
-            $ref: '../../schemas/requests/GetBatchItemsRequest.yaml'
-
-    responses:
-      '200':
-        description: >
-          A list of the requested Item objects. The returned list may be shorter than the
-          input list if some IDs were not found or if the consumer lacked permission.
-          The order of the returned items is not guaranteed to match the input order.
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '../../schemas/entities/Item.yaml'
-      '400':
-        $ref: '../../openapi.yaml#/components/responses/BadRequest'
-      '401':
-        $ref: '../../openapi.yaml#/components/responses/Unauthorized'
-      '403':
-        $ref: '../../openapi.yaml#/components/responses/Forbidden'
+            type: array
+            items:
+              $ref: '../../schemas/entities/Item.yaml'
+    '400':
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'

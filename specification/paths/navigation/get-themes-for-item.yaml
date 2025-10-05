@@ -1,39 +1,38 @@
-/items/{itemId}/themes:
-  get:
-    tags:
-      - "Structural Navigation Actions"
-    summary: "Retrieves all Themes associated with a single Item."
-    operationId: "getThemesForItem"
-    description: |
-      Retrieves a list of all `Theme`s that are directly associated with a specific `Item`. This provides a direct inverse navigation from a structural entity to its classifications in the conceptual ontology.
-      
-      ### Discussion
-      This action is the essential counterpart to using a `Theme` as a scope in `enumerateItems`. It makes the relationship between items and themes fully bidirectional, enabling an agent to efficiently answer questions like "What topics does this article cover?". Without this primitive, an agent would need to resort to a highly inefficient brute-force search across the entire thematic ontology.
-    security:
-      - ApiKeyAuth: []
+get:
+  tags:
+    - "Structural Navigation Actions"
+  summary: "Retrieves all Themes associated with a single Item."
+  operationId: "getThemesForItem"
+  description: |
+    Retrieves a list of all `Theme`s that are directly associated with a specific `Item`. This provides a direct inverse navigation from a structural entity to its classifications in the conceptual ontology.
+    
+    ### Discussion
+    This action is the essential counterpart to using a `Theme` as a scope in `enumerateItems`. It makes the relationship between items and themes fully bidirectional, enabling an agent to efficiently answer questions like "What topics does this article cover?". Without this primitive, an agent would need to resort to a highly inefficient brute-force search across the entire thematic ontology.
+  security:
+    - ApiKeyAuth: []
 
-    parameters:
-      - name: itemId
-        in: path
-        required: true
-        description: "The canonical ID of the Item whose thematic classifications are requested."
-        schema:
-          $ref: '#/components/schemas/ID'
+  parameters:
+    - name: itemId
+      in: path
+      required: true
+      description: "The canonical ID of the Item whose thematic classifications are requested."
+      schema:
+        $ref: '#/components/schemas/ID'
 
-    responses:
-      '200':
-        description: "A list of Theme objects associated with the Item. The list may be empty if the Item has no thematic classifications."
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/Theme'
-      '400':
-        $ref: '#/components/responses/BadRequest'
-      '401':
-        $ref: '#/components/responses/Unauthorized'
-      '403':
-        $ref: '#/components/responses/Forbidden'
-      '404':
-        $ref: '#/components/responses/NotFound'
+  responses:
+    '200':
+      description: "A list of Theme objects associated with the Item. The list may be empty if the Item has no thematic classifications."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Theme'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'
+    '404':
+      $ref: '#/components/responses/NotFound'

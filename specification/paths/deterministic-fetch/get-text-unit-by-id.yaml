@@ -1,36 +1,35 @@
-/text-units/{textUnitId}:
-  get:
-    tags:
-      - "Deterministic Fetch Actions"
-    summary: "Get a single TextUnit by its unique ID."
-    operationId: "getTextUnit"
-    description: |
-      Retrieves the full `TextUnit` object given its unique identifier, including its content and all associated metadata.
-      
-      ### Discussion
-      While the primary method for discovering `TextUnit`s is through the `searchTextUnits` function, this deterministic endpoint provides direct, primary-key-based access. It ensures API completeness, allowing a client to retrieve a specific text snippet if it only has its ID, which might occur in advanced logging or auditing workflows.
-    security:
-      - ApiKeyAuth: []
+get:
+  tags:
+    - "Deterministic Fetch Actions"
+  summary: "Get a single TextUnit by its unique ID."
+  operationId: "getTextUnit"
+  description: |
+    Retrieves the full `TextUnit` object given its unique identifier, including its content and all associated metadata.
+    
+    ### Discussion
+    While the primary method for discovering `TextUnit`s is through the `searchTextUnits` function, this deterministic endpoint provides direct, primary-key-based access. It ensures API completeness, allowing a client to retrieve a specific text snippet if it only has its ID, which might occur in advanced logging or auditing workflows.
+  security:
+    - ApiKeyAuth: []
 
-    parameters:
-      - name: textUnitId
-        in: path
-        required: true
-        description: "The unique identifier of the TextUnit to retrieve."
-        schema:
-          $ref: '#/components/schemas/ID'
+  parameters:
+    - name: textUnitId
+      in: path
+      required: true
+      description: "The unique identifier of the TextUnit to retrieve."
+      schema:
+        $ref: '#/components/schemas/ID'
 
-    responses:
-      '200':
-        description: "Successfully retrieved the TextUnit object."
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TextUnit'
+  responses:
+    '200':
+      description: "Successfully retrieved the TextUnit object."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TextUnit'
 
-      '401':
-        $ref: '#/components/responses/Unauthorized'
-      '403':
-        $ref: '#/components/responses/Forbidden'
-      '404':
-        $ref: '#/components/responses/NotFound'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'
+    '404':
+      $ref: '#/components/responses/NotFound'

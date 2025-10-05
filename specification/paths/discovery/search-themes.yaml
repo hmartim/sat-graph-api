@@ -1,61 +1,60 @@
-/search-themes:
-  get:
-    tags:
-      - "Discovery and Search Actions"
-    summary: "Performs a hybrid search for Themes based on their descriptions."
-    operationId: "searchThemes"
-    description: |
-      Performs a hybrid (semantic and/or lexical) search to discover `Theme` nodes based on a descriptive query. 
-      This action **searches exclusively on the textual descriptions associated with the themes themselves**.
-      
-      At least one of `semantic_query` or `lexical_query` must be provided.
-      
-      ### Discussion
-      This action's purpose is to map a user's description of a topic to the most appropriate formal concept in the graph. 
-      The design allows for both broad conceptual matching (via `semantic_query`) and high-precision keyword filtering (via `lexical_query`).
-    security:
-      - ApiKeyAuth: []
+get:
+  tags:
+    - "Discovery and Search Actions"
+  summary: "Performs a hybrid search for Themes based on their descriptions."
+  operationId: "searchThemes"
+  description: |
+    Performs a hybrid (semantic and/or lexical) search to discover `Theme` nodes based on a descriptive query. 
+    This action **searches exclusively on the textual descriptions associated with the themes themselves**.
+    
+    At least one of `semantic_query` or `lexical_query` must be provided.
+    
+    ### Discussion
+    This action's purpose is to map a user's description of a topic to the most appropriate formal concept in the graph. 
+    The design allows for both broad conceptual matching (via `semantic_query`) and high-precision keyword filtering (via `lexical_query`).
+  security:
+    - ApiKeyAuth: []
 
-    parameters:
-      - name: semantic_query
-        in: query
-        required: false
-        description: "The natural language query string for vector-based semantic search."
-        schema:
-          type: string
-          minLength: 1
-        example: "laws about consumer protection"
-      - name: lexical_query
-        in: query
-        required: false
-        description: "Keywords or a specific phrase for a full-text syntactic search."
-        schema:
-          type: string
-          minLength: 1
-        example: "\"environmental impact report\""
-      - name: top_k
-        in: query
-        required: false
-        description: "The maximum number of candidate themes to return."
-        schema:
-          type: integer
-          format: int32
-          default: 5
-          minimum: 1
-      - $ref: '#/components/parameters/DatasourcesParameter'
+  parameters:
+    - name: semantic_query
+      in: query
+      required: false
+      description: "The natural language query string for vector-based semantic search."
+      schema:
+        type: string
+        minLength: 1
+      example: "laws about consumer protection"
+    - name: lexical_query
+      in: query
+      required: false
+      description: "Keywords or a specific phrase for a full-text syntactic search."
+      schema:
+        type: string
+        minLength: 1
+      example: "\"environmental impact report\""
+    - name: top_k
+      in: query
+      required: false
+      description: "The maximum number of candidate themes to return."
+      schema:
+        type: integer
+        format: int32
+        default: 5
+        minimum: 1
+    - $ref: '#/components/parameters/DatasourcesParameter'
 
-    responses:
-      '200':
-        description: "A ranked list of matching Theme candidates was successfully returned."
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/SearchedItemResult'
-      '400':
-        $ref: '#/components/responses/BadRequest'
-      '401':
-        $ref: '#/components/responses/Unauthorized'
-      '403':
-        $ref: '#/components/responses/Forbidden'
+  responses:
+    '200':
+      description: "A ranked list of matching Theme candidates was successfully returned."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/SearchedItemResult'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'

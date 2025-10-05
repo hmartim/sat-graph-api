@@ -1,36 +1,35 @@
-/actions/{actionId}:
-  get:
-    tags:
-      - "Deterministic Fetch Actions"
-    summary: "Get a single Action by its unique ID."
-    operationId: "getAction"
-    description: |
-      Retrieves the full `Action` data object given its unique identifier. This provides direct access to the details of a specific action, including its precise `source_version_id`, and the `Version`s it terminates and produces.
-      
-      ### Discussion
-      This is a core deterministic action used for auditing and causal analysis. It allows an agent to inspect the exact event that caused a change in a legal norm's version history.
-    security:
-      - ApiKeyAuth: []
+get:
+  tags:
+    - "Deterministic Fetch Actions"
+  summary: "Get a single Action by its unique ID."
+  operationId: "getAction"
+  description: |
+    Retrieves the full `Action` data object given its unique identifier. This provides direct access to the details of a specific action, including its precise `source_version_id`, and the `Version`s it terminates and produces.
+    
+    ### Discussion
+    This is a core deterministic action used for auditing and causal analysis. It allows an agent to inspect the exact event that caused a change in a legal norm's version history.
+  security:
+    - ApiKeyAuth: []
 
-    parameters:
-      - name: actionId
-        in: path
-        required: true
-        description: "The unique identifier of the Action to retrieve."
-        schema:
-          $ref: '#/components/schemas/ID'
+  parameters:
+    - name: actionId
+      in: path
+      required: true
+      description: "The unique identifier of the Action to retrieve."
+      schema:
+        $ref: '#/components/schemas/ID'
 
-    responses:
-      '200':
-        description: "Successfully retrieved the Action object."
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Action'
+  responses:
+    '200':
+      description: "Successfully retrieved the Action object."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Action'
 
-      '401':
-        $ref: '#/components/responses/Unauthorized'
-      '403':
-        $ref: '#/components/responses/Forbidden'
-      '404':
-        $ref: '#/components/responses/NotFound'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'
+    '404':
+      $ref: '#/components/responses/NotFound'

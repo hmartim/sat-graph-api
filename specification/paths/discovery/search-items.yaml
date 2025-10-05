@@ -1,35 +1,59 @@
-/search-items:
-  post:
-    tags:
-      - "Discovery and Search Actions"
-    summary: "Performs a hybrid search for Items across their entire version history."
-    operationId: "searchItems"
-    description: |
-      Performs a hybrid search to discover `Item` nodes by combining semantic, lexical, and structured criteria.
-      This action is intentionally **time-agnostic**, searching across the entire version history of each item's text to ensure comprehensive discovery of the conceptual locus.
+post:
+  tags:
+    - "Discovery and Search Actions"
+  summary: "Performs a hybrid search for Items across their entire version history."
+  operationId: "searchItems"
+  description: |
+    Performs a hybrid search to discover `Item` nodes by combining semantic, lexical, and structured criteria.
+    This action is intentionally **time-agnostic**, searching across the entire version history of each item's text to ensure comprehensive discovery of the conceptual locus.
 
-      ### Discussion
-      This action's purpose is **structural discovery**, not content retrieval. It is used to find the *item* that, at any point in its history, has dealt with a concept. This is fundamentally different from `searchTextUnits`, which finds the specific *text* that was valid at a specific point in time.
-    security:
-      - ApiKeyAuth: []
+    ### Discussion
+    This action's purpose is **structural discovery**, not content retrieval. It is used to find the *item* that, at any point in its history, has dealt with a concept. This is fundamentally different from `searchTextUnits`, which finds the specific *text* that was valid at a specific point in time.
+  security:
+    - ApiKeyAuth: []
 
-    requestBody:
-      description: "The search criteria for finding Items."
-      required: true
+  requestBody:
+    description: "The search criteria for finding Items."
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            item_ids:
+              type: array
+              items: { $ref: '#/components/schemas/ID' }
+              description: "Optional. A list of 'Item' IDs to define the search scope."
+            theme_ids:
+              type: array
+              items: { $ref: '#/components/schemas/ID' }
+              description: "Optional. A list of 'Theme' IDs to expand the search scope."
+            item_metadata_filter:
+              $ref: '#/components/schemas/ItemMetadataFilterSchema'
+            semantic_query:
+              type: string
+              description: "The natural language query string for vector search."
+            lexical_query:
+              type: string
+              description: "Keywords or phrases for a full-text syntactic search."
+            top_k:
+              type: integer
+              format: int32
+              default: 10
+              minimum: 1
+              description: "The maximum number of results to return."
+            datasources:
+              $ref: '#/components/schemas/DatasourcesSchema'
+
+  responses:
+    '200':
+      description: "Search executed successfully. Returns a ranked list of Items."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/SearchItemsRequest'
-
-    responses:
-      '200':
-        description: "Search executed successfully. Returns a ranked list of Items."
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/SearchedItemResult'
-      '400': { $ref: '#/components/responses/BadRequest' }
-      '401': { $ref: '#/components/responses/Unauthorized' }
-      '403': { $ref: '#/components/responses/Forbidden' }
+            type: array
+            items:
+              $ref: '#/components/schemas/SearchedItemResult'
+    '400': { $ref: '#/components/responses/BadRequest' }
+    '401': { $ref: '#/components/responses/Unauthorized' }
+    '403': { $ref: '#/components/responses/Forbidden' }

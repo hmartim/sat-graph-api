@@ -1,29 +1,28 @@
-/versions/{versionId}:
-  get:
-    tags:
-      - "Deterministic Fetch Actions"
-    summary: "Get a single Version by its unique ID."
-    operationId: "getVersion"
-    description: "Retrieves the full `Version` object given its unique identifier. This is the primary way to inspect the details of a specific temporal snapshot of an Item."
-    security:
-      - ApiKeyAuth: []
-    parameters:
-      - name: versionId
-        in: path
-        required: true
-        description: "The unique identifier of the Version to retrieve."
-        schema:
-          $ref: '#/components/schemas/ID'
-    responses:
-      '200':
-        description: "Successfully retrieved the Version object."
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Version'
-      '401':
-        $ref: '#/components/responses/Unauthorized'
-      '403':
-        $ref: '#/components/responses/Forbidden'
-      '404':
-        $ref: '#/components/responses/NotFound'
+get:
+  tags:
+    - "Deterministic Fetch Actions"
+  summary: "Get a single Version by its unique ID."
+  operationId: "getVersion"
+  description: "Retrieves the full `Version` object given its unique identifier. This is the primary way to inspect the details of a specific temporal snapshot of an Item."
+  security:
+    - ApiKeyAuth: []
+  parameters:
+    - name: versionId
+      in: path
+      required: true
+      description: "The unique identifier of the Version to retrieve."
+      schema:
+        $ref: '#/components/schemas/ID'
+  responses:
+    '200':
+      description: "Successfully retrieved the Version object."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Version'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'
+    '404':
+      $ref: '#/components/responses/NotFound'
