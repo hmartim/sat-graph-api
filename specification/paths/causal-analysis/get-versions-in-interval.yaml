@@ -1,0 +1,54 @@
+get:
+  tags:
+    - "Causal Analysis Actions"
+  summary: "Gets all Versions of an Item that were valid within a time interval."
+  operationId: "getVersionsInInterval"
+  description: |
+    Retrieves all `Version`s of a given `Item` that were legally valid at any point within a specified time interval. The returned list is ordered chronologically (ascending).
+
+    ### Discussion
+    This function serves as a critical performance optimization for historical analysis. While `getItemHistory` retrieves the causal *events* (`Action`s), this action retrieves the resulting *states* (`Version`s) within a specific temporal window. By providing this as a server-side primitive, the API enables an agent to efficiently answer questions like "show all versions of this article during a specific presidential term."
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: itemId
+      in: path
+      required: true
+      description: "The canonical ID of the Item of interest."
+      schema:
+        $ref: '../../schemas/core/ID.yaml'
+    - name: start_time
+      in: query
+      required: true
+      description: "The start of the time interval for the query (UTC date-time)."
+      schema:
+        type: string
+        format: date-time
+      example: "2010-01-01T00:00:00Z"
+    - name: end_time
+      in: query
+      required: true
+      description: "The end of the time interval for the query (UTC date-time)."
+      schema:
+        type: string
+        format: date-time
+      example: "2014-12-31T23:59:59Z"
+
+  responses:
+    '200':
+      description: "A time-ordered list (ascending) of Version objects whose validity period overlaps with the specified interval. The list may be empty if no versions match."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../../schemas/entities/Version.yaml'
+    '400':
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
+    '404':
+      $ref: '../../openapi.yaml#/components/responses/NotFound'

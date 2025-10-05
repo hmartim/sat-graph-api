@@ -1,0 +1,51 @@
+get:
+  tags:
+    - "Causal Analysis Actions"
+  summary: "Retrieves all Actions caused by a specific source Work."
+  operationId: "getActionsBySource"
+  description: |
+    An essential action for impact analysis that provides forward causal tracing. Given the ID of a source `Work` (e.g., an amending law), it retrieves all atomic `Action`s authorized by any clause within that Work.
+
+    The returned list is ordered chronologically by the action's effective date.
+
+    ### Discussion
+    This action is the logical inverse of `traceCausality`. It traces forwards from a high-level cause to all of its granular effects, answering the critical question: "What did Law X do?".
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: sourceWorkId
+      in: path
+      required: true
+      description: "The canonical ID of the source 'Work' (e.g., an amending law)."
+      schema:
+        $ref: '../../schemas/core/ID.yaml'
+    - name: action_types
+      in: query
+      required: false
+      description: "Optional. Filters for specific types of actions."
+      schema:
+        type: array
+        items:
+          type: string
+          # Este enum deve ser mantido em sincronia com Action.yaml
+          enum: [ "Amendment", "Revocation", "Creation", "Repeal" ]
+    - $ref: '../../openapi.yaml#/components/parameters/DatasourcesParameter'
+
+  responses:
+    '200':
+      description: "A time-ordered list of Action objects caused by the specified source. The list may be empty."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../../schemas/relationships/Action.yaml'
+    '400':
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
+    '404':
+      $ref: '../../openapi.yaml#/components/responses/NotFound'

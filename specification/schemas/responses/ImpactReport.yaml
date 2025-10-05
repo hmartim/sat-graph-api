@@ -1,0 +1,23 @@
+type: object
+description: >
+  A structured summary of changes. It contains aggregate statistics and
+  lightweight lists of identifiers for the relevant Actions and affected Items.
+properties:
+  statistics:
+    type: object
+    description: "Aggregate counts of actions, grouped by type."
+    additionalProperties:
+      type: integer
+    example:
+      Amendment: 12
+      Revocation: 5
+  actions:
+    type: array
+    description: "A list of unique identifiers for all `Action`s that match the query criteria."
+    items:
+      $ref: '../core/ID.yaml'
+  affected_items:
+    type: array
+    description: "A list of unique identifiers for all `Item`s that were affected by the actions in the report."
+    items:
+      $ref: '../core/ID.yaml'

@@ -1,0 +1,28 @@
+type: object
+description: >
+  A structured report detailing the differences between two Versions. It can
+  highlight changes at both the textual and structural levels.
+properties:
+  changes:
+    type: array
+    description: "An ordered list of differences found between the two versions."
+    items:
+      type: object
+      properties:
+        type:
+          type: string
+          description: "The type of change."
+          enum: [ "addition", "deletion", "modification" ]
+        level:
+          type: string
+          description: "The structural level at which the change was detected."
+          enum: [ "component", "sentence", "word" ]
+        component_id:
+          $ref: '../core/ID.yaml'
+          description: "The ID of the Item component where the change occurred."
+        content_before:
+          type: string
+          description: "The content from the first version ('version A'). Empty for additions."
+        content_after:
+          type: string
+          description: "The content from the second version ('version B'). Empty for deletions."

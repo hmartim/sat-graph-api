@@ -1,0 +1,26 @@
+type: object
+description: "Specifies the criteria for summarizing impact."
+required:
+  - time_interval
+properties:
+  item_ids:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: "Optional. A list of 'Item' IDs to define the structural scope of the analysis."
+  theme_ids:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: "Optional. A list of 'Theme' IDs to define the thematic scope of the analysis."
+  time_interval:
+    $ref: '../core/TimeInterval.yaml'
+    description: "A start and end UTC date-time for the analysis window."
+  action_types:
+    type: array
+    items:
+      type: string
+      enum: [ "Amendment", "Revocation", "Creation", "Repeal" ]
+    description: "Optional. Filters the summary to specific action types. If omitted, all action types are included."
+  datasources:
+    $ref: '../DatasourcesSchema.yaml'

@@ -1,0 +1,12 @@
+type: object
+description: "An object containing the specific Actions that created and (optionally) terminated a Version."
+required:
+  - creating_action
+properties:
+  creating_action:
+    $ref: '../relationships/Action.yaml'
+    description: "The Action that brought this Version into existence (its provenance)."
+  terminating_action:
+    $ref: '../relationships/Action.yaml'
+    nullable: true
+    description: "The Action that terminated the validity of this Version. This will be null if the Version is still valid."

@@ -1,0 +1,36 @@
+get:
+  tags:
+    - "Causal Analysis Actions"
+  summary: "Traces the direct causal links for a single Version."
+  operationId: "traceCausality"
+  description: |
+    Traces the direct causal links for a single `Version`. It identifies the specific `Action` that brought this `Version` into existence (its provenance) and, if applicable, the `Action` that terminated its validity.
+
+    ### Discussion
+    This action is crucial for pinpointing the exact act responsible for a specific version of a text, facilitating precise auditability at the event level.
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: versionId
+      in: path
+      required: true
+      description: "The unique identifier of the Version to trace."
+      schema:
+        $ref: '../../schemas/core/ID.yaml'
+
+  responses:
+    '200':
+      description: "Successfully retrieved the causality trace for the Version."
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/responses/CausalityTrace.yaml'
+    '400':
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
+    '404':
+      $ref: '../../openapi.yaml#/components/responses/NotFound'

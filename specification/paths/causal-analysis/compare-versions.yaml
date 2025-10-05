@@ -1,0 +1,46 @@
+get:
+  tags:
+    - "Causal Analysis Actions"
+  summary: "Performs a structure-aware comparison between two Versions."
+  operationId: "compareVersions"
+  description: |
+    Performs a granular, structure-aware comparison between the textual content of two different `Version`s. It highlights additions, deletions, and modifications.
+
+    ### Discussion
+    This action provides a powerful, server-side analysis that goes beyond a simple textual `diff`. Because the server has access to the full graph structure, it can perform a **structural comparison**, identifying not just changed words but also added or removed components. This transforms the comparison into a true structural impact analysis, fundamental for legal practitioners.
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: version_id_a
+      in: query
+      required: true
+      description: "Identifier of the first Version (the 'before' state)."
+      schema:
+        $ref: '../../schemas/core/ID.yaml'
+    - name: version_id_b
+      in: query
+      required: true
+      description: "Identifier of the second Version (the 'after' state)."
+      schema:
+        $ref: '../../schemas/core/ID.yaml'
+
+  responses:
+    '200':
+      description: "Successfully generated and returned the text diff report."
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/responses/TextDiffReport.yaml'
+    '400':
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
+    '404':
+      description: "Not Found - One or both of the specified Version IDs could not be found."
+      content:
+        application/json:
+          schema:
+            $ref: '../../openapi.yaml#/components/schemas/ErrorResponse'

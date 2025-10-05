@@ -200,3 +200,17 @@ paths:
     $ref: './paths/causal-analysis/get-valid-version.yaml#~1items~1{itemId}~1valid-version'
   /versions/{versionId}/text-unit:
     $ref: './paths/causal-analysis/get-version-text-unit.yaml#~1versions~1{versionId}~1text-unit'
+  /items/{itemId}/history:
+    $ref: './paths/causal-analysis/get-item-history.yaml'
+  /versions/{versionId}/causality:
+    $ref: './paths/causal-analysis/trace-causality.yaml'
+  /items/{itemId}/versions:
+    $ref: './paths/causal-analysis/get-versions-in-interval.yaml'
+  /versions/compare:
+    $ref: './paths/causal-analysis/compare-versions.yaml'
+  /items/{sourceWorkId}/actions-caused:
+    $ref: './paths/causal-analysis/get-actions-by-source.yaml'
+
+  # --- aggregate-analysis ---
+  /analysis/impact-summary:
+    $ref: './paths/aggregate-analysis/summarize-impact.yaml'

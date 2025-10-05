@@ -1,0 +1,34 @@
+post:
+  tags:
+    - "Aggregate Analysis Actions"
+  summary: "Provides a high-level summary of impact over a scope and time period."
+  operationId: "summarizeImpact"
+  description: |
+    An aggregate analysis action that provides a high-level summary of changes that occurred within a specific scope during a defined time period.
+
+    ### Discussion
+    This powerful action enables macro-level analysis by offloading complex processing to the server. It is the primary primitive for answering broad questions about evolution. The `ImpactReport` intentionally contains lightweight identifiers, allowing an agent to selectively hydrate full details using batch operations as needed.
+  security:
+    - ApiKeyAuth: []
+
+  requestBody:
+    description: "The criteria for the impact summary."
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/requests/SummarizeImpactRequest.yaml'
+
+  responses:
+    '200':
+      description: "Successfully generated and returned the impact report."
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/responses/ImpactReport.yaml'
+    '400':
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
