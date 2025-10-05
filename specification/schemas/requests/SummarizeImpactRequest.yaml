@@ -23,4 +23,4 @@ properties:
       enum: [ "Amendment", "Revocation", "Creation", "Repeal" ]
     description: "Optional. Filters the summary to specific action types. If omitted, all action types are included."
   datasources:
-    $ref: '../DatasourcesSchema.yaml'
+    $ref: '../responses/DatasourcesSchema.yaml'

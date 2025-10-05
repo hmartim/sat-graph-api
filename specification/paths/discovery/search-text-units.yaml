@@ -22,7 +22,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/SearchRequest'
+          $ref: '#/components/schemas/SearchTextUnitsRequest'
 
   responses:
     '200':

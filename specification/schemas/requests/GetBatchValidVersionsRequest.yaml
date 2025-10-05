@@ -16,7 +16,7 @@ properties:
     format: date-time
     description: "The specific UTC date-time for which to check validity for all items."
   policy:
-    $ref: '../TemporalPolicy.yaml'
+    $ref: '../core/TemporalPolicy.yaml'
     description: "The temporal resolution policy to apply uniformly to all items."
   datasources:
-    $ref: '../DatasourcesSchema.yaml'
+    $ref: '../responses/DatasourcesSchema.yaml'

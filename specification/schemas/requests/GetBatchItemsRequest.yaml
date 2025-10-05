@@ -11,4 +11,4 @@ properties:
     minItems: 1
     uniqueItems: true
   datasources:
-    $ref: '../DatasourcesSchema.yaml'
+    $ref: '../responses/DatasourcesSchema.yaml'

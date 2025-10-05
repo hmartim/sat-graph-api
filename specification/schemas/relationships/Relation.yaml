@@ -21,7 +21,7 @@ required:
   - target_id
 properties:
   id:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
     description: "A unique identifier for this specific relation instance."
   source_type:
     type: string
@@ -29,7 +29,7 @@ properties:
     enum: [ "Item", "Version" ]
     example: "Item"
   source_id:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
     description: "The ID of the source entity."
     example: "urn:lex:br:federal:constituicao:1988-10-05;1988"
   predicate:
@@ -51,18 +51,18 @@ properties:
     enum: [ "Item", "Version" ]
     example: "Item"
   target_id:
-    $ref: './ID.yaml'
+    $ref: '../core/ID.yaml'
     description: "The ID of the target entity."
     example: "urn:lex:br:federal:constituicao:1967-01-24;1967"
   validity_interval:
-      $ref: './TimeInterval.yaml'
+      $ref: '../core/TimeInterval.yaml'
       nullable: true
       description: >-
         The time interval during which this relation is valid.
         If null, the relation is considered atemporal.
       example: [ "2020-03-15T00:00:00Z", "2020-09-15T23:59:59Z" ]
   metadata:
-    $ref: './JSON.yaml'
+    $ref: '../core/JSON.yaml'
     nullable: true
     description: >-
       A flexible field for any valid JSON data providing more context about the
