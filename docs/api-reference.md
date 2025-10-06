@@ -263,4 +263,4 @@ For complete technical details, see the [OpenAPI 3.0 specification](../specifica
 
 ---
 
-*For practical examples, see [Basic Queries](examples/basic-queries.md) and [Use Cases](use-cases/).*
+*For practical examples, see [Examples](examples/).*

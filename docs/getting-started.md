@@ -130,8 +130,8 @@ Error responses include detailed information:
 
 ## Next Steps
 
-1. **Explore Examples**: Check out the [Basic Queries](examples/basic-queries.md) for common patterns
-2. **Understand Use Cases**: See [Use Cases](../use-cases/) for domain-specific examples
+1. **Explore Examples**: Start with [Fundamental Patterns](examples/00-fundamental-patterns.md) to understand core concepts
+2. **Study Use Cases**: See complete [Use Cases](examples/) for real-world legal analysis scenarios
 3. **Generate a Client**: Use the OpenAPI specification to generate a client SDK
 4. **Read the Full Reference**: Consult the [API Reference](api-reference.md) for complete details
 
@@ -161,4 +161,4 @@ openapi-generator-cli generate \
 
 ---
 
-*Ready to dive deeper? Check out the [Basic Queries Examples](examples/basic-queries.md) for practical examples.*
+*Ready to dive deeper? Check out the [Examples](examples/) for practical use cases.*
