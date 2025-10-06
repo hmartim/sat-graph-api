@@ -48,13 +48,13 @@ target_item_id = "urn:lex:br:federal:lei:2020-01-15;1234;art10"
 
 ## Path 1: Structural Predecessor (Deterministic)
 
-**Goal:** Find the direct antecedent in the version chain using the API's built-in "semantic shortcut".
+**Goal:** Find the direct causal antecedent of the current version by tracing the event that created it.
 
 ### Step 1.1: Retrieve the Current Version
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/items/urn:lex:br:federal:lei:2020-01-15;1234;art10/valid-version?timestamp=2025-10-06T10:30:00Z&policy=PointInTime"
+  "$BASE_URL/items/urn:lex:br:federal:lei:2020-01-15;1234;art10/valid-version?timestamp=2025-10-06T10:30:00Z&policy=SnapshotLast"
 ```
 
 **Response:**
@@ -66,7 +66,6 @@ curl -H "Authorization: $API_KEY" \
     "2023-03-20T00:00:00Z",
     null
   ],
-  "derivative_from_id": "urn:lex:br:federal:lei:2020-01-15;1234;art10@2020-01-15",
   "parent": "urn:lex:br:federal:lei:2020-01-15;1234",
   "children": []
 }
@@ -77,21 +76,47 @@ curl -H "Authorization: $API_KEY" \
 current_version = get_valid_version(
     item_id=target_item_id,
     timestamp="2025-10-06T10:30:00Z",
-    policy="PointInTime"
+    policy="SnapshotLast"
 )
 # current_version.id = "urn:lex:br:federal:lei:2020-01-15;1234;art10@2023-03-20"
 ```
 
-### Step 1.2: Access the Structural Predecessor
+### Step 1.2: Trace Causality to Find the Creating Action
 
-The Version object contains a direct reference to its structural predecessor.
+Use `traceCausality` to find the Action that created this version.
 
+```bash
+curl -H "Authorization: $API_KEY" \
+  "$BASE_URL/versions/urn:lex:br:federal:lei:2020-01-15;1234;art10@2023-03-20/causality"
+```
+
+**Response:**
+```json
+{
+  "version_id": "urn:lex:br:federal:lei:2020-01-15;1234;art10@2023-03-20",
+  "creating_action": {
+    "id": "action_amendment_2023",
+    "type": "Amendment",
+    "date": "2023-03-20T00:00:00Z",
+    "source_version_id": "urn:lex:br:federal:lei:2023-03-20;7890",
+    "produces_version_id": "urn:lex:br:federal:lei:2020-01-15;1234;art10@2023-03-20",
+    "terminates_version_id": "urn:lex:br:federal:lei:2020-01-15;1234;art10@2020-01-15"
+  },
+  "terminating_action": null
+}
+```
+
+**Agent Logic:**
 ```python
-predecessor_version_id = current_version.derivative_from_id
+causality = trace_causality(version_id=current_version.id)
+creating_action = causality.creating_action
+
+# The structural predecessor is the version that this action terminated
+predecessor_version_id = creating_action.terminates_version_id
 # predecessor_version_id = "urn:lex:br:federal:lei:2020-01-15;1234;art10@2020-01-15"
 ```
 
-**This is it!** The structural predecessor is deterministically identified.
+**This is it!** The structural predecessor is deterministically identified through the causal graph.
 
 ### Step 1.3: Get the Predecessor's Text
 
@@ -121,11 +146,11 @@ predecessor_text = get_text_for_version(
 
 ### Path 1 Result
 
-✅ **Deterministic:** 2 API calls, guaranteed result
+✅ **Deterministic:** 3 API calls, guaranteed result
 
-✅ **Efficient:** Leverages explicit diachronic lineage in the graph
+✅ **Efficient:** Leverages explicit causal graph structure
 
-✅ **Auditable:** Complete version chain with IDs
+✅ **Auditable:** Complete version chain with IDs and causal actions
 
 ---
 
@@ -170,6 +195,17 @@ current_text = get_text_for_version(
 ### Step 2.2: Search for Semantically Similar Texts Before the Change
 
 Search for texts that were valid **immediately before** the change date.
+
+**Agent Logic:**
+```python
+from datetime import datetime, timedelta
+
+# Calculate timestamp immediately prior to change_date
+change_datetime = datetime.fromisoformat(change_date.replace('Z', '+00:00'))
+prior_datetime = change_datetime - timedelta(seconds=1)
+previous_timestamp = prior_datetime.isoformat().replace('+00:00', 'Z')
+# previous_timestamp = "2023-03-19T23:59:59Z"
+```
 
 ```bash
 curl -X POST "$BASE_URL/search-text-units" \
@@ -309,7 +345,7 @@ synthesis_data = {
     "structural_predecessor": {
         "version_id": "urn:lex:br:federal:lei:2020-01-15;1234;art10@2020-01-15",
         "text": "Public servants shall disclose financial assets within 30 days...",
-        "method": "Deterministic (derivative_from_id)"
+        "method": "Deterministic (traceCausality → terminates_version_id)"
     },
     "normative_predecessor": {
         "version_id": "urn:lex:br:federal:lei:1995-06-20;5555;art150@1995-06-20",
@@ -367,8 +403,8 @@ synthesis_data = {
 | Aspect | Structural Path | Normative Path |
 |--------|----------------|----------------|
 | **Method** | Deterministic | Heuristic |
-| **Data Source** | `derivative_from_id` field | Semantic search + causality |
-| **Efficiency** | 2 API calls | 3-4 API calls |
+| **Data Source** | `traceCausality` + `terminates_version_id` | Semantic search + causality |
+| **Efficiency** | 3 API calls | 4-5 API calls |
 | **Certainty** | Guaranteed | Probabilistic (requires verification) |
 | **Scope** | Same article only | Cross-document |
 
@@ -378,7 +414,7 @@ synthesis_data = {
 
 | Capability | Standard RAG | SAT-Graph API |
 |------------|--------------|---------------|
-| **Find structural predecessor** | ❌ No versioning | ✅ derivative_from_id |
+| **Find structural predecessor** | ❌ No versioning | ✅ traceCausality() + terminates_version_id |
 | **Find normative predecessor** | ❌ No semantic+temporal search | ✅ searchTextUnits(timestamp) |
 | **Verify revocation timing** | ❌ No causal model | ✅ traceCausality() |
 | **Disambiguate query intent** | ❌ Single interpretation | ✅ Dual-path execution |
@@ -392,14 +428,17 @@ Dual-Path Execution:
 
 Path 1: Structural Predecessor (Deterministic)
 ├── getValidVersion(current)
-└── Access derivative_from_id → Done in 2 calls
+├── traceCausality(current version)
+├── Extract terminates_version_id from creating_action
+└── getTextForVersion(predecessor) → Done in 3 calls
 
 Path 2: Normative Predecessor (Heuristic)
 ├── getValidVersion(current)
 ├── getTextForVersion(current)
+├── Calculate prior timestamp
 ├── searchTextUnits(semantic + temporal)
-├── Filter candidates
-└── traceCausality(verify) → Done in 4-5 calls
+├── Filter candidates (exclude structural predecessor)
+└── traceCausality(verify revocation) → Done in 4-5 calls
 
 Synthesis:
 └── Combine both results and present disambiguation
