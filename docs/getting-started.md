@@ -157,7 +157,7 @@ openapi-generator-cli generate \
 
 - **Documentation**: This guide and linked resources
 - **API Specification**: [`../specification/openapi.yaml`](../specification/openapi.yaml)
-- **Contributing**: See [Contributing Guidelines](contributing.md)
+- **Contributing**: See [Contributing Guidelines](../CONTRIBUTING.md)
 
 ---
 
