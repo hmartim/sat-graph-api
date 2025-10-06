@@ -29,7 +29,11 @@ get:
     - name: policy
       in: query
       required: false
-      description: "The temporal resolution policy to apply."
+      description: |
+        The temporal resolution policy to apply. If not specified, defaults to `SnapshotLast`.
+
+        - `SnapshotLast` (default): Finds the last version valid at any point during the day of the timestamp
+        - `PointInTime`: Finds the version whose validity interval strictly contains the exact timestamp
       schema:
         $ref: '#/components/schemas/TemporalPolicy'
 

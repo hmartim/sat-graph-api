@@ -1,31 +1,53 @@
 type: object
-description: "The request body for the searchTextUnits operation."
+description: |
+  The request body for the searchTextUnits operation.
+
+  **Parameter Modes (Mutually Exclusive):**
+
+  **Mode 1: Explicit Version Scope**
+  - Use `version_ids` to search within a specific set of versions
+  - `item_ids`, `theme_ids`, and `timestamp` are ignored when `version_ids` is provided
+
+  **Mode 2: Conceptual Scope with Temporal Resolution**
+  - Use `item_ids` and/or `theme_ids` to define scope
+  - Use `timestamp` to constrain temporally (defaults to "now" if omitted)
+  - `version_ids` must be omitted in this mode
+
+  You cannot mix `version_ids` with `item_ids`/`theme_ids`/`timestamp`. Choose one mode per request.
 properties:
   version_ids:
     type: array
     items:
       $ref: '../core/ID.yaml'
-    description: >-
-      Explicit Version Scope. A list of specific 'Version' IDs. Mutually
-      exclusive with the combination of 'item_ids'/'theme_ids' and 'timestamp'.
+    description: |
+      **Mode 1: Explicit Version Scope**
+      A list of specific Version IDs to search within.
+      When provided, `item_ids`, `theme_ids`, and `timestamp` are ignored.
   item_ids:
     type: array
     items:
       $ref: '../core/ID.yaml'
-    description: "Conceptual Scope. A list of 'Item' IDs to define the structural scope."
+    description: |
+      **Mode 2: Conceptual Scope**
+      A list of Item IDs to define the structural scope.
+      Cannot be used with `version_ids`.
   theme_ids:
     type: array
     items:
       $ref: '../core/ID.yaml'
-    description: "Conceptual Scope. A list of 'Theme' IDs to define the thematic scope."
+    description: |
+      **Mode 2: Conceptual Scope**
+      A list of Theme IDs to define the thematic scope.
+      Cannot be used with `version_ids`.
   metadata_filter:
     $ref: '../common/MetadataFilter.yaml'
   timestamp:
     type: string
     format: date-time
-    description: >-
-      Conceptual Scope. A UTC date-time to constrain the search. Defaults to 'now' if omitted.
-      Ignored if 'version_ids' is provided.
+    description: |
+      **Mode 2: Conceptual Scope**
+      A UTC date-time to constrain the search temporally. Defaults to 'now' if omitted.
+      Cannot be used with `version_ids`.
   semantic_query:
     type: string
     description: "The natural language query string for vector search."
