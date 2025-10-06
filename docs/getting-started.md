@@ -27,7 +27,23 @@ The API is served at: `https://api.example.com`
 
 ## Core Concepts
 
-### 1. Data Models
+### 1. Action Categories
+
+The API provides actions organized into seven functional categories. Understanding these categories is essential for building effective retrieval plans:
+
+| Category | Purpose | Examples |
+|----------|---------|----------|
+| **Discovery & Search** | Find entities using natural language (probabilistic) | `resolveItemReference`, `searchTextUnits` |
+| **Deterministic Fetch** | Retrieve full objects by ID (deterministic) | `getItem`, `getVersion` |
+| **Structural Navigation** | Traverse hierarchy (deterministic) | `getAncestors`, `enumerateItems` |
+| **Temporal Resolution** | Point-in-time queries (deterministic) | `getValidVersion` |
+| **Causal Analysis** | Trace legislative events (deterministic) | `traceCausality`, `compareVersions` |
+| **Aggregate Analysis** | Server-side computation (deterministic) | `summarizeImpact` |
+| **Introspection** | Discover capabilities (deterministic) | `getAvailableLanguages` |
+
+📖 **See [Action Categories Guide](./ACTION_CATEGORIES.md) for detailed taxonomy and workflow patterns.**
+
+### 2. Data Models
 
 The API operates on several key entities:
 
@@ -38,7 +54,7 @@ The API operates on several key entities:
 - **Theme**: Classification system for discovery
 - **TextUnit**: Actual textual content in multiple languages
 
-### 2. Datasources
+### 3. Datasources
 
 Data comes from multiple providers called "Datasources":
 - `datasource_Senate`: Federal Senate data
@@ -47,12 +63,14 @@ Data comes from multiple providers called "Datasources":
 
 Your API key grants access to specific datasources, and all queries are automatically scoped to your authorized datasources.
 
-### 3. Temporal Resolution
+### 4. Temporal Resolution
 
 The API supports two temporal resolution strategies:
 
-- **PointInTime**: Finds the exact version valid at a specific timestamp
-- **SnapshotLast**: Finds the last version valid during a given day (default)
+- **PointInTime**: Finds the exact version valid at a specific timestamp (precise, for compliance/audits)
+- **SnapshotLast**: Finds the last version valid during a given day (intuitive, default)
+
+⏱️ **For detailed explanation and examples, see [Temporal Resolution Guide](./TEMPORAL_RESOLUTION.md)**
 
 ## Your First API Call
 
@@ -123,10 +141,19 @@ Error responses include detailed information:
 
 ```json
 {
-  "code": "FORBIDDEN_DATASOURCE",
-  "message": "The provided API Key does not have access to the 'datasource_STF' datasource."
+  "error": {
+    "code": "DATASOURCE_ACCESS_DENIED",
+    "message": "Your API key does not have access to the requested datasource.",
+    "details": {
+      "requested_datasource": "datasource_STF"
+    },
+    "timestamp": "2025-10-06T14:30:00Z",
+    "request_id": "req_001"
+  }
 }
 ```
+
+📖 **For complete error handling guide, see [Error Handling Documentation](./ERROR_HANDLING.md)**
 
 ## Next Steps
 

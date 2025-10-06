@@ -5,11 +5,19 @@
 
 This repository contains the official OpenAPI 3.x specification for the **SAT-Graph API**, a formal, auditable interface for querying the Structure-Aware Temporal Graph (SAT-Graph) RAG system.
 
-This API is the practical implementation of the architectural framework proposed in the paper:
+## 📄 Academic Publication
 
-**📄 Research Paper:** _Orchestrating Deterministic Legal Retrieval: A Canonical Action API for Querying the Structure-Aware Temporal Graph RAG_ (Forthcoming)
+This specification is described in the research paper:
 
-> **Related Work:** This API builds upon the [SAT-Graph RAG](https://arxiv.org/abs/2505.00039) framework and [LRMoo Ontology](https://arxiv.org/abs/2506.07853).
+> **Hudson de Martim.** "Orchestrating Deterministic Legal Retrieval: A Canonical Action API for Querying the Structure-Aware Temporal Graph RAG." _arXiv preprint arXiv:XXXX.XXXXX_ (2025).
+
+**Status:** This is a **formal specification**, not a reference implementation. The implementation is ongoing as part of the SAT-Graph ecosystem.
+
+### Related Work
+
+This API builds upon:
+- **[SAT-Graph RAG](https://arxiv.org/abs/2505.00039)** - The knowledge graph substrate
+- **[LRMoo Ontology](https://arxiv.org/abs/2506.07853)** - Temporal modeling framework for legal resources
 
 ## The Problem: The Limits of Standard RAG in Structured Domains
 
@@ -89,7 +97,10 @@ Authorization: YOUR_API_KEY
 ### Quick Links
 - **📖 [Technical Specification Documentation](./specification/README.md)** - Detailed API architecture, endpoint categories, and technical guides
 - **🚀 [Getting Started Guide](./docs/getting-started.md)** - Step-by-step guide for first-time users
+- **🗂️ [Action Categories](./docs/ACTION_CATEGORIES.md)** - Complete taxonomy of all API actions with workflow patterns
 - **📋 [API Reference](./docs/api-reference.md)** - Complete endpoint reference documentation
+- **⚠️ [Error Handling Guide](./docs/ERROR_HANDLING.md)** - HTTP status codes, error formats, and handling patterns
+- **⏱️ [Temporal Resolution Guide](./docs/TEMPORAL_RESOLUTION.md)** - Understanding PointInTime vs SnapshotLast policies
 - **🔧 [OpenAPI Specification](./specification/openapi.yaml)** - Main specification file
 
 ### Getting Started
