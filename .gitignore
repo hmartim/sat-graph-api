@@ -47,8 +47,3 @@ Thumbs.db
 # Claude Code Settings #
 ########################
 .claude/
-
-# Academic Paper (keep private for now) #
-##########################################
-Article.tex
-docs/ARTICLE_REVIEW.md
