@@ -161,7 +161,7 @@ If you use this specification or the concepts from our framework in your researc
 
 ## Contributing
 
-Contributions to improve and extend the API specification are welcome. Please read our `CONTRIBUTING.md` file for guidelines on how to submit pull requests, open issues, and suggest enhancements.
+This project is currently in a specification-only phase and is not accepting contributions at this time.
 
 ## License
 
