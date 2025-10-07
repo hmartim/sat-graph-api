@@ -43,3 +43,12 @@ Thumbs.db
 # JetBrains IDEs module files #
 ###############################
 *.iml
+
+# Claude Code Settings #
+########################
+.claude/
+
+# Academic Paper (keep private for now) #
+##########################################
+Article.tex
+docs/ARTICLE_REVIEW.md
