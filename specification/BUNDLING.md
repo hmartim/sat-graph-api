@@ -70,7 +70,12 @@ When working on the specification:
 
 ## Note on Git
 
-The bundled file (`openapi-bundled.yaml`) is gitignored since it's a generated artifact. Users who need it should run the bundling script.
+The bundled file (`openapi-bundled.yaml`) is **not committed to the repository** since it's a generated artifact. This keeps the repository clean and avoids synchronization issues.
+
+**To obtain the bundled file:**
+- Run the bundling script locally (see instructions above)
+- Download from GitHub Releases (automatically generated for each release)
+- Use the GitHub Action workflow (see `.github/workflows/bundle-openapi.yml`)
 
 ## Alternative Tools
 

@@ -126,17 +126,23 @@ The complete API specification is located in the `specification/` directory.
 
 You can explore the API specification using any OpenAPI 3 compatible tool.
 
-**Note:** The specification uses a multi-file structure with `$ref` for better organization. The online Swagger Editor cannot resolve external file references. To use it:
+**Note:** The specification uses a multi-file structure with `$ref` for better organization. The online Swagger Editor cannot resolve external file references.
 
-1. **Generate a bundled version:**
+**To use with Swagger Editor, you need a bundled single-file version:**
+
+1. **Generate locally:**
    ```bash
    cd specification
    npm install
    npm run bundle
    ```
-   This creates `openapi-bundled.yaml` which you can upload to Swagger Editor.
+   Upload the generated `openapi-bundled.yaml` to Swagger Editor.
 
-2. **Or use tools that support multi-file specs:**
+2. **Download from GitHub Releases** (recommended for end users):
+   - Each release includes a pre-generated `openapi-bundled.yaml` file
+   - No need to install Node.js or run scripts
+
+3. **Use tools that support multi-file specs:**
    - **[Stoplight Studio](https://stoplight.io/studio/)** (Desktop app)
    - **[VS Code OpenAPI Extension](https://marketplace.visualstudio.com/items?itemName=42Crunch.vscode-openapi)**
    - **[ReDoc](https://redocly.github.io/redoc/)** with Redocly CLI
