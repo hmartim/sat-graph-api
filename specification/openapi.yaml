@@ -221,99 +221,99 @@ paths:
   # Entity resolution and hybrid search operations
   # ---------------------------------------------------------------------------
   /resolve-item-reference:
-    $ref: './paths/discovery/resolve-item-reference.yaml#~1resolve-item-reference'
+    $ref: './paths/discovery/resolve-item-reference.yaml'
   /resolve-theme-reference:
-    $ref: './paths/discovery/resolve-theme-reference.yaml#~1resolve-theme-reference'
+    $ref: './paths/discovery/resolve-theme-reference.yaml'
   /search-items:
-    $ref: './paths/discovery/search-items.yaml#~1search-items'
+    $ref: './paths/discovery/search-items.yaml'
   /search-themes:
-    $ref: './paths/discovery/search-themes.yaml#~1search-themes'
+    $ref: './paths/discovery/search-themes.yaml'
   /search-text-units:
-    $ref: './paths/discovery/search-text-units.yaml#~1search-text-units'
+    $ref: './paths/discovery/search-text-units.yaml'
 
   # ---------------------------------------------------------------------------
   # Deterministic Fetch Actions
   # Direct retrieval of entities by unique identifiers
   # ---------------------------------------------------------------------------
   /actions/{actionId}:
-    $ref: './paths/deterministic-fetch/get-action-by-id.yaml#~1actions~1{actionId}'
+    $ref: './paths/deterministic-fetch/get-action-by-id.yaml'
   /items/{itemId}:
-    $ref: './paths/deterministic-fetch/get-item-by-id.yaml#~1items~1{itemId}'
+    $ref: './paths/deterministic-fetch/get-item-by-id.yaml'
   /relations/{relationId}:
-    $ref: './paths/deterministic-fetch/get-relation-by-id.yaml#~1relations~1{relationId}'
+    $ref: './paths/deterministic-fetch/get-relation-by-id.yaml'
   /themes/{themeId}:
-    $ref: './paths/deterministic-fetch/get-theme-by-id.yaml#~1themes~1{themeId}'
+    $ref: './paths/deterministic-fetch/get-theme-by-id.yaml'
   /text-units/{textUnitId}:
-    $ref: './paths/deterministic-fetch/get-text-unit-by-id.yaml#~1text-units~1{textUnitId}'
+    $ref: './paths/deterministic-fetch/get-text-unit-by-id.yaml'
   /versions/{versionId}:
-    $ref: './paths/deterministic-fetch/get-version-by-id.yaml#~1versions~1{versionId}'
+    $ref: './paths/deterministic-fetch/get-version-by-id.yaml'
 
   /items/batch-get:
-    $ref: './paths/deterministic-fetch/get-batch-items.yaml#~1items~1batch-get'
+    $ref: './paths/deterministic-fetch/get-batch-items.yaml'
   /versions/batch-valid-at:
-    $ref: './paths/deterministic-fetch/get-batch-valid-versions.yaml#~1versions~1batch-valid-at'
+    $ref: './paths/deterministic-fetch/get-batch-valid-versions.yaml'
   /actions/batch-get:
-    $ref: './paths/deterministic-fetch/get-batch-actions.yaml#~1actions~1batch-get'
+    $ref: './paths/deterministic-fetch/get-batch-actions.yaml'
   /text-units/batch-get:
-    $ref: './paths/deterministic-fetch/get-batch-texts.yaml#~1text-units~1batch-get'
+    $ref: './paths/deterministic-fetch/get-batch-texts.yaml'
 
   # ---------------------------------------------------------------------------
   # Navigation Actions
   # Structural hierarchy traversal operations
   # ---------------------------------------------------------------------------
   /items/{itemId}/ancestors:
-    $ref: './paths/navigation/get-ancestors.yaml#~1items~1{itemId}~1ancestors'
+    $ref: './paths/navigation/get-ancestors.yaml'
   /items/{itemId}/context:
-    $ref: './paths/navigation/get-item-context.yaml#~1items~1{itemId}~1context'
+    $ref: './paths/navigation/get-item-context.yaml'
   /items/{itemId}/themes:
-    $ref: './paths/navigation/get-themes-for-item.yaml#~1items~1{itemId}~1themes'
+    $ref: './paths/navigation/get-themes-for-item.yaml'
   /enumerate-items:
-    $ref: './paths/navigation/enumerate-items.yaml#~1enumerate-items'
+    $ref: './paths/navigation/enumerate-items.yaml'
 
   # ---------------------------------------------------------------------------
   # Graph Traversal Actions
   # Relationship queries and entity connections
   # ---------------------------------------------------------------------------
   /entities/{entityId}/related:
-    $ref: './paths/graph-traversal/find-related-entities.yaml#~1entities~1{entityId}~1related'
+    $ref: './paths/graph-traversal/find-related-entities.yaml'
   /query-relations:
-    $ref: './paths/graph-traversal/get-relations.yaml#~1query-relations'
+    $ref: './paths/graph-traversal/get-relations.yaml'
 
   # ---------------------------------------------------------------------------
   # Causal Analysis Actions
   # Temporal reasoning, version tracking, and causality tracing
   # ---------------------------------------------------------------------------
   /items/{itemId}/valid-version:
-    $ref: './paths/causal-analysis/get-valid-version.yaml#~1items~1{itemId}~1valid-version'
+    $ref: './paths/causal-analysis/get-valid-version.yaml'
   /versions/{versionId}/text-unit:
-    $ref: './paths/causal-analysis/get-version-text-unit.yaml#~1versions~1{versionId}~1text-unit'
+    $ref: './paths/causal-analysis/get-version-text-unit.yaml'
   /items/{itemId}/history:
-    $ref: './paths/causal-analysis/get-item-history.yaml#~1items~1{itemId}~1history'
+    $ref: './paths/causal-analysis/get-item-history.yaml'
   /versions/{versionId}/causality:
-    $ref: './paths/causal-analysis/trace-causality.yaml#~1versions~1{versionId}~1causality'
+    $ref: './paths/causal-analysis/trace-causality.yaml'
   /items/{itemId}/versions:
-    $ref: './paths/causal-analysis/get-versions-in-interval.yaml#~1items~1{itemId}~1versions'
+    $ref: './paths/causal-analysis/get-versions-in-interval.yaml'
   /versions/compare:
-    $ref: './paths/causal-analysis/compare-versions.yaml#~1versions~1compare'
+    $ref: './paths/causal-analysis/compare-versions.yaml'
   /items/{sourceWorkId}/actions-caused:
-    $ref: './paths/causal-analysis/get-actions-by-source.yaml#~1items~1{sourceWorkId}~1actions-caused'
+    $ref: './paths/causal-analysis/get-actions-by-source.yaml'
 
   # ---------------------------------------------------------------------------
   # Aggregate Analysis Actions
   # Summary and impact analysis operations
   # ---------------------------------------------------------------------------
   /analysis/impact-summary:
-    $ref: './paths/aggregate-analysis/summarize-impact.yaml#~1analysis~1impact-summary'
+    $ref: './paths/aggregate-analysis/summarize-impact.yaml'
 
   # ---------------------------------------------------------------------------
   # Introspection & Metadata Actions
   # System metadata and configuration queries
   # ---------------------------------------------------------------------------
   /items/{itemId}/temporal-coverage:
-    $ref: './paths/introspection/get-temporal-coverage.yaml#~1items~1{itemId}~1temporal-coverage'
+    $ref: './paths/introspection/get-temporal-coverage.yaml'
   /meta/languages:
-    $ref: './paths/introspection/get-available-languages.yaml#~1meta~1languages'
+    $ref: './paths/introspection/get-available-languages.yaml'
   /meta/action-types:
-    $ref: './paths/introspection/get-supported-action-types.yaml#~1meta~1action-types'
+    $ref: './paths/introspection/get-supported-action-types.yaml'
   /themes/roots:
-    $ref: './paths/introspection/get-root-themes.yaml#~1themes~1roots'
+    $ref: './paths/introspection/get-root-themes.yaml'

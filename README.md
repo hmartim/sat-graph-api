@@ -36,6 +36,18 @@ The SAT-Graph RAG framework addresses these challenges with a two-layer architec
 
 This repository specifies this critical second layer. Instead of a monolithic query engine, this API provides a library of **atomic, composable, and auditable actions** that serve as the fundamental building blocks for constructing reliable retrieval plans, as showed in the figure below.
 
+### Active Retrieval: A Paradigm Shift
+
+In traditional RAG systems (baseline), the generative AI receives context extracted from the knowledge base through a **passive semantic similarity algorithm** that matches the user's prompt against stored embeddings. This approach is fundamentally limited to surface-level text matching.
+
+In contrast, the SAT-Graph API enables **active retrieval** through an agentic workflow:
+
+1. A **reasoning agent** (an LLM with planning capabilities) analyzes the user's query and decomposes it into a strategic retrieval plan.
+2. The agent **actively orchestrates** context gathering by making deliberate calls to the API's actions, navigating the graph's structure, temporal dimensions, and causal relationships.
+3. The retrieved context—now enriched with structural, temporal, and causal information—is then passed to the **generative AI** for response synthesis.
+
+This active strategy transforms retrieval from a passive matching process into an intelligent exploration guided by reasoning, enabling the system to answer questions that require multi-step logical inference across complex graph structures.
+
 <img src="imgs/SATGraphAPI.png" width="600" height="300" alt="Diagram illustrating a reasoning agent decomposing a user prompt into tasks that are executed through actions provided by the SAT-Graph API.">
 
 ## Core Design Principles
@@ -56,7 +68,7 @@ At the heart of this architecture is a strict separation of concerns that distin
 * **Version**: The temporal snapshot. Each Version represents the state and structure of an Item during a specific time interval.
 * **Action**: The causal engine. A first-class entity that represents the event that causes state transitions, terminating an old Version and producing a new one.
 * **Relation**: 🔷 *Extended API* - Models semantic relationships between entities (e.g., citations, references, dependencies). Part of the production extensions beyond the canonical core.
-* **TextUnit**: The concrete textual content. This flexible object holds the text for any entity in any language, enabling the "multi-aspect retrieval" strategy where even metadata and descriptions are searchable.
+* **TextUnit**: The concrete textual content. This flexible object holds the text for any entity in any language, enabling the "multi-aspect retrieval" strategy where, beyond text segments, even metadata, alternative identifiers and names, and descriptions are searchable.
 
 * ![Data Models](imgs/SATGraphModels.png)
 
@@ -112,10 +124,24 @@ The complete API specification is located in the `specification/` directory.
 
 ### Exploring the API
 
-You can explore the API specification using any OpenAPI 3 compatible tool. We recommend:
+You can explore the API specification using any OpenAPI 3 compatible tool.
 
-- **[Swagger Editor](https://editor.swagger.io/):** Paste the content of `openapi.yaml` to visualize the endpoints and data models interactively.
-- **[ReDoc](https://redocly.github.io/redoc/):** Generate clean, three-panel documentation for easy reading.
+**Note:** The specification uses a multi-file structure with `$ref` for better organization. The online Swagger Editor cannot resolve external file references. To use it:
+
+1. **Generate a bundled version:**
+   ```bash
+   cd specification
+   npm install
+   npm run bundle
+   ```
+   This creates `openapi-bundled.yaml` which you can upload to Swagger Editor.
+
+2. **Or use tools that support multi-file specs:**
+   - **[Stoplight Studio](https://stoplight.io/studio/)** (Desktop app)
+   - **[VS Code OpenAPI Extension](https://marketplace.visualstudio.com/items?itemName=42Crunch.vscode-openapi)**
+   - **[ReDoc](https://redocly.github.io/redoc/)** with Redocly CLI
+
+See [specification/BUNDLING.md](./specification/BUNDLING.md) for detailed instructions.
 
 ### Reusing the Specification: Generating a Client
 

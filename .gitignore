@@ -47,3 +47,12 @@ Thumbs.db
 # Claude Code Settings #
 ########################
 .claude/
+
+# Node.js dependencies #
+########################
+node_modules/
+package-lock.json
+
+# OpenAPI bundled output #
+##########################
+specification/openapi-bundled.yaml

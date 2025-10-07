@@ -1,0 +1,21 @@
+{
+  "name": "sat-graph-api-spec",
+  "version": "1.0.0",
+  "description": "OpenAPI specification bundling tools for SAT-Graph API",
+  "scripts": {
+    "bundle": "node bundle-spec.js",
+    "validate": "swagger-cli validate openapi.yaml",
+    "validate-bundled": "swagger-cli validate openapi-bundled.yaml"
+  },
+  "keywords": [
+    "openapi",
+    "swagger",
+    "api",
+    "specification"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "js-yaml": "^4.1.0",
+    "@apidevtools/swagger-cli": "^4.0.4"
+  }
+}
