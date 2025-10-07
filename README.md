@@ -9,7 +9,7 @@ This repository contains the official OpenAPI 3.x specification for the **SAT-Gr
 
 This specification is described in the research paper:
 
-> **Hudson de Martim.** "Orchestrating Deterministic Legal Retrieval: A Canonical Action API for Querying the Structure-Aware Temporal Graph RAG." _arXiv preprint arXiv:XXXX.XXXXX_ (2025).
+> "Deterministic Legal Retrieval: An Action API for Querying the SAT-Graph RAG." _arXiv preprint arXiv:XXXX.XXXXX_ (2025).
 
 **Status:** This is a **formal specification**, not a reference implementation. The implementation is ongoing as part of the SAT-Graph ecosystem.
 
@@ -154,9 +154,7 @@ If you use this specification or the concepts from our framework in your researc
 
 ```bibtex
 @article{demartim2025satgraphapi,
-  title={Orchestrating Deterministic Legal Retrieval: A Canonical Action API for Querying the Structure-Aware Temporal Graph RAG},
-  author={de Martim, Hudson},
-  journal={Journal of Trustworthy AI (Forthcoming)},
+  title={Deterministic Legal Retrieval: An Action API for Querying the SAT-Graph RAG},
   year={2025}
 }
 ```
