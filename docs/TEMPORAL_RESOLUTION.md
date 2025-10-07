@@ -19,12 +19,13 @@ This guide explains how the SAT-Graph API handles temporal queries, focusing on 
 
 ## Overview
 
-Legal documents are **time-sensitive** - the same article can have different text and meaning at different points in time. The SAT-Graph API provides **deterministic temporal resolution** through two distinct policies:
+Many types of documents, like legal norms, are **time-sensitive** - the same article can have different text and meaning at different points in time. The SAT-Graph API provides **deterministic temporal resolution** through two distinct policies:
 
-| Policy | Semantics | Use Case |
-|--------|-----------|----------|
-| **PointInTime** | Strict containment - exact moment in time | Legal compliance, audit trails, precise historical analysis |
-| **SnapshotLast** | Snapshot semantics - end-of-day state | General queries, user-facing applications, research |
+
+| Policy           | Semantics                                 | Use Case                                                    |
+| ---------------- | ----------------------------------------- | ----------------------------------------------------------- |
+| **PointInTime**  | Strict containment - exact moment in time | Legal compliance, audit trails, precise historical analysis |
+| **SnapshotLast** | Snapshot semantics - end-of-day state     | General queries, user-facing applications, research         |
 
 **Default:** `SnapshotLast` (most intuitive for general use)
 
@@ -34,10 +35,10 @@ Legal documents are **time-sensitive** - the same article can have different tex
 
 ### The Challenge: Multiple Events on the Same Day
 
-In legislative systems, multiple changes can occur on the same day:
+In some domains, multiple changes can occur on the same day:
 
 ```
-Item: Article 5 of Law 1234
+Item: Topic 1 of Document X
 
 Timeline:
 ├── Version A [2020-01-01, 2020-06-15)  ← Valid from Jan 1 to Jun 14
@@ -45,9 +46,10 @@ Timeline:
 └── Version C [2020-06-15, null]        ← Valid from Jun 15 onwards
 ```
 
-**Question:** What was Article 5 on June 15, 2020?
+**Question:** What was Topic 1 on June 15, 2020?
 
 **Answer depends on policy:**
+
 - `PointInTime` at `2020-06-15T00:00:00Z` → **Version A** (still valid at start of day)
 - `PointInTime` at `2020-06-15T23:59:59Z` → **Version C** (valid at end of day)
 - `SnapshotLast` at `2020-06-15` → **Version C** (last version that day)
@@ -68,6 +70,7 @@ Timeline:
 **Definition:** Returns the version whose validity interval **strictly contains** the exact timestamp.
 
 **Formal Logic:**
+
 ```
 Given:
   - Query timestamp: T
@@ -78,12 +81,14 @@ Return version if:
 ```
 
 **Key Characteristics:**
+
 - ✅ **Precise:** Exact moment in time
 - ✅ **Deterministic:** Same timestamp always returns same result
 - ⚠️ **Boundary-sensitive:** Timestamp at boundary returns "before" state
-- 🎯 **Use for:** Legal compliance, audit trails, precise historical analysis
+- 🎯 **Use for:** Compliance, audit trails, precise historical analysis
 
 **Behavior:**
+
 ```
 Version validity interval: [2020-06-15T00:00:00Z, 2020-12-31T23:59:59Z)
 
@@ -100,6 +105,7 @@ Query: 2020-12-31T23:59:58Z  → ✅ Returns this version (before end)
 **Definition:** Returns the **last version** whose validity interval started on or before the queried date, treating the query as "end of day."
 
 **Formal Logic:**
+
 ```
 Given:
   - Query date: D (treated as end of day D)
@@ -110,12 +116,14 @@ Return:
 ```
 
 **Key Characteristics:**
+
 - ✅ **Intuitive:** Matches how people think ("What was the law on date X?")
 - ✅ **Simple:** No need to specify exact time
 - ✅ **Snapshot-oriented:** Gives you the state at end of specified day
 - 🎯 **Use for:** General queries, user-facing apps, historical research
 
 **Behavior:**
+
 ```
 Timeline:
 - Version A starts: 2020-01-01
@@ -134,21 +142,24 @@ Query: 2020-12-31  → Returns Version C (still latest)
 ### Example 1: Single Change on a Date
 
 **Timeline:**
+
 ```
-Version 1: [2020-01-01, 2020-06-15)  "Article text: Old version"
-Version 2: [2020-06-15, null]        "Article text: New version"
+Version 1: [2020-01-01, 2020-06-15)  "Topic text: Old version"
+Version 2: [2020-06-15, null]        "Topic text: New version"
 ```
 
 **Query Date:** June 15, 2020
 
-| Policy | Timestamp | Result | Explanation |
-|--------|-----------|--------|-------------|
-| `PointInTime` | `2020-06-15T00:00:00Z` | **Version 1** | Exact start moment - old version still valid |
-| `PointInTime` | `2020-06-15T00:00:01Z` | **Version 2** | One second after change |
-| `PointInTime` | `2020-06-15T23:59:59Z` | **Version 2** | End of day - new version |
-| `SnapshotLast` | `2020-06-15` (any time) | **Version 2** | Last version that day |
+
+| Policy         | Timestamp               | Result        | Explanation                                  |
+| -------------- | ----------------------- | ------------- | -------------------------------------------- |
+| `PointInTime`  | `2020-06-15T00:00:00Z`  | **Version 1** | Exact start moment - old version still valid |
+| `PointInTime`  | `2020-06-15T00:00:01Z`  | **Version 2** | One second after change                      |
+| `PointInTime`  | `2020-06-15T23:59:59Z`  | **Version 2** | End of day - new version                     |
+| `SnapshotLast` | `2020-06-15` (any time) | **Version 2** | Last version that day                        |
 
 **Visualization:**
+
 ```
 2020-06-15
 00:00:00 ├─────────────────────────────────────┤ 23:59:59
@@ -162,6 +173,7 @@ Version 2: [2020-06-15, null]        "Article text: New version"
 ### Example 2: Multiple Changes on Same Day
 
 **Timeline:**
+
 ```
 Version A: [2020-06-15T00:00:00Z, 2020-06-15T10:00:00Z)  "Morning version"
 Version B: [2020-06-15T10:00:00Z, 2020-06-15T16:00:00Z)  "Midday version"
@@ -170,14 +182,15 @@ Version C: [2020-06-15T16:00:00Z, null]                  "Afternoon version"
 
 **Query Date:** June 15, 2020
 
-| Policy | Timestamp | Result | Explanation |
-|--------|-----------|--------|-------------|
-| `PointInTime` | `2020-06-15T00:00:00Z` | **Version A** | Exact start of day |
-| `PointInTime` | `2020-06-15T09:59:59Z` | **Version A** | Just before 10am change |
-| `PointInTime` | `2020-06-15T10:00:00Z` | **Version B** | Exactly at 10am change |
-| `PointInTime` | `2020-06-15T15:59:59Z` | **Version B** | Just before 4pm change |
-| `PointInTime` | `2020-06-15T16:00:00Z` | **Version C** | Exactly at 4pm change |
-| `PointInTime` | `2020-06-15T23:59:59Z` | **Version C** | End of day |
+
+| Policy         | Timestamp               | Result        | Explanation                |
+| -------------- | ----------------------- | ------------- | -------------------------- |
+| `PointInTime`  | `2020-06-15T00:00:00Z`  | **Version A** | Exact start of day         |
+| `PointInTime`  | `2020-06-15T09:59:59Z`  | **Version A** | Just before 10am change    |
+| `PointInTime`  | `2020-06-15T10:00:00Z`  | **Version B** | Exactly at 10am change     |
+| `PointInTime`  | `2020-06-15T15:59:59Z`  | **Version B** | Just before 4pm change     |
+| `PointInTime`  | `2020-06-15T16:00:00Z`  | **Version C** | Exactly at 4pm change      |
+| `PointInTime`  | `2020-06-15T23:59:59Z`  | **Version C** | End of day                 |
 | `SnapshotLast` | `2020-06-15` (any time) | **Version C** | Always last version of day |
 
 **Key Insight:** `SnapshotLast` ignores intra-day changes and always returns the final state.
@@ -187,18 +200,21 @@ Version C: [2020-06-15T16:00:00Z, null]                  "Afternoon version"
 ### Example 3: No Version Exists at Date
 
 **Timeline:**
+
 ```
 Version 1: [2025-01-01, null]  "Item created in 2025"
 ```
 
 **Query Date:** 2020-06-15 (before item existed)
 
-| Policy | Timestamp | Result | HTTP Status |
-|--------|-----------|--------|-------------|
-| `PointInTime` | `2020-06-15T12:00:00Z` | **404 Not Found** | `NO_VALID_VERSION` |
-| `SnapshotLast` | `2020-06-15` | **404 Not Found** | `NO_VALID_VERSION` |
+
+| Policy         | Timestamp              | Result            | HTTP Status        |
+| -------------- | ---------------------- | ----------------- | ------------------ |
+| `PointInTime`  | `2020-06-15T12:00:00Z` | **404 Not Found** | `NO_VALID_VERSION` |
+| `SnapshotLast` | `2020-06-15`           | **404 Not Found** | `NO_VALID_VERSION` |
 
 **Error Response:**
+
 ```json
 {
   "error": {
@@ -222,6 +238,7 @@ Version 1: [2025-01-01, null]  "Item created in 2025"
 ### Example 4: Version Terminated (No Longer Valid)
 
 **Timeline:**
+
 ```
 Version 1: [2020-01-01, 2020-12-31)  "Old version (revoked)"
 [Gap - item no longer valid]
@@ -229,9 +246,10 @@ Version 1: [2020-01-01, 2020-12-31)  "Old version (revoked)"
 
 **Query Date:** 2025-06-15 (after revocation, item doesn't exist anymore)
 
-| Policy | Result | Explanation |
-|--------|--------|-------------|
-| `PointInTime` at `2025-06-15` | **404 Not Found** | No version valid at this date |
+
+| Policy                         | Result            | Explanation                    |
+| ------------------------------ | ----------------- | ------------------------------ |
+| `PointInTime` at `2025-06-15`  | **404 Not Found** | No version valid at this date  |
 | `SnapshotLast` at `2025-06-15` | **404 Not Found** | No version exists at this date |
 
 **Note:** Some legal items can be revoked without replacement, creating gaps in coverage.
@@ -245,6 +263,7 @@ Version 1: [2020-01-01, 2020-12-31)  "Old version (revoked)"
 **Scenario:** Query timestamp exactly matches version start/end
 
 **Timeline:**
+
 ```
 Version A: [2020-06-15T00:00:00Z, 2020-12-31T00:00:00Z)
 Version B: [2020-12-31T00:00:00Z, null]
@@ -252,10 +271,11 @@ Version B: [2020-12-31T00:00:00Z, null]
 
 **Boundary Queries:**
 
-| Timestamp | PointInTime Result | Explanation |
-|-----------|-------------------|-------------|
-| `2020-06-15T00:00:00Z` | **Version A** | Start time is **included** |
-| `2020-12-31T00:00:00Z` | **Version B** | End time is **excluded** from previous version |
+
+| Timestamp              | PointInTime Result | Explanation                                   |
+| ---------------------- | ------------------ | --------------------------------------------- |
+| `2020-06-15T00:00:00Z` | **Version A**      | Start time is**included**                     |
+| `2020-12-31T00:00:00Z` | **Version B**      | End time is**excluded** from previous version |
 
 **Rule:** Intervals are **[start, end)** - start inclusive, end exclusive.
 
@@ -268,6 +288,7 @@ Version B: [2020-12-31T00:00:00Z, null]
 **Answer:** Yes, the API uses full RFC 3339 precision.
 
 **Example:**
+
 ```
 Version A ends:   2020-06-15T12:00:00.000000Z
 Version B starts: 2020-06-15T12:00:00.000001Z  (1 microsecond later)
@@ -285,6 +306,7 @@ Query: 2020-06-15T12:00:00.000001Z → Version B (1μs after boundary)
 **Important:** All timestamps in the API are in **UTC** (Coordinated Universal Time).
 
 **Example Problem:**
+
 ```
 User thinks: "June 15, 2020 in São Paulo" (BRT = UTC-3)
 User queries: 2020-06-15T00:00:00Z (midnight UTC)
@@ -296,6 +318,7 @@ Result: Might get wrong version!
 **Solution:** Always convert local times to UTC before querying.
 
 **Conversion Examples:**
+
 ```python
 from datetime import datetime, timezone
 
@@ -318,6 +341,7 @@ utc_time = local_time_brt.astimezone(timezone.utc)
 **Scenario:** A version valid for only one day (rare but possible)
 
 **Timeline:**
+
 ```
 Version A: [2020-06-14, 2020-06-15)  "Valid only June 14"
 Version B: [2020-06-15, 2020-06-16)  "Valid only June 15"
@@ -326,11 +350,12 @@ Version C: [2020-06-16, null]        "Valid from June 16 onwards"
 
 **Queries:**
 
-| Policy | Date | Result | Explanation |
-|--------|------|--------|-------------|
-| `PointInTime` | `2020-06-15T00:00:00Z` | **Version B** | Start of June 15 |
-| `PointInTime` | `2020-06-15T23:59:59Z` | **Version B** | End of June 15 (still within) |
-| `SnapshotLast` | `2020-06-15` | **Version B** | Last (and only) version that day |
+
+| Policy         | Date                   | Result        | Explanation                      |
+| -------------- | ---------------------- | ------------- | -------------------------------- |
+| `PointInTime`  | `2020-06-15T00:00:00Z` | **Version B** | Start of June 15                 |
+| `PointInTime`  | `2020-06-15T23:59:59Z` | **Version B** | End of June 15 (still within)    |
+| `SnapshotLast` | `2020-06-15`           | **Version B** | Last (and only) version that day |
 
 **Note:** Even single-day versions work correctly with both policies.
 
@@ -351,6 +376,7 @@ Version C: [2020-06-16, null]        "Valid from June 16 onwards"
 ### When to Use PointInTime
 
 ✅ **Use PointInTime when:**
+
 - Performing **legal compliance checks** ("Was this action legal at exactly 2:30 PM on June 15?")
 - Creating **audit trails** that require exact timestamps
 - Analyzing **before/after states** of specific legislative events
@@ -358,6 +384,7 @@ Version C: [2020-06-16, null]        "Valid from June 16 onwards"
 - Querying **intra-day changes** (multiple versions on same day)
 
 **Example Scenarios:**
+
 ```
 - "What was the law when the contract was signed at 2020-06-15T14:30:00Z?"
 - "Show me the version immediately before Amendment #123 took effect"
@@ -369,6 +396,7 @@ Version C: [2020-06-16, null]        "Valid from June 16 onwards"
 ### When to Use SnapshotLast (Default)
 
 ✅ **Use SnapshotLast when:**
+
 - Building **user-facing applications** where users think in dates, not timestamps
 - Performing **historical research** ("What was the law at end of 2020?")
 - Creating **reports** that summarize end-of-period states
@@ -376,6 +404,7 @@ Version C: [2020-06-16, null]        "Valid from June 16 onwards"
 - **Simplifying** queries (no need to specify exact time)
 
 **Example Scenarios:**
+
 ```
 - "What was Article 5 on December 31, 2020?"
 - "Show me the state of the Constitution on Independence Day 1988"
@@ -408,16 +437,19 @@ Do you need exact moment-in-time precision?
 #### getValidVersion
 
 **Signature:**
+
 ```
 GET /items/{item_id}/valid-version?timestamp={date}&policy={TemporalPolicy}
 ```
 
 **Parameters:**
+
 - `item_id` (required): Item to query
 - `timestamp` (required): ISO 8601 date-time (e.g., `2020-06-15T12:00:00Z`)
 - `policy` (optional): `PointInTime` or `SnapshotLast` (default: `SnapshotLast`)
 
 **Example:**
+
 ```bash
 # PointInTime query
 curl -H "Authorization: $API_KEY" \
@@ -433,11 +465,13 @@ curl -H "Authorization: $API_KEY" \
 #### getBatchValidVersions
 
 **Signature:**
+
 ```
 POST /items/batch-valid-versions
 ```
 
 **Request Body:**
+
 ```json
 {
   "item_ids": ["urn:lex:...", "urn:lex:..."],
@@ -455,6 +489,7 @@ POST /items/batch-valid-versions
 **Note:** When using `searchTextUnits` with a `timestamp` parameter, the temporal resolution uses **SnapshotLast semantics** implicitly.
 
 **Example:**
+
 ```bash
 curl -X POST "$BASE_URL/search-text-units" \
   -H "Authorization: $API_KEY" \
@@ -476,11 +511,13 @@ curl -X POST "$BASE_URL/search-text-units" \
 **Purpose:** Discover the available date range for an item
 
 **Example:**
+
 ```bash
 GET /items/urn:lex:br:federal:lei:2020;1234;art10/temporal-coverage
 ```
 
 **Response:**
+
 ```json
 {
   "start": "2020-01-15T00:00:00Z",
@@ -666,12 +703,13 @@ def test_version_at_boundary():
 
 ### Quick Reference
 
-| Scenario | Policy | Timestamp Format | Example |
-|----------|--------|------------------|---------|
+
+| Scenario                  | Policy         | Timestamp Format       | Example                |
+| ------------------------- | -------------- | ---------------------- | ---------------------- |
 | General query "on date X" | `SnapshotLast` | `YYYY-MM-DDT00:00:00Z` | `2020-06-15T00:00:00Z` |
-| Compliance at exact time | `PointInTime` | Full timestamp | `2020-06-15T14:30:00Z` |
-| End-of-year snapshot | `SnapshotLast` | `YYYY-12-31T23:59:59Z` | `2020-12-31T23:59:59Z` |
-| Before/after event | `PointInTime` | Event timestamp ± 1s | `2020-06-15T10:00:00Z` |
+| Compliance at exact time  | `PointInTime`  | Full timestamp         | `2020-06-15T14:30:00Z` |
+| End-of-year snapshot      | `SnapshotLast` | `YYYY-12-31T23:59:59Z` | `2020-12-31T23:59:59Z` |
+| Before/after event        | `PointInTime`  | Event timestamp ± 1s  | `2020-06-15T10:00:00Z` |
 
 ---
 

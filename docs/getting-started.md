@@ -4,13 +4,13 @@ This guide will help you get up and running with the Canonical Action API for SA
 
 ## Overview
 
-The SAT-Graph API provides a formal, auditable interface for querying legal documents with temporal and structural awareness. Unlike standard RAG systems, it can distinguish between current and historical versions of laws, understand document hierarchy, and trace legislative changes over time.
+The SAT-Graph API provides a formal, auditable interface for querying documents with temporal and structural awareness. Unlike standard RAG systems, it can distinguish between current and historical versions of laws, understand document hierarchy, and trace changes over time.
 
 ## Prerequisites
 
 - A valid API key (contact system administrator)
 - Understanding of REST APIs and JSON
-- Basic familiarity with legal document structure (helpful but not required)
+- Basic familiarity with document structure (helpful but not required)
 
 ## Authentication
 
@@ -37,7 +37,7 @@ The API provides actions organized into seven functional categories. Understandi
 | **Deterministic Fetch** | Retrieve full objects by ID (deterministic) | `getItem`, `getVersion` |
 | **Structural Navigation** | Traverse hierarchy (deterministic) | `getAncestors`, `enumerateItems` |
 | **Temporal Resolution** | Point-in-time queries (deterministic) | `getValidVersion` |
-| **Causal Analysis** | Trace legislative events (deterministic) | `traceCausality`, `compareVersions` |
+| **Causal Analysis** | Trace events (deterministic) | `traceCausality`, `compareVersions` |
 | **Aggregate Analysis** | Server-side computation (deterministic) | `summarizeImpact` |
 | **Introspection** | Discover capabilities (deterministic) | `getAvailableLanguages` |
 
@@ -49,7 +49,7 @@ The API operates on several key entities:
 
 - **Item**: Timeless, structural entities (documents, articles, concepts)
 - **Version**: Temporal snapshots of Items at specific points in time
-- **Action**: Legislative events that cause changes (amendments, revocations)
+- **Action**: Events that cause changes (amendments, revocations)
 - **Relation**: Connections between entities (citations, successions)
 - **Theme**: Classification system for discovery
 - **TextUnit**: Actual textual content in multiple languages
@@ -74,7 +74,7 @@ The API supports two temporal resolution strategies:
 
 ## Your First API Call
 
-Let's start with a simple search to find legal items:
+Let's start with a simple search to find items:
 
 ```bash
 curl -X POST "https://api.example.com/search-items" \
@@ -158,7 +158,7 @@ Error responses include detailed information:
 ## Next Steps
 
 1. **Explore Examples**: Start with [Fundamental Patterns](examples/00-fundamental-patterns.md) to understand core concepts
-2. **Study Use Cases**: See complete [Use Cases](examples/) for real-world legal analysis scenarios
+2. **Study Use Cases**: See complete [Use Cases](examples/) for real-world analysis scenarios
 3. **Generate a Client**: Use the OpenAPI specification to generate a client SDK
 4. **Read the Full Reference**: Consult the [API Reference](api-reference.md) for complete details
 

@@ -4,7 +4,7 @@ This directory contains the complete OpenAPI 3.0.3 specification for the **SAT-G
 
 ## 📚 Overview
 
-The API provides atomic and composable actions for constructing reliable legal retrieval plans with full temporal awareness and structural navigation capabilities.
+The API provides atomic and composable actions for constructing reliable retrieval plans with full temporal awareness and structural navigation capabilities.
 
 **Related Paper:** [An Ontology-Driven Graph RAG for Legal Norms: A Structural, Temporal, and Deterministic Approach](https://arxiv.org/abs/2508.00827)
 
@@ -19,7 +19,7 @@ The foundational set of actions formally specified in the research paper, focusi
 - **Deterministic Retrieval**: Verifiable, auditable query execution
 - **Structural Navigation**: Hierarchical traversal and thematic classification
 
-This core represents the **minimal set of primitives** required for trustworthy legal retrieval.
+This core represents the **minimal set of primitives** required for trustworthy retrieval.
 
 ### **2. Extended API** (Production Enhancements)
 Additional capabilities designed for production use cases, including:
@@ -48,7 +48,7 @@ specification/
 │   │   ├── TemporalPolicy.yaml
 │   │   └── TimeInterval.yaml
 │   ├── entities/            # Domain entity models
-│   │   ├── Item.yaml        # Legal works/documents
+│   │   ├── Item.yaml        # Works/documents and Work/Document components
 │   │   ├── Version.yaml     # Temporal versions of items
 │   │   ├── Theme.yaml       # Thematic classifications
 │   │   └── TextUnit.yaml    # Searchable text fragments
@@ -121,7 +121,7 @@ specification/
 
 ### 1. **Discovery & Search** 📘 (`/paths/discovery/`)
 Search and resolve entities using semantic, lexical, or structured queries.
-- 📘 `POST /search-items` - Search for legal items
+- 📘 `POST /search-items` - Search for items
 - 📘 `POST /search-text-units` - Hybrid search for text fragments (primary RAG entry point)
 - 📘 `POST /search-themes` - Search thematic classifications
 - 📘 `POST /resolve-item-reference` - Resolve natural language references to items
@@ -147,7 +147,7 @@ Direct retrieval of entities by their unique identifiers.
 - 📘 `POST /text-units/batch-get` - Batch retrieve text units
 
 ### 3. **Navigation** 📘 + 🔷 (`/paths/navigation/`)
-Traverse the structural hierarchy of legal documents.
+Traverse the structural hierarchy of documents.
 - 📘 `GET /items/{itemId}/ancestors` - Get hierarchical ancestors
 - 📘 `GET /items/{itemId}/themes` - Get associated themes
 - 📘 `POST /enumerate-items` - Enumerate items within a scope
@@ -170,7 +170,7 @@ Temporal reasoning and version tracking.
 
 ### 6. **Aggregate Analysis** 📘 (`/paths/aggregate-analysis/`)
 Summary and impact analysis operations.
-- 📘 `POST /analysis/impact-summary` - Summarize legislative impact
+- 📘 `POST /analysis/impact-summary` - Summarize impact
 
 ### 7. **Introspection & Metadata** 📘 (`/paths/introspection/`)
 System metadata and available options.
@@ -186,7 +186,7 @@ System metadata and available options.
 **Option 1: Swagger UI**
 ```bash
 # Install Swagger UI or use online editor
-# Upload openapi.yaml to https://editor.swagger.io/
+# Upload openapi-bundled.yaml to https://editor.swagger.io/
 ```
 
 **Option 2: Redoc**
@@ -284,10 +284,10 @@ Primitive, foundational types used throughout the API:
 
 ### `schemas/entities/`
 Core domain models representing graph nodes:
-- `Item` - Legal works (laws, regulations, etc.)
+- `Item` - Works (laws, regulations, etc.) and Work Components (Title, Article etc.)
 - `Version` - Temporal snapshots of items
 - `Theme` - Hierarchical topic classifications
-- `TextUnit` - Searchable text fragments with embeddings
+- `TextUnit` - Searchable text fragments (and metadata, descriptions, alternative identifiers and names etc.) with embeddings
 
 ### `schemas/relationships/`
 Graph edge models representing connections:
@@ -305,7 +305,7 @@ The **Relation** entity and associated Graph Traversal endpoints represent a pla
 
 ### Purpose
 Enables a **semantic overlay graph** for capturing cross-document relationships that are not strictly structural or causal, such as:
-- Citations between legal documents
+- Citations between documents
 - Succession relationships (one law replacing another)
 - Applicability scopes (one norm applying to another)
 - Conceptual relationships (definitions, references)
@@ -337,7 +337,7 @@ This specification **implements that future vision** as a production-ready exten
 
 ### When to Use
 - **Use Relations for:** Cross-document citations, semantic references, discovered connections
-- **Use Actions for:** Temporal causality, legislative events, version transitions
+- **Use Actions for:** Temporal causality, events, version transitions
 - **Use Item hierarchy for:** Structural containment (articles in chapters, etc.)
 
 ## 📊 Key Design Principles
