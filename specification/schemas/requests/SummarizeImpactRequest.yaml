@@ -1,5 +1,10 @@
 type: object
-description: "Specifies the criteria for summarizing impact."
+description: |
+  Specifies the criteria for summarizing impact.
+
+  **Filter Logic:**
+  - If both `categories` and `item_type_ids` are provided, only items satisfying BOTH conditions are included (AND logic).
+  - All filters (categories, item_type_ids, action_types) are combined with AND logic.
 required:
   - time_interval
 properties:
@@ -16,6 +21,28 @@ properties:
   time_interval:
     $ref: '../core/TimeInterval.yaml'
     description: "A start and end UTC date-time for the analysis window."
+  categories:
+    type: array
+    items:
+      type: string
+      enum:
+        - "Work"
+        - "Work Component"
+        - "Term"
+        - "Concept"
+        - "Named Entity"
+    description: >
+      Optional. Filter impact analysis to only items with the specified categories.
+      When combined with `item_type_ids`, both filters must be satisfied (AND logic).
+    example: ["Work Component"]
+  item_type_ids:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: >
+      Optional. Filter impact analysis to only items of the specified types.
+      When combined with `categories`, both filters must be satisfied (AND logic).
+    example: ["item-type:article", "item-type:paragraph"]
   action_types:
     type: array
     items:
