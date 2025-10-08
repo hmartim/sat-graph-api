@@ -24,6 +24,16 @@ properties:
     $ref: '../core/ID.yaml'
     description: "A unique identifier for this specific version instance."
     example: "urn:lex:br:federal:constituicao:1988@1988-10-05"
+  uri:
+    type: string
+    nullable: true
+    description: >-
+      The canonical URI/URN for this Version. Typically extends the Item's URI
+      with temporal information (e.g., @2020-01-15 suffix). This enables precise
+      temporal citations and version tracking across systems, providing stable
+      identification that persists even if the surrogate ID changes.
+    minLength: 1
+    example: "urn:lex:br:federal:constituicao:1988-10-05;art5@2020-01-15"
   item_id:
     $ref: '../core/ID.yaml'
     description: "The ID of the timeless 'Item' this object is a version of."

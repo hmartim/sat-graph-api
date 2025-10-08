@@ -32,6 +32,16 @@ required:
 properties:
   id:
     $ref: '../core/ID.yaml'
+  uri:
+    type: string
+    nullable: true
+    description: >-
+      The canonical URI/URN for this Item. In legal contexts, typically follows
+      the LEX URN standard (e.g., urn:lex:br:federal:constituicao:1988-10-05;art5).
+      This provides stable identification for citations, external references, and
+      cross-system interoperability, persisting even if the surrogate ID changes.
+    minLength: 1
+    example: "urn:lex:br:federal:constituicao:1988-10-05;art5"
   category:
     type: string
     description: >-

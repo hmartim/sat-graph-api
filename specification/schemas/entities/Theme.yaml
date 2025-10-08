@@ -17,6 +17,15 @@ required:
 properties:
   id:
     $ref: '../core/ID.yaml'
+  uri:
+    type: string
+    nullable: true
+    description: >-
+      The canonical URI/URN for this Theme. This provides a stable, semantic identifier
+      that persists even if the surrogate ID changes. Useful for external references,
+      ontology mapping, cross-system interoperability, and semantic web integration.
+    minLength: 1
+    example: "urn:example:theme:social-security"
   label:
     type: string
     description: "The human-readable name or label for the theme."
