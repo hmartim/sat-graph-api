@@ -315,5 +315,7 @@ paths:
     $ref: './paths/introspection/get-available-languages.yaml'
   /meta/action-types:
     $ref: './paths/introspection/get-supported-action-types.yaml'
+  /meta/item-types:
+    $ref: './paths/introspection/get-item-types.yaml'
   /themes/roots:
     $ref: './paths/introspection/get-root-themes.yaml'

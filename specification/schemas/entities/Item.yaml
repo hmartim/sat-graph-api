@@ -43,12 +43,12 @@ properties:
       - "Work Component"
       - "Term"
       - "Concept"
-      - "NamedEntity"
+      - "Named Entity"
     example: "Work"
   type:
     type: string
     description: >-
-      The specific semantic type of the item. For a 'NamedEntity', this could be
+      The specific semantic type of the item. For a 'Named Entity', this could be
       'Organization', 'Person', etc. For a 'Work', it could be 'Constitution', 'Statute', etc.
     minLength: 1
     example: "Constitution"

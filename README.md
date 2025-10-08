@@ -7,7 +7,7 @@ This repository contains the official OpenAPI 3.x specification for the **SAT-Gr
 
 ## 📄 Academic Publication
 
-This specification is described in the research paper:
+This specification is described in the [research paper](https://arxiv.org/abs/2510.06002):
 
 > "Deterministic Legal Retrieval: An Action API for Querying the SAT-Graph RAG." _arXiv preprint arXiv:2510.06002 (2025).
 

@@ -14,7 +14,7 @@ The SAT-Graph API actions are organized into seven functional categories. Unders
 | **Temporal Resolution** | Point-in-time queries across versions | Fully deterministic | `getValidVersion`, `getVersionsInInterval` |
 | **Causal Analysis** | Event tracing and lineage analysis | Fully deterministic | `traceCausality`, `compareVersions`, `getItemHistory` |
 | **Aggregate Analysis** | Server-side computation and summarization | Fully deterministic | `summarizeImpact`, `getActionsBySource` |
-| **Introspection** | System capabilities and boundary discovery | Fully deterministic | `getAvailableLanguages`, `getTemporalCoverage`, `getSupportedActionTypes` |
+| **Introspection** | System capabilities and boundary discovery | Fully deterministic | `getAvailableLanguages`, `getTemporalCoverage`, `getSupportedActionTypes`, `getItemTypes` |
 
 ## Key Principles
 
@@ -168,6 +168,7 @@ Each step builds upon the previous, creating a transparent, auditable chain.
 | `getTemporalCoverage` | Item ID | TimeInterval | "What date range is available for this item?" |
 | `getAvailableLanguages` | None | List of language codes | "Which languages are supported?" |
 | `getSupportedActionTypes` | None | List of action type strings | "What action types can I filter by?" |
+| `getItemTypes` | Optional: category | List of item type strings | "What item types exist? (e.g., Constitution, Article)" |
 | `getRootThemes` | None | List of root Theme objects | "What are the top-level thematic categories?" |
 
 **Design Note:** These actions enable graceful degradation - agents can validate before querying and provide helpful error messages.
