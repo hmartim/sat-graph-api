@@ -1,0 +1,98 @@
+#
+# OpenAPI 3.x Schema for the 'ItemType' Data Model
+#
+# This file defines the schema for the 'ItemType' object, which represents a
+# classification type within the SAT-Graph taxonomy. ItemTypes form a poly-hierarchical
+# taxonomy (e.g., "Article" is a child of "Work Component" and can have children
+# like "Paragraph" and "Section") and serve as a formal type system for Items.
+#
+type: object
+description: >
+  Represents a classification type in the Item taxonomy. ItemTypes form a poly-hierarchical
+  structure that defines the formal type system for Items. For example, in the legal domain,
+  "Article" is a type of "Work Component" that can contain "Paragraphs" and "Sections".
+
+  ItemTypes enable:
+  - Validation of Item hierarchies (e.g., an Article can only contain Paragraphs)
+  - Rich metadata about types (icons, levels, constraints)
+  - Multilingual descriptions via associated TextUnits (using aspects like 'description', 'summary')
+  - Discovery and navigation of the type system
+required:
+  - id
+  - label
+  - category
+properties:
+  id:
+    $ref: '../core/ID.yaml'
+    description: >-
+      The unique identifier for this ItemType. May be a surrogate ID (auto-generated)
+      or a semantic identifier.
+    example: "item-type:123456"
+  uri:
+    type: string
+    nullable: true
+    description: >-
+      The canonical URI/URN for this ItemType. This provides a stable, semantic identifier
+      that persists even if the surrogate ID changes. Useful for external references,
+      exports, and semantic web integration.
+    minLength: 1
+    example: "urn:lex:type:article"
+  label:
+    type: string
+    description: "The human-readable name or label for this type."
+    minLength: 1
+    example: "Article"
+  category:
+    type: string
+    description: >-
+      The architectural category that this type belongs to. This provides a high-level
+      classification that groups related types.
+    minLength: 1
+    enum:
+      - "Work"
+      - "Work Component"
+      - "Term"
+      - "Concept"
+      - "Named Entity"
+    example: "Work Component"
+  parent:
+    type: array
+    nullable: true
+    description: >-
+      An optional list of IDs of broader types in the taxonomy. An ItemType can have
+      multiple parents to support poly-hierarchical classification (e.g., "Legal Provision"
+      might be both a "Work Component" and a "Normative Content").
+    items:
+      $ref: '../core/ID.yaml'
+    example:
+      - "item-type:work-component"
+  children:
+    type: array
+    nullable: true
+    description: >-
+      An optional list of IDs of more specific types in the taxonomy. For example,
+      "Article" might have children "Paragraph", "Section", "Sole Paragraph".
+    items:
+      $ref: '../core/ID.yaml'
+    example:
+      - "item-type:paragraph"
+      - "item-type:section"
+      - "item-type:sole-paragraph"
+  metadata:
+    $ref: '../core/JSON.yaml'
+    nullable: true
+    description: >-
+      A flexible field for any valid JSON data. Used for storing type-specific properties
+      such as validation rules, UI hints, structural constraints, or other domain-specific
+      attributes.
+
+      Examples:
+      - Validation rules: which types can contain which other types
+      - UI hints: icons, colors, display order
+      - Structural constraints: max depth, numbering schemes
+      - Legal semantics: normative weight, citation formats
+    example:
+      level: 2
+      icon: "📄"
+      allowed_children: ["paragraph", "section"]
+      numbering_scheme: "sequential"

@@ -27,7 +27,7 @@ description: >
 required:
   - id
   - category
-  - type
+  - type_id
   - label
 properties:
   id:
@@ -45,13 +45,16 @@ properties:
       - "Concept"
       - "Named Entity"
     example: "Work"
-  type:
-    type: string
+  type_id:
+    $ref: '../core/ID.yaml'
     description: >-
-      The specific semantic type of the item. For a 'Named Entity', this could be
-      'Organization', 'Person', etc. For a 'Work', it could be 'Constitution', 'Statute', etc.
-    minLength: 1
-    example: "Constitution"
+      The unique identifier of the ItemType that classifies this item. This references
+      an ItemType entity that defines the formal type within the taxonomy (e.g.,
+      "Constitution", "Article", "Paragraph").
+
+      The ItemType taxonomy enables validation, navigation, and rich metadata about
+      type relationships and constraints.
+    example: "item-type:123456"
   label:
     type: string
     description: "The human-readable label or title for the item."

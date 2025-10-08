@@ -64,7 +64,8 @@ The API design is guided by three principles to ensure trustworthiness:
 The following diagram provides a comprehensive overview of the core data models that constitute the SAT-Graph entities and their relationships.
 At the heart of this architecture is a strict separation of concerns that distinguishes the timeless structural layer from the temporal, causal, and textual layers:
 
-* **Theme**: A classification system for discovery.
+* **Theme**: A classification system for discovery. Themes form a poly-hierarchical taxonomy for organizing Items by topic or subject matter.
+* **ItemType**: The type taxonomy system. ItemTypes form a poly-hierarchical classification that defines the formal type system for Items (e.g., Constitution, Article, Paragraph), enabling validation, navigation, and rich metadata about structural relationships.
 * **Item**: The timeless, conceptual anchor. It represents the abstract identity of any entity in the knowledge graph, from a whole document (Work) to a single paragraph (Work Component) or a concept (Concept) or a concrete entity.
 * **Version**: The temporal snapshot. Each Version represents the state and structure of an Item during a specific time interval.
 * **Action**: The causal engine. A first-class entity that represents the event that causes state transitions, terminating an old Version and producing a new one.

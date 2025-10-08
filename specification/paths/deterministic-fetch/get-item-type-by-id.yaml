@@ -1,0 +1,46 @@
+get:
+  tags:
+    - "Deterministic Fetch Actions"
+  summary: "Retrieves a single ItemType by its unique ID."
+  operationId: "getItemType"
+  description: |
+    Fetches the full `ItemType` object given its unique identifier.
+
+    ### Discussion
+    This is a deterministic fetch operation that returns complete ItemType data,
+    including its position in the taxonomy (parents and children), metadata, and
+    the canonical URI/URN if available.
+
+    This endpoint is essential for:
+    - Validating item hierarchies (checking if a type can contain another)
+    - Displaying type information in UIs
+    - Building type-aware editors and forms
+    - Understanding the type system structure
+
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: typeId
+      in: path
+      required: true
+      description: "The unique ID of the ItemType to retrieve."
+      schema:
+        $ref: '#/components/schemas/ID'
+      example: "item-type:123456"
+
+  responses:
+    '200':
+      description: "Successfully retrieved the ItemType object."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ItemType'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'
+    '404':
+      $ref: '#/components/responses/NotFound'

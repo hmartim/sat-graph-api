@@ -74,6 +74,8 @@ components:
       $ref: './schemas/entities/Version.yaml'
     Theme:
       $ref: './schemas/entities/Theme.yaml'
+    ItemType:
+      $ref: './schemas/entities/ItemType.yaml'
     TextUnit:
       $ref: './schemas/entities/TextUnit.yaml'
 
@@ -243,6 +245,8 @@ paths:
     $ref: './paths/deterministic-fetch/get-relation-by-id.yaml'
   /themes/{themeId}:
     $ref: './paths/deterministic-fetch/get-theme-by-id.yaml'
+  /item-types/{typeId}:
+    $ref: './paths/deterministic-fetch/get-item-type-by-id.yaml'
   /text-units/{textUnitId}:
     $ref: './paths/deterministic-fetch/get-text-unit-by-id.yaml'
   /versions/{versionId}:
@@ -317,5 +321,7 @@ paths:
     $ref: './paths/introspection/get-supported-action-types.yaml'
   /meta/item-types:
     $ref: './paths/introspection/get-item-types.yaml'
+  /item-types/roots:
+    $ref: './paths/introspection/get-root-item-types.yaml'
   /themes/roots:
     $ref: './paths/introspection/get-root-themes.yaml'

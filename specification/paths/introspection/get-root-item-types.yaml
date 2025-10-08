@@ -1,0 +1,61 @@
+get:
+  tags:
+    - "Introspection & Metadata Actions"
+  summary: "Gets the root nodes of the ItemType taxonomy."
+  operationId: "getRootItemTypes"
+  description: |
+    Retrieves a list of all `ItemType` objects that are at the root of the type taxonomy
+    (i.e., types that have no parents within their category).
+
+    ### Discussion
+    This is the primary action for exploring the ItemType taxonomy. It provides an efficient
+    entry point to the type system, allowing clients to render the top-level types and then
+    "lazy-load" sub-trees by fetching children as needed.
+
+    **Use Cases:**
+    - Build cascading type selectors in UIs (select category → show root types → expand children)
+    - Understand the top-level structure of the type system
+    - Initialize type navigation interfaces
+    - Generate documentation of the type hierarchy
+
+    The optional `category` parameter allows filtering to only root types within a specific
+    architectural category (e.g., only root types for "Work" or "Work Component").
+
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: category
+      in: query
+      required: false
+      description: |
+        Optional. Filter root types to only those in a specific category.
+
+        Valid values: `Work`, `Work Component`, `Term`, `Concept`, `Named Entity`.
+
+        When omitted, returns root types across all categories.
+      schema:
+        type: string
+        enum:
+          - "Work"
+          - "Work Component"
+          - "Term"
+          - "Concept"
+          - "Named Entity"
+      example: "Work Component"
+
+  responses:
+    '200':
+      description: "A list of root ItemType objects, optionally filtered by category."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ItemType'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'

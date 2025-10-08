@@ -9,7 +9,7 @@ The SAT-Graph API actions are organized into seven functional categories. Unders
 | Category | Purpose | Determinism | Examples |
 |----------|---------|-------------|----------|
 | **Discovery & Search** | Probabilistic entry points for finding entities | Non-deterministic | `searchItems`, `resolveItemReference`, `searchTextUnits`, `searchThemes` |
-| **Deterministic Fetch** | ID-based retrieval of full data objects | Fully deterministic | `getItem`, `getTheme`, `getVersion`, `getAction` |
+| **Deterministic Fetch** | ID-based retrieval of full data objects | Fully deterministic | `getItem`, `getItemType`, `getTheme`, `getVersion`, `getAction` |
 | **Structural Navigation** | Hierarchy traversal and context retrieval | Fully deterministic | `getAncestors`, `enumerateItems`, `getItemContext` |
 | **Temporal Resolution** | Point-in-time queries across versions | Fully deterministic | `getValidVersion`, `getVersionsInInterval` |
 | **Causal Analysis** | Event tracing and lineage analysis | Fully deterministic | `traceCausality`, `compareVersions`, `getItemHistory` |
@@ -169,6 +169,7 @@ Each step builds upon the previous, creating a transparent, auditable chain.
 | `getAvailableLanguages` | None | List of language codes | "Which languages are supported?" |
 | `getSupportedActionTypes` | None | List of action type strings | "What action types can I filter by?" |
 | `getItemTypes` | Optional: category | List of item type strings | "What item types exist? (e.g., Constitution, Article)" |
+| `getRootItemTypes` | Optional: category | List of root ItemType objects | "What are the root types in the taxonomy?" |
 | `getRootThemes` | None | List of root Theme objects | "What are the top-level thematic categories?" |
 
 **Design Note:** These actions enable graceful degradation - agents can validate before querying and provide helpful error messages.
