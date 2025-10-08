@@ -9,13 +9,14 @@ This repository contains the official OpenAPI 3.x specification for the **SAT-Gr
 
 This specification is described in the research paper:
 
-> "Deterministic Legal Retrieval: An Action API for Querying the SAT-Graph RAG." _arXiv preprint arXiv:XXXX.XXXXX_ (2025).
+> "Deterministic Legal Retrieval: An Action API for Querying the SAT-Graph RAG." _arXiv preprint arXiv:2510.06002 (2025).
 
 **Status:** This is a **formal specification**, not a reference implementation. The implementation is ongoing as part of the SAT-Graph ecosystem.
 
 ### Related Work
 
 This API builds upon:
+
 - **[SAT-Graph RAG](https://arxiv.org/abs/2505.00039)** - The knowledge graph substrate
 - **[LRMoo Ontology](https://arxiv.org/abs/2506.07853)** - Temporal modeling framework for legal resources
 
@@ -69,7 +70,6 @@ At the heart of this architecture is a strict separation of concerns that distin
 * **Action**: The causal engine. A first-class entity that represents the event that causes state transitions, terminating an old Version and producing a new one.
 * **Relation**: 🔷 *Extended API* - Models semantic relationships between entities (e.g., citations, references, dependencies). Part of the production extensions beyond the canonical core.
 * **TextUnit**: The concrete textual content. This flexible object holds the text for any entity in any language, enabling the "multi-aspect retrieval" strategy where, beyond text segments, even metadata, alternative identifiers and names, and descriptions are searchable.
-
 * ![Data Models](imgs/SATGraphModels.png)
 
 For a detailed definition of each field and property, please refer to the individual schema files in the /specification/schemas/ directory.
@@ -82,9 +82,9 @@ This API is designed to serve data from multiple, distinct providers in a unifie
 
 A Datasource represents the system or institution where an entity (`Item`, `Theme`, etc.) originates. For example, in a legal context, datasources could include:
 
-*   `datasource_Senate`: Data curated and provided by the Federal Senate.
-*   `datasource_Chamber`: Data from the Chamber of Deputies.
-*   `datasource_SupremeCourt`: Jurisprudence data from the Supreme Federal Court.
+* `datasource_Senate`: Data curated and provided by the Federal Senate.
+* `datasource_Chamber`: Data from the Chamber of Deputies.
+* `datasource_SupremeCourt`: Jurisprudence data from the Supreme Federal Court.
 
 Or it can be an internal system of each institution.
 
@@ -92,8 +92,8 @@ Or it can be an internal system of each institution.
 
 Access to the API is governed by these Datasources. Each consumer's API Key is granted access to a specific set of one or more Datasources. This has two major implications for how you use the API:
 
-1.  **Implicit Filtering (Security):** Every request you make is automatically and securely filtered to only include results from the Datasources your API Key has been granted. It is impossible to access data from a Datasource you are not authorized for.
-2.  **Explicit Filtering (Flexibility):** For consumers with access to multiple Datasources, most search functions include an optional `datasources` parameter. You can use this to narrow your search to a specific subset of your granted Datasources, providing more targeted results.
+1. **Implicit Filtering (Security):** Every request you make is automatically and securely filtered to only include results from the Datasources your API Key has been granted. It is impossible to access data from a Datasource you are not authorized for.
+2. **Explicit Filtering (Flexibility):** For consumers with access to multiple Datasources, most search functions include an optional `datasources` parameter. You can use this to narrow your search to a specific subset of your granted Datasources, providing more targeted results.
 
 #### Authentication
 
@@ -107,6 +107,7 @@ Authorization: YOUR_API_KEY
 ## 📚 Documentation
 
 ### Quick Links
+
 - **📖 [Technical Specification Documentation](./specification/README.md)** - Detailed API architecture, endpoint categories, and technical guides
 - **🚀 [Getting Started Guide](./docs/getting-started.md)** - Step-by-step guide for first-time users
 - **🗂️ [Action Categories](./docs/ACTION_CATEGORIES.md)** - Complete taxonomy of all API actions with workflow patterns
@@ -131,18 +132,20 @@ You can explore the API specification using any OpenAPI 3 compatible tool.
 **To use with Swagger Editor, you need a bundled single-file version:**
 
 1. **Generate locally:**
+
    ```bash
    cd specification
    npm install
    npm run bundle
    ```
-   Upload the generated `openapi-bundled.yaml` to Swagger Editor.
 
+   Upload the generated `openapi-bundled.yaml` to Swagger Editor.
 2. **Download from GitHub Releases** (recommended for end users):
+
    - Each release includes a pre-generated `openapi-bundled.yaml` file
    - No need to install Node.js or run scripts
-
 3. **Use tools that support multi-file specs:**
+
    - **[Stoplight Studio](https://stoplight.io/studio/)** (Desktop app)
    - **[VS Code OpenAPI Extension](https://marketplace.visualstudio.com/items?itemName=42Crunch.vscode-openapi)**
    - **[ReDoc](https://redocly.github.io/redoc/)** with Redocly CLI

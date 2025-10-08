@@ -362,7 +362,7 @@ When modifying the specification:
 ## 📖 Further Reading
 
 - [OpenAPI 3.0.3 Specification](https://spec.openapis.org/oas/v3.0.3)
-- [SAT-Graph Paper on arXiv](https://arxiv.org/abs/2508.00827)
+- [SAT-Graph Paper on arXiv](ttps://arxiv.org/abs/2508.00827)
 - [Redocly CLI Documentation](https://redocly.com/docs/cli/)
 - [OpenAPI Generator](https://openapi-generator.tech/)
 
