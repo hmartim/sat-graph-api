@@ -11,7 +11,15 @@
 #
 type: object
 description: >
-  Represents a reified legislative event (e.g., an amendment, a revocation).
+  Represents a reified event (e.g., an amendment, a revocation). 
+   
+  It is important to clarify the scope of "causality" within this framework. 
+  For exemple, in legislative domain, we address the chain of events that determine 
+  the textual validity of a legal provision at a specific point in time 
+  (causality in the textual-documentary world). This is distinct from the legal-dogmatic 
+  concept of causality, which typically refers to the relationship between a real-world 
+  event (the operative fact) and the legal norm that applies to it.
+  
   It is a first-class entity that models a single, auditable causal link,
   connecting the source of a command to its precise effects on the version
   history of an Item.
