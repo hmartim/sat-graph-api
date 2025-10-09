@@ -92,7 +92,7 @@ specification/
     │   └── get-batch-valid-versions.yaml
     ├── navigation/          # Structural traversal (4 endpoints)
     │   ├── enumerate-items.yaml
-    │   ├── get-ancestors.yaml
+    │   ├── get-item-ancestors.yaml
     │   ├── get-item-context.yaml
     │   └── get-themes-for-item.yaml
     ├── graph-traversal/     # Relationship queries (2 endpoints)

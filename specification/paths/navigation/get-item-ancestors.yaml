@@ -2,14 +2,14 @@ get:
   tags:
     - "Structural Navigation Actions"
   summary: "Retrieves the hierarchical ancestors of a single Item."
-  operationId: "getAncestors"
+  operationId: "getItemAncestors"
   description: |
     Navigates the hierarchy upwards from a specific structural `Item` to its parent, grandparent, and so on, up to the root `Work`. This is crucial for retrieving the full contextual path ("breadcrumb") of any given provision.
 
     The returned list is **ordered** from the highest-level ancestor (e.g., a `Title`) down to the immediate parent of the input item. The root `Work` and the item itself are excluded from the list.
 
     ### Discussion
-    This action is the fundamental tool for contextualization. After a search identifies a relevant item, an agent should use `getAncestors` to retrieve its structural path. This allows the generation of richer, context-aware responses, significantly improving the quality and explainability of the final answer.
+    This action is the fundamental tool for contextualization. After a search identifies a relevant item, an agent should use `getItemAncestors` to retrieve its structural path. This allows the generation of richer, context-aware responses, significantly improving the quality and explainability of the final answer.
   security:
     - ApiKeyAuth: [ ]
 

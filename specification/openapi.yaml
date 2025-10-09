@@ -266,7 +266,7 @@ paths:
   # Structural hierarchy traversal operations
   # ---------------------------------------------------------------------------
   /items/{itemId}/ancestors:
-    $ref: './paths/navigation/get-ancestors.yaml'
+    $ref: './paths/navigation/get-item-ancestors.yaml'
   /items/{itemId}/context:
     $ref: './paths/navigation/get-item-context.yaml'
   /items/{itemId}/themes:
@@ -319,8 +319,6 @@ paths:
     $ref: './paths/introspection/get-available-languages.yaml'
   /meta/action-types:
     $ref: './paths/introspection/get-supported-action-types.yaml'
-  /meta/item-types:
-    $ref: './paths/introspection/get-item-types.yaml'
   /item-types/roots:
     $ref: './paths/introspection/get-root-item-types.yaml'
   /themes/roots:

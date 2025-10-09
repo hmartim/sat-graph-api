@@ -512,7 +512,7 @@ GET /versions/urn:lex:...:art10@2020-01-15/text-unit?language=fr
 
 ---
 
-#### getAncestors
+#### getItemAncestors
 
 | Scenario | Status | Error Code | Description |
 |----------|--------|------------|-------------|

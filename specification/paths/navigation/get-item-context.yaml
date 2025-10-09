@@ -7,7 +7,7 @@ get:
     Retrieves the complete, immediate structural context of a single `Item` in one efficient call. This includes its parent, siblings, and direct children.
 
     ### Discussion
-    This is a high-utility, performance-oriented action designed for applications that need to render a contextual view of an item (e.g., a document browser or a table of contents). Replicating this functionality would require multiple, less efficient API calls (`getAncestors`, `enumerateItems`). By providing this as a single, atomic operation, the API dramatically simplifies the logic for common UI and agentic navigation tasks.
+    This is a high-utility, performance-oriented action designed for applications that need to render a contextual view of an item (e.g., a document browser or a table of contents). Replicating this functionality would require multiple, less efficient API calls (`getItemAncestors`, `enumerateItems`). By providing this as a single, atomic operation, the API dramatically simplifies the logic for common UI and agentic navigation tasks.
   security:
     - ApiKeyAuth: [ ]
 

@@ -10,7 +10,7 @@ The SAT-Graph API actions are organized into seven functional categories. Unders
 |----------|---------|-------------|----------|
 | **Discovery & Search** | Probabilistic entry points for finding entities | Non-deterministic | `searchItems`, `resolveItemReference`, `searchTextUnits`, `searchThemes` |
 | **Deterministic Fetch** | ID-based retrieval of full data objects | Fully deterministic | `getItem`, `getItemType`, `getTheme`, `getVersion`, `getAction` |
-| **Structural Navigation** | Hierarchy traversal and context retrieval | Fully deterministic | `getAncestors`, `enumerateItems`, `getItemContext` |
+| **Structural Navigation** | Hierarchy traversal and context retrieval | Fully deterministic | `getItemAncestors`, `enumerateItems`, `getItemContext` |
 | **Temporal Resolution** | Point-in-time queries across versions | Fully deterministic | `getValidVersion`, `getVersionsInInterval` |
 | **Causal Analysis** | Event tracing and lineage analysis | Fully deterministic | `traceCausality`, `compareVersions`, `getItemHistory` |
 | **Aggregate Analysis** | Server-side computation and summarization | Fully deterministic | `summarizeImpact`, `getActionsBySource` |
@@ -33,7 +33,7 @@ Actions are atomic building blocks that can be chained together. A typical workf
 
 1. **Discover** (probabilistic): `resolveItemReference("Article 6")` → returns candidate IDs with confidence scores
 2. **Fetch** (deterministic): `getItem(id)` → returns full Item object
-3. **Navigate** (deterministic): `getAncestors(id)` → returns hierarchical context
+3. **Navigate** (deterministic): `getItemAncestors(id)` → returns hierarchical context
 4. **Resolve** (deterministic): `getValidVersion(id, "2020-01-01")` → returns specific Version
 5. **Retrieve** (deterministic): `getTextForVersion(version_id)` → returns TextUnit
 
@@ -94,7 +94,7 @@ Each step builds upon the previous, creating a transparent, auditable chain.
 | Action | Input | Output | Use Case |
 |--------|-------|--------|----------|
 | `enumerateItems` | Scope (Item IDs or Theme IDs) + depth | List of Item objects | Get all articles in a chapter |
-| `getAncestors` | Item ID | Ordered list of ancestors | Get hierarchical path: Article → Chapter → Title → Work |
+| `getItemAncestors` | Item ID | Ordered list of ancestors | Get hierarchical path: Article → Chapter → Title → Work |
 | `getItemContext` | Item ID | StructuralContext object | Get parent + siblings + children in one call |
 | `getThemesForItem` | Item ID | List of Theme objects | Get all themes classifying an item |
 

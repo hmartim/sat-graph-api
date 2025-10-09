@@ -35,7 +35,7 @@ The API provides actions organized into seven functional categories. Understandi
 |----------|---------|----------|
 | **Discovery & Search** | Find entities using natural language (probabilistic) | `resolveItemReference`, `searchTextUnits` |
 | **Deterministic Fetch** | Retrieve full objects by ID (deterministic) | `getItem`, `getVersion` |
-| **Structural Navigation** | Traverse hierarchy (deterministic) | `getAncestors`, `enumerateItems` |
+| **Structural Navigation** | Traverse hierarchy (deterministic) | `getItemAncestors`, `enumerateItems` |
 | **Temporal Resolution** | Point-in-time queries (deterministic) | `getValidVersion` |
 | **Causal Analysis** | Trace events (deterministic) | `traceCausality`, `compareVersions` |
 | **Aggregate Analysis** | Server-side computation (deterministic) | `summarizeImpact` |
