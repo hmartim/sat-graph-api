@@ -172,7 +172,7 @@ The API actions are organized into logical groups to support complex agentic wor
 
 - **Discovery and Search:** Probabilistic entry points for finding entities based on natural language text, semantic content, or structured filters (e.g., `resolveItemReference`, `searchTextUnits`).
 - **Deterministic Fetch:** Guaranteed retrieval of full data objects using their canonical IDs (e.g., `getItem`, `getValidVersion`).
-- **Structural Navigation:** Actions for traversing the atemporal document hierarchy (e.g., `getAncestors`, `getItemsInScope`).
+- **Structural Navigation:** Actions for traversing the atemporal document hierarchy (e.g., `getItemAncestors`, `getItemsInScope`).
 - **Causal & Lineage Analysis:** Powerful actions for traversing the temporal and causal dimensions of the graph (e.g., `getItemHistory`, `traceCausality`, `summarizeImpact`).
 - **Introspection:** Actions that allow an agent to discover the graph's capabilities and boundaries at runtime (e.g., `getTemporalCoverage`).
 
@@ -190,8 +190,12 @@ If you use this specification or the concepts from our framework in your researc
 
 ```bibtex
 @article{demartim2025satgraphapi,
-  title={Deterministic Legal Retrieval: An Action API for Querying the SAT-Graph RAG},
-  year={2025}
+  author       = {Hudson de Martim},
+  title        = {Deterministic Legal Retrieval: An Action API for Querying the SAT-Graph RAG},
+  year         = {2025},
+  eprint       = {2510.06002},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.AI}
 }
 ```
 
