@@ -59,4 +59,11 @@ properties:
     example:
       - "urn:lex:br:federal:constituicao:1988-10-05!artX"
       - "urn:lex:br:federal:lei:2025-05-14;abc"
+  metadata:
+    $ref: '../core/JSON.yaml'
+    nullable: true
+    description: >-
+      A flexible field for any valid JSON data. Used for storing structured
+      properties of the theme, such as scope, domain-specific attributes, or
+      additional classification information that doesn't fit into other fields.
 
