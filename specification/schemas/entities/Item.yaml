@@ -26,7 +26,6 @@ description: >
   aspect like 'description', 'summary'.
 required:
   - id
-  - category
   - type_id
   - label
 properties:
@@ -42,19 +41,6 @@ properties:
       cross-system interoperability, persisting even if the surrogate ID changes.
     minLength: 1
     example: "urn:lex:br:federal:constituicao:1988-10-05;art5"
-  category:
-    type: string
-    description: >-
-      The architectural class of the item, which defines its fundamental nature.
-      This list can be extended by a concrete implementation.
-    minLength: 1
-    enum:
-      - "Work"
-      - "Work Component"
-      - "Term"
-      - "Concept"
-      - "Named Entity"
-    example: "Work"
   type_id:
     $ref: '../core/ID.yaml'
     description: >-
