@@ -3,8 +3,7 @@ description: |
   The request body for the searchItems operation.
 
   **Filter Logic:**
-  - If both `categories` and `item_type_ids` are provided, only items satisfying BOTH conditions are included (AND logic).
-  - These explicit filters are more efficient than using `item_metadata_filter` for category/type filtering.
+  - The `item_type_ids` filter is more efficient than using `item_metadata_filter` for type filtering.
 properties:
   item_ids:
     type: array
@@ -16,28 +15,12 @@ properties:
     items:
       $ref: '../core/ID.yaml'
     description: "Optional. A list of 'Theme' IDs to expand the search scope."
-  categories:
-    type: array
-    items:
-      type: string
-      enum:
-        - "Work"
-        - "Work Component"
-        - "Term"
-        - "Concept"
-        - "Named Entity"
-    description: >
-      Optional. Filter search results to only items with the specified categories.
-      When combined with `item_type_ids`, both filters must be satisfied (AND logic).
-      More efficient than using `item_metadata_filter` for category filtering.
-    example: ["Work Component"]
   item_type_ids:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: >
-      Optional. Filter search results to only items of the specified types.
-      When combined with `categories`, both filters must be satisfied (AND logic).
+      Optional. Filter search results to only items of the specified types (references to ItemType entities).
       More efficient than using `item_metadata_filter` for type filtering.
     example: ["item-type:article", "item-type:paragraph"]
   item_metadata_filter:

@@ -20,7 +20,6 @@ description: >
 required:
   - id
   - label
-  - category
 properties:
   id:
     $ref: '../core/ID.yaml'
@@ -42,19 +41,6 @@ properties:
     description: "The human-readable name or label for this type."
     minLength: 1
     example: "Article"
-  category:
-    type: string
-    description: >-
-      The architectural category that this type belongs to. This provides a high-level
-      classification that groups related types.
-    minLength: 1
-    enum:
-      - "Work"
-      - "Work Component"
-      - "Term"
-      - "Concept"
-      - "Named Entity"
-    example: "Work Component"
   parent:
     type: array
     nullable: true

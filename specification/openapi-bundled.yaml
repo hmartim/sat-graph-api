@@ -103,7 +103,7 @@ components:
             - '2000-02-14T00:00:00Z'
             - null
     TemporalPolicy:
-      type: string
+      type: string--
       description: |
         Specifies the temporal resolution logic for finding a valid version.
         This is essential for guaranteeing determinism when multiple events occur on the same day.
@@ -294,7 +294,6 @@ components:
       required:
         - id
         - label
-        - category
       properties:
         id:
           $ref: ../core/ID.yaml
@@ -311,17 +310,6 @@ components:
           description: The human-readable name or label for this type.
           minLength: 1
           example: Article
-        category:
-          type: string
-          description: The architectural category that this type belongs to. This provides a high-level classification that groups related types.
-          minLength: 1
-          enum:
-            - Work
-            - Work Component
-            - Term
-            - Concept
-            - Named Entity
-          example: Work Component
         parent:
           type: array
           nullable: true
@@ -526,8 +514,7 @@ components:
         The request body for the searchItems operation.
 
         **Filter Logic:**
-        - If both `categories` and `item_type_ids` are provided, only items satisfying BOTH conditions are included (AND logic).
-        - These explicit filters are more efficient than using `item_metadata_filter` for category/type filtering.
+        - The `item_type_ids` filter is more efficient than using `item_metadata_filter` for type filtering.
       properties:
         item_ids:
           type: array
@@ -539,26 +526,12 @@ components:
           items:
             $ref: ../core/ID.yaml
           description: Optional. A list of 'Theme' IDs to expand the search scope.
-        categories:
-          type: array
-          items:
-            type: string
-            enum:
-              - Work
-              - Work Component
-              - Term
-              - Concept
-              - Named Entity
-          description: |
-            Optional. Filter search results to only items with the specified categories. When combined with `item_type_ids`, both filters must be satisfied (AND logic). More efficient than using `item_metadata_filter` for category filtering.
-          example:
-            - Work Component
         item_type_ids:
           type: array
           items:
             $ref: ../core/ID.yaml
           description: |
-            Optional. Filter search results to only items of the specified types. When combined with `categories`, both filters must be satisfied (AND logic). More efficient than using `item_metadata_filter` for type filtering.
+            Optional. Filter search results to only items of the specified types (references to ItemType entities). More efficient than using `item_metadata_filter` for type filtering.
           example:
             - item-type:article
             - item-type:paragraph
@@ -660,9 +633,7 @@ components:
       description: |
         Specifies the scope and filters for enumerating Item objects.
 
-        **Filter Logic:**
-        - If both `categories` and `item_type_ids` are provided, items must satisfy BOTH conditions (AND logic).
-        - Filters are applied after scope resolution (item_ids/theme_ids/depth).
+        Filters are applied after scope resolution (item_ids/theme_ids/depth).
       properties:
         item_ids:
           type: array
@@ -679,26 +650,12 @@ components:
           description: |
             Controls traversal depth for 'item_ids' scopes. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively. This parameter is ignored for 'theme_ids' scopes.
           default: -1
-        categories:
-          type: array
-          items:
-            type: string
-            enum:
-              - Work
-              - Work Component
-              - Term
-              - Concept
-              - Named Entity
-          description: |
-            Optional. Filter results to only items with the specified categories. When combined with `item_type_ids`, both filters must be satisfied (AND logic).
-          example:
-            - Work Component
         item_type_ids:
           type: array
           items:
             $ref: ../core/ID.yaml
           description: |
-            Optional. Filter results to only items of the specified types (references to ItemType entities). When combined with `categories`, both filters must be satisfied (AND logic).
+            Optional. Filter results to only items of the specified types (references to ItemType entities).
           example:
             - item-type:article
             - item-type:paragraph
@@ -821,8 +778,7 @@ components:
         Specifies the criteria for summarizing impact.
 
         **Filter Logic:**
-        - If both `categories` and `item_type_ids` are provided, only items satisfying BOTH conditions are included (AND logic).
-        - All filters (categories, item_type_ids, action_types) are combined with AND logic.
+        - All filters (item_type_ids, action_types) are combined with AND logic.
       required:
         - time_interval
       properties:
@@ -839,26 +795,12 @@ components:
         time_interval:
           $ref: ../core/TimeInterval.yaml
           description: A start and end UTC date-time for the analysis window.
-        categories:
-          type: array
-          items:
-            type: string
-            enum:
-              - Work
-              - Work Component
-              - Term
-              - Concept
-              - Named Entity
-          description: |
-            Optional. Filter impact analysis to only items with the specified categories. When combined with `item_type_ids`, both filters must be satisfied (AND logic).
-          example:
-            - Work Component
         item_type_ids:
           type: array
           items:
             $ref: ../core/ID.yaml
           description: |
-            Optional. Filter impact analysis to only items of the specified types. When combined with `categories`, both filters must be satisfied (AND logic).
+            Optional. Filter impact analysis to only items of the specified types (references to ItemType entities).
           example:
             - item-type:article
             - item-type:paragraph
@@ -2523,37 +2465,15 @@ paths:
         "lazy-load" sub-trees by fetching children as needed.
 
         **Use Cases:**
-        - Build cascading type selectors in UIs (select category → show root types → expand children)
+        - Build type selectors in UIs and expand children as needed
         - Understand the top-level structure of the type system
         - Initialize type navigation interfaces
         - Generate documentation of the type hierarchy
-
-        The optional `category` parameter allows filtering to only root types within a specific
-        architectural category (e.g., only root types for "Work" or "Work Component").
       security:
         - ApiKeyAuth: []
-      parameters:
-        - name: category
-          in: query
-          required: false
-          description: |
-            Optional. Filter root types to only those in a specific category.
-
-            Valid values: `Work`, `Work Component`, `Term`, `Concept`, `Named Entity`.
-
-            When omitted, returns root types across all categories.
-          schema:
-            type: string
-            enum:
-              - Work
-              - Work Component
-              - Term
-              - Concept
-              - Named Entity
-          example: Work Component
       responses:
         '200':
-          description: A list of root ItemType objects, optionally filtered by category.
+          description: A list of root ItemType objects.
           content:
             application/json:
               schema:
