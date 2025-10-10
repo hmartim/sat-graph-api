@@ -51,8 +51,7 @@ curl -G "$BASE_URL/resolve-item-reference" \
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1",
     "label": "Chapter I - National Tax System",
-    "category": "Work Component",
-    "type": "Chapter",
+    "type_id": "item-type:chapter",
     "confidence": 0.96
   }
 ]
@@ -232,43 +231,33 @@ curl -X POST "$BASE_URL/items/batch-get" \
 [
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art156a",
-    "category": "Work Component",
-    "type": "Article",
+    "type_id": "item-type:article",
     "label": "Article 156-A",
-    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3",
-    "children": []
+    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3"
   },
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art149a",
-    "category": "Work Component",
-    "type": "Article",
+    "type_id": "item-type:article",
     "label": "Article 149-A",
-    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section2",
-    "children": []
+    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section2"
   },
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art156b",
-    "category": "Work Component",
-    "type": "Article",
+    "type_id": "item-type:article",
     "label": "Article 156-B",
-    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3",
-    "children": []
+    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3"
   },
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art156c",
-    "category": "Work Component",
-    "type": "Article",
+    "type_id": "item-type:article",
     "label": "Article 156-C",
-    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3",
-    "children": []
+    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3"
   },
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art153a",
-    "category": "Work Component",
-    "type": "Article",
+    "type_id": "item-type:article",
     "label": "Article 153-A",
-    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section2",
-    "children": []
+    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section2"
   }
 ]
 ```

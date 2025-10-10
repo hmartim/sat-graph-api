@@ -47,8 +47,7 @@ curl -G "$BASE_URL/resolve-item-reference" \
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art227.para4",
     "label": "Article 227, paragraph 4",
-    "category": "Work Component",
-    "type": "Paragraph",
+    "type_id": "item-type:paragraph",
     "confidence": 0.97
   }
 ]
@@ -93,8 +92,6 @@ curl -H "Authorization: $API_KEY" \
     "1996-06-15T00:00:00Z",
     null
   ],
-  "parent": "urn:lex:br:federal:constituicao:1988-10-05;art227",
-  "children": []
 }
 ```
 
@@ -157,8 +154,6 @@ curl -H "Authorization: $API_KEY" \
   "id": "urn:lex:br:federal:emenda.constitucional:1996-06-15;13",
   "item_id": "urn:lex:br:federal:emenda.constitucional:1996-06-15;13",
   "validity_interval": ["1996-06-15T00:00:00Z", null],
-  "parent": null,
-  "children": []
 }
 ```
 
@@ -175,8 +170,6 @@ curl -H "Authorization: $API_KEY" \
   "category": "Work",
   "type": "Constitutional Amendment",
   "label": "Constitutional Amendment No. 13/1996",
-  "parent": null,
-  "children": [],
   "metadata": {
     "jurisdiction": "federal",
     "document_type": "constitutional_amendment"
@@ -217,8 +210,6 @@ curl -H "Authorization: $API_KEY" \
     "1996-06-15T00:00:00Z",
     null
   ],
-  "parent": "urn:lex:br:federal:constituicao:1988-10-05;art227",
-  "children": []
 }
 ```
 

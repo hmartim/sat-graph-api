@@ -103,7 +103,7 @@ components:
             - '2000-02-14T00:00:00Z'
             - null
     TemporalPolicy:
-      type: string--
+      type: string
       description: |
         Specifies the temporal resolution logic for finding a valid version.
         This is essential for guaranteeing determinism when multiple events occur on the same day.
@@ -183,12 +183,6 @@ components:
           $ref: ../core/ID.yaml
           nullable: true
           description: The canonical ID of the single structural parent of this item. This field is primarily relevant for 'Work Component' items to define the document hierarchy. For other categories like 'Concept' or 'Term', it may be used to build a taxonomy.
-        children:
-          type: array
-          nullable: true
-          description: An optional list of canonical IDs for the immediate children of this item. Primarily used to define the document hierarchy for 'Work' and 'Work Component' items.
-          items:
-            $ref: ../core/ID.yaml
         metadata:
           $ref: ../core/JSON.yaml
           nullable: true
@@ -221,18 +215,6 @@ components:
         validity_interval:
           $ref: ../core/TimeInterval.yaml
           description: The time interval during which this version was legally valid.
-        parent:
-          type: array
-          nullable: true
-          description: A list of IDs for the parent 'Version'(s) that include this Version as a component. A Version can have multiple parents because, under the SAT-Graph's aggregation model, an unchanged child Version is reused across multiple subsequent parent Versions. A 'Work' version has no parents.
-          items:
-            $ref: ../core/ID.yaml
-        children:
-          type: array
-          nullable: true
-          description: A list of IDs for the children 'Version's. It is composed by aggregating the most recent valid versions of all its child components, some of which may be newly created while others are reused from previous states.
-          items:
-            $ref: ../core/ID.yaml
         metadata:
           $ref: ../core/JSON.yaml
           nullable: true
@@ -742,6 +724,26 @@ components:
             **Note:** This parameter is a security/scoping feature applied consistently
             across all batch operations, though not specified in the canonical model.
             It filters results to only those from authorized datasources.
+          $ref: ../common/DatasourcesSchema.yaml
+    GetBatchVersionsRequest:
+      type: object
+      description: Specifies the criteria for retrieving a batch of Version objects by their IDs.
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          description: A list of canonical IDs for the Versions to retrieve.
+          items:
+            $ref: ../core/ID.yaml
+          minItems: 1
+          uniqueItems: true
+        datasources:
+          description: |
+            Optional. A list of datasource identifiers to scope the query.
+
+            **Note:** This parameter is a security/scoping feature applied consistently
+            across all batch operations. It filters results to only those from authorized datasources.
           $ref: ../common/DatasourcesSchema.yaml
     GetBatchValidVersionsRequest:
       type: object
@@ -1370,6 +1372,48 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /items/{itemId}/children:
+    get:
+      tags:
+        - Deterministic Fetch Actions
+      summary: Returns the immediate children of a specific Item.
+      operationId: getItemChildren
+      description: |
+        Given an Item ID, this action returns the list of its immediate structural children.
+
+        This is a **deterministic action**: Given the same `itemId`, it will always return
+        the same set of children (the structural hierarchy of Items is stable and timeless).
+
+        This endpoint is designed for efficient structural navigation without loading
+        potentially large child arrays into every Item response. It is particularly useful
+        for items with many children (e.g., articles with numerous paragraphs or incisos).
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          description: The unique identifier of the Item whose children are to be retrieved.
+          schema:
+            $ref: '#/components/schemas/ID'
+      responses:
+        '200':
+          description: Successfully retrieved the children of the Item.
+          content:
+            application/json:
+              schema:
+                type: array
+                description: An array of Item IDs representing the immediate children.
+                items:
+                  $ref: '#/components/schemas/ID'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /relations/{relationId}:
     get:
       tags:
@@ -1538,6 +1582,113 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /versions/{versionId}/children:
+    get:
+      tags:
+        - Deterministic Fetch Actions
+      summary: Returns the immediate structural children of a specific Version.
+      operationId: getVersionChildren
+      description: |
+        Given a Version ID, this action returns the list of its immediate structural children
+        (component Versions that comprise this Version).
+
+        This is a **deterministic action**: Given the same `versionId`, it will always return
+        the same set of children Versions.
+
+        **Temporal Aggregation:** Under the SAT-Graph's aggregation model, a Version is composed
+        by aggregating the most recent valid versions of all its child components at the time
+        of its creation. Some children may be newly created while others are reused from previous
+        states (unchanged components).
+
+        This endpoint is designed for efficient structural navigation without loading potentially
+        large child arrays into every Version response.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: versionId
+          in: path
+          required: true
+          description: The unique identifier of the Version whose children are to be retrieved.
+          schema:
+            $ref: '#/components/schemas/ID'
+      responses:
+        '200':
+          description: Successfully retrieved the children of the Version.
+          content:
+            application/json:
+              schema:
+                type: array
+                description: An array of Version IDs representing the immediate structural children.
+                items:
+                  $ref: '#/components/schemas/ID'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /versions/{versionId}/parent:
+    get:
+      tags:
+        - Deterministic Fetch Actions
+      summary: Returns the structural parent of a specific Version at a given point in time.
+      operationId: getVersionParent
+      description: |
+        Given a Version ID and an optional timestamp, this action returns the ID of the parent
+        Version that contained this Version as a component at that specific point in time.
+
+        This is a **deterministic action**: Given the same `versionId` and `at` timestamp,
+        it will always return the same parent Version ID.
+
+        **Temporal Reuse:** Under the SAT-Graph's aggregation model, an unchanged child Version
+        can be reused by multiple parent Versions over time. For example, an unchanged paragraph
+        may be part of 100+ different Constitution amendment versions. The `at` parameter resolves
+        which parent was valid at a specific moment.
+
+        **Default Behavior:** If the `at` parameter is omitted, returns the parent Version
+        that is currently valid (as of the current system time).
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: versionId
+          in: path
+          required: true
+          description: The unique identifier of the Version whose parent is to be retrieved.
+          schema:
+            $ref: '#/components/schemas/ID'
+        - name: at
+          in: query
+          required: false
+          description: |
+            **Optional.** An ISO 8601 UTC date-time string specifying the point in time
+            for which to resolve the parent Version.
+
+            If omitted, the current system time is used.
+          schema:
+            type: string
+            format: date-time
+          example: '2020-01-15T00:00:00Z'
+      responses:
+        '200':
+          description: Successfully retrieved the parent Version ID.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ID'
+                  - type: object
+                    nullable: true
+                    description: The ID of the parent Version, or null if this is a root Version (Work).
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /items/batch-get:
     post:
       tags:
@@ -1568,6 +1719,51 @@ paths:
                 type: array
                 items:
                   $ref: ../../schemas/entities/Item.yaml
+        '400':
+          $ref: ../../openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ../../openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ../../openapi.yaml#/components/responses/Forbidden
+  /versions/batch-get:
+    post:
+      tags:
+        - Deterministic Fetch Actions
+      summary: Gets a batch of Version objects by their canonical IDs.
+      operationId: getBatchVersions
+      description: |
+        A batch-optimized version of `getVersion`. Given a list of Version IDs, it efficiently
+        retrieves the full data object for each corresponding `Version` in a single request.
+
+        ### Discussion
+        This action is essential for efficiently hydrating multiple Version references, particularly useful when:
+        - Processing Item histories (e.g., retrieving all Versions produced by a series of Actions)
+        - Hydrating children Versions from multiple Items
+        - Exploring causal relationships where Actions reference multiple Versions
+
+        This endpoint prevents the "N+1 query problem" by allowing bulk retrieval in a single call.
+
+        **Note:** This is distinct from `getBatchValidVersions`, which resolves Versions by Item IDs
+        + timestamp. Use `getBatchVersions` when you already have specific Version IDs to hydrate.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        description: The list of Version IDs to retrieve.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../../schemas/requests/GetBatchVersionsRequest.yaml
+      responses:
+        '200':
+          description: |
+            A list of the requested Version objects. The returned list may be shorter than the input list if some IDs were not found or if the consumer lacked permission. The order of the returned versions is not guaranteed to match the input order.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: ../../schemas/entities/Version.yaml
         '400':
           $ref: ../../openapi.yaml#/components/responses/BadRequest
         '401':

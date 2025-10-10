@@ -63,14 +63,6 @@ properties:
       The canonical ID of the single structural parent of this item. This field is
       primarily relevant for 'Work Component' items to define the document hierarchy.
       For other categories like 'Concept' or 'Term', it may be used to build a taxonomy.
-  children:
-    type: array
-    nullable: true
-    description: >-
-      An optional list of canonical IDs for the immediate children of this item.
-      Primarily used to define the document hierarchy for 'Work' and 'Work Component' items.
-    items:
-      $ref: '../core/ID.yaml'
   metadata:
     $ref: '../core/JSON.yaml'
     nullable: true

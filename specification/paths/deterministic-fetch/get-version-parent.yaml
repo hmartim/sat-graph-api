@@ -1,0 +1,57 @@
+get:
+  tags:
+    - "Deterministic Fetch Actions"
+  summary: "Returns the structural parent of a specific Version at a given point in time."
+  operationId: "getVersionParent"
+  description: |
+    Given a Version ID and an optional timestamp, this action returns the ID of the parent
+    Version that contained this Version as a component at that specific point in time.
+
+    This is a **deterministic action**: Given the same `versionId` and `at` timestamp,
+    it will always return the same parent Version ID.
+
+    **Temporal Reuse:** Under the SAT-Graph's aggregation model, an unchanged child Version
+    can be reused by multiple parent Versions over time. For example, an unchanged paragraph
+    may be part of 100+ different Constitution amendment versions. The `at` parameter resolves
+    which parent was valid at a specific moment.
+
+    **Default Behavior:** If the `at` parameter is omitted, returns the parent Version
+    that is currently valid (as of the current system time).
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: versionId
+      in: path
+      required: true
+      description: "The unique identifier of the Version whose parent is to be retrieved."
+      schema:
+        $ref: '#/components/schemas/ID'
+    - name: at
+      in: query
+      required: false
+      description: |
+        **Optional.** An ISO 8601 UTC date-time string specifying the point in time
+        for which to resolve the parent Version.
+
+        If omitted, the current system time is used.
+      schema:
+        type: string
+        format: date-time
+      example: "2020-01-15T00:00:00Z"
+
+  responses:
+    '200':
+      description: "Successfully retrieved the parent Version ID."
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ID'
+              - type: object
+                nullable: true
+                description: "The ID of the parent Version, or null if this is a root Version (Work)."
+    '400': { $ref: '#/components/responses/BadRequest' }
+    '401': { $ref: '#/components/responses/Unauthorized' }
+    '403': { $ref: '#/components/responses/Forbidden' }
+    '404': { $ref: '#/components/responses/NotFound' }

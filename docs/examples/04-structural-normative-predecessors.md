@@ -65,9 +65,7 @@ curl -H "Authorization: $API_KEY" \
   "validity_interval": [
     "2023-03-20T00:00:00Z",
     null
-  ],
-  "parent": "urn:lex:br:federal:lei:2020-01-15;1234",
-  "children": []
+  ]
 }
 ```
 

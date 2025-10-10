@@ -1,0 +1,48 @@
+post:
+  tags:
+    - "Deterministic Fetch Actions"
+  summary: "Gets a batch of Version objects by their canonical IDs."
+  operationId: "getBatchVersions"
+  description: |
+    A batch-optimized version of `getVersion`. Given a list of Version IDs, it efficiently
+    retrieves the full data object for each corresponding `Version` in a single request.
+
+    ### Discussion
+    This action is essential for efficiently hydrating multiple Version references, particularly useful when:
+    - Processing Item histories (e.g., retrieving all Versions produced by a series of Actions)
+    - Hydrating children Versions from multiple Items
+    - Exploring causal relationships where Actions reference multiple Versions
+
+    This endpoint prevents the "N+1 query problem" by allowing bulk retrieval in a single call.
+
+    **Note:** This is distinct from `getBatchValidVersions`, which resolves Versions by Item IDs
+    + timestamp. Use `getBatchVersions` when you already have specific Version IDs to hydrate.
+  security:
+    - ApiKeyAuth: []
+
+  requestBody:
+    description: "The list of Version IDs to retrieve."
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../schemas/requests/GetBatchVersionsRequest.yaml'
+
+  responses:
+    '200':
+      description: >
+        A list of the requested Version objects. The returned list may be shorter than the
+        input list if some IDs were not found or if the consumer lacked permission.
+        The order of the returned versions is not guaranteed to match the input order.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../../schemas/entities/Version.yaml'
+    '400':
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'

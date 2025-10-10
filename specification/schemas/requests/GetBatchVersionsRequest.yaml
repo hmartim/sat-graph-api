@@ -1,0 +1,19 @@
+type: object
+description: "Specifies the criteria for retrieving a batch of Version objects by their IDs."
+required:
+  - ids
+properties:
+  ids:
+    type: array
+    description: "A list of canonical IDs for the Versions to retrieve."
+    items:
+      $ref: '../core/ID.yaml'
+    minItems: 1
+    uniqueItems: true
+  datasources:
+    description: |
+      Optional. A list of datasource identifiers to scope the query.
+
+      **Note:** This parameter is a security/scoping feature applied consistently
+      across all batch operations. It filters results to only those from authorized datasources.
+    $ref: '../common/DatasourcesSchema.yaml'

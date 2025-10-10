@@ -42,8 +42,7 @@ curl -G "$BASE_URL/resolve-item-reference" \
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art6",
     "label": "Article 6",
-    "category": "Work Component",
-    "type": "Article",
+    "type_id": "item-type:article",
     "confidence": 0.98
   }
 ]

@@ -1,0 +1,39 @@
+get:
+  tags:
+    - "Deterministic Fetch Actions"
+  summary: "Returns the immediate children of a specific Item."
+  operationId: "getItemChildren"
+  description: |
+    Given an Item ID, this action returns the list of its immediate structural children.
+
+    This is a **deterministic action**: Given the same `itemId`, it will always return
+    the same set of children (the structural hierarchy of Items is stable and timeless).
+
+    This endpoint is designed for efficient structural navigation without loading
+    potentially large child arrays into every Item response. It is particularly useful
+    for items with many children (e.g., articles with numerous paragraphs or incisos).
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: itemId
+      in: path
+      required: true
+      description: "The unique identifier of the Item whose children are to be retrieved."
+      schema:
+        $ref: '#/components/schemas/ID'
+
+  responses:
+    '200':
+      description: "Successfully retrieved the children of the Item."
+      content:
+        application/json:
+          schema:
+            type: array
+            description: "An array of Item IDs representing the immediate children."
+            items:
+              $ref: '#/components/schemas/ID'
+    '400': { $ref: '#/components/responses/BadRequest' }
+    '401': { $ref: '#/components/responses/Unauthorized' }
+    '403': { $ref: '#/components/responses/Forbidden' }
+    '404': { $ref: '#/components/responses/NotFound' }

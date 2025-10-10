@@ -41,8 +41,7 @@ curl -G "$BASE_URL/resolve-item-reference" \
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art6",
     "label": "Article 6",
-    "category": "Work Component",
-    "type": "Article",
+    "type_id": "item-type:article",
     "confidence": 0.98
   }
 ]
@@ -72,11 +71,13 @@ curl -H "Authorization: $API_KEY" \
   "validity_interval": [
     "1998-02-04T00:00:00Z",
     "2010-09-16T00:00:00Z"
-  ],
-  "parent": "urn:lex:br:federal:constituicao:1988-10-05;tit2.cap2",
-  "children": []
+  ]
 }
 ```
+
+**Note:** To retrieve structural relationships, use dedicated endpoints:
+- `GET /versions/{versionId}/parent?at={timestamp}` - Get parent Version at specific time
+- `GET /versions/{versionId}/children` - Get child Versions
 
 **Agent Logic:**
 ```python

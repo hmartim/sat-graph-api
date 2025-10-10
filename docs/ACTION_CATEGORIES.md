@@ -74,7 +74,12 @@ Each step builds upon the previous, creating a transparent, auditable chain.
 | Action | Input | Output | Use Case |
 |--------|-------|--------|----------|
 | `getItem` | Item ID | Item object | Get full metadata for a specific article |
+| `getItemChildren` | Item ID | Array of child Item IDs | Get immediate structural children of an item |
+| `getVersion` | Version ID | Version object | Get full metadata for a specific version |
+| `getVersionChildren` | Version ID | Array of child Version IDs | Get immediate structural children of a version |
+| `getVersionParent` | Version ID + optional timestamp | Parent Version ID (or null) | Get parent version valid at specific time |
 | `getTheme` | Theme ID | Theme object | Get full theme taxonomy info |
+| `getItemType` | ItemType ID | ItemType object | Get full type taxonomy info |
 | `getAction` | Action ID | Action object | Get details of a specific legislative event |
 | `getValidVersion` | Item ID + timestamp + policy | Version object | Get the version valid on a specific date |
 | `getTextForVersion` | Version ID + language | TextUnit object | Get the canonical text of a specific version |
@@ -183,6 +188,7 @@ For efficiency, the API provides batch-enabled versions of core fetch actions:
 | Batch Action | Equivalent Single Action | Benefit |
 |--------------|-------------------------|---------|
 | `getBatchItems` | `getItem` | Avoid N+1 queries when hydrating multiple IDs |
+| `getBatchVersions` | `getVersion` | Hydrate multiple Versions efficiently (e.g., from history) |
 | `getBatchValidVersions` | `getValidVersion` | Reconstruct point-in-time structure in one call |
 | `getBatchTexts` | `getTextForVersion` | Retrieve multiple version texts efficiently |
 | `getBatchActions` | `getAction` | Hydrate action details from impact summaries |

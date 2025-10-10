@@ -1,0 +1,44 @@
+get:
+  tags:
+    - "Deterministic Fetch Actions"
+  summary: "Returns the immediate structural children of a specific Version."
+  operationId: "getVersionChildren"
+  description: |
+    Given a Version ID, this action returns the list of its immediate structural children
+    (component Versions that comprise this Version).
+
+    This is a **deterministic action**: Given the same `versionId`, it will always return
+    the same set of children Versions.
+
+    **Temporal Aggregation:** Under the SAT-Graph's aggregation model, a Version is composed
+    by aggregating the most recent valid versions of all its child components at the time
+    of its creation. Some children may be newly created while others are reused from previous
+    states (unchanged components).
+
+    This endpoint is designed for efficient structural navigation without loading potentially
+    large child arrays into every Version response.
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: versionId
+      in: path
+      required: true
+      description: "The unique identifier of the Version whose children are to be retrieved."
+      schema:
+        $ref: '#/components/schemas/ID'
+
+  responses:
+    '200':
+      description: "Successfully retrieved the children of the Version."
+      content:
+        application/json:
+          schema:
+            type: array
+            description: "An array of Version IDs representing the immediate structural children."
+            items:
+              $ref: '#/components/schemas/ID'
+    '400': { $ref: '#/components/responses/BadRequest' }
+    '401': { $ref: '#/components/responses/Unauthorized' }
+    '403': { $ref: '#/components/responses/Forbidden' }
+    '404': { $ref: '#/components/responses/NotFound' }

@@ -127,10 +127,11 @@ Retrieves a single Item by its canonical ID.
   "category": "Work",
   "type": "Statute",
   "label": "Statute of Children and Adolescents",
-  "parent": "urn:lex:br:federal:constituicao:1988-10-05",
-  "children": ["urn:lex:br:federal:lei:1990-07-20;8069;art1"]
+  "parent": "urn:lex:br:federal:constituicao:1988-10-05"
 }
 ```
+
+**Note:** To retrieve children, use `GET /items/{itemId}/children`
 
 #### GET /versions/{versionId}
 
@@ -455,7 +456,6 @@ Timeless, structural entities representing documents, articles, concepts, or nam
   "type": "Statute",
   "label": "Statute of Children and Adolescents",
   "parent": "urn:lex:br:federal:constituicao:1988-10-05",
-  "children": ["urn:lex:br:federal:lei:1990-07-20;8069;art1"],
   "metadata": {
     "jurisdiction": "federal",
     "publication_date": "1990-07-20"

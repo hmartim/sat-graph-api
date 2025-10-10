@@ -10,6 +10,16 @@
 # contain the textual content itself. The text is provided by one or more
 # 'TextUnit' objects that link to this Version.
 #
+# IMPLEMENTATION NOTE: While the academic paper's conceptual model includes
+# 'parent' and 'children' properties for didactic clarity, this API specification
+# separates structural navigation into dedicated endpoints for efficiency and
+# correct temporal semantics:
+# - A Version can be reused by multiple parent Versions over time (e.g., an
+#   unchanged paragraph may be part of 100+ brazilian federal Constitution amendment versions)
+# - GET /versions/{versionId}/parent?at={timestamp} returns the contextually
+#   correct parent for a specific point in time
+# - GET /versions/{versionId}/children returns immediate structural children
+#
 type: object
 description: >
   Represents a specific, time-bound version of an Item (a TV/CTV). It captures
@@ -41,25 +51,6 @@ properties:
   validity_interval:
     $ref: '../core/TimeInterval.yaml'
     description: "The time interval during which this version was legally valid."
-  parent:
-    type: array
-    nullable: true
-    description: >-
-      A list of IDs for the parent 'Version'(s) that include this Version as a component.
-      A Version can have multiple parents because, under the SAT-Graph's aggregation model,
-      an unchanged child Version is reused across multiple subsequent parent Versions.
-      A 'Work' version has no parents.
-    items:
-      $ref: '../core/ID.yaml'
-  children:
-    type: array
-    nullable: true
-    description: >-
-      A list of IDs for the children 'Version's. It is composed by
-      aggregating the most recent valid versions of all its child components, some
-      of which may be newly created while others are reused from previous states.
-    items:
-      $ref: '../core/ID.yaml'
   metadata:
     $ref: '../core/JSON.yaml'
     nullable: true

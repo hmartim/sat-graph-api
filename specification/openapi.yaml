@@ -102,6 +102,8 @@ components:
       $ref: './schemas/requests/GetBatchActionsRequest.yaml'
     GetBatchItemsRequest:
       $ref: './schemas/requests/GetBatchItemsRequest.yaml'
+    GetBatchVersionsRequest:
+      $ref: './schemas/requests/GetBatchVersionsRequest.yaml'
     GetBatchValidVersionsRequest:
       $ref: './schemas/requests/GetBatchValidVersionsRequest.yaml'
     SummarizeImpactRequest:
@@ -241,6 +243,8 @@ paths:
     $ref: './paths/deterministic-fetch/get-action-by-id.yaml'
   /items/{itemId}:
     $ref: './paths/deterministic-fetch/get-item-by-id.yaml'
+  /items/{itemId}/children:
+    $ref: './paths/deterministic-fetch/get-item-children.yaml'
   /relations/{relationId}:
     $ref: './paths/deterministic-fetch/get-relation-by-id.yaml'
   /themes/{themeId}:
@@ -251,9 +255,15 @@ paths:
     $ref: './paths/deterministic-fetch/get-text-unit-by-id.yaml'
   /versions/{versionId}:
     $ref: './paths/deterministic-fetch/get-version-by-id.yaml'
+  /versions/{versionId}/children:
+    $ref: './paths/deterministic-fetch/get-version-children.yaml'
+  /versions/{versionId}/parent:
+    $ref: './paths/deterministic-fetch/get-version-parent.yaml'
 
   /items/batch-get:
     $ref: './paths/deterministic-fetch/get-batch-items.yaml'
+  /versions/batch-get:
+    $ref: './paths/deterministic-fetch/get-batch-versions.yaml'
   /versions/batch-valid-at:
     $ref: './paths/deterministic-fetch/get-batch-valid-versions.yaml'
   /actions/batch-get:
