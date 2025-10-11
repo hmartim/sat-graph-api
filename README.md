@@ -100,7 +100,10 @@ Or it can be an internal system of each institution.
 Access to the API is governed by these Datasources. Each consumer's API Key is granted access to a specific set of one or more Datasources. This has two major implications for how you use the API:
 
 1. **Implicit Filtering (Security):** Every request you make is automatically and securely filtered to only include results from the Datasources your API Key has been granted. It is impossible to access data from a Datasource you are not authorized for.
-2. **Explicit Filtering (Flexibility):** For consumers with access to multiple Datasources, most search functions include an optional `datasources` parameter. You can use this to narrow your search to a specific subset of your granted Datasources, providing more targeted results.
+2. **Explicit Filtering (Flexibility):** For consumers with access to multiple Datasources, most endpoints include an optional `datasources` parameter. You can use this to narrow your query to a specific subset of your granted Datasources, providing more targeted results. This includes:
+   - Search and discovery actions (e.g., `searchItems`, `resolveItemReference`)
+   - Introspection endpoints (e.g., `getRootThemes`, `getRootItemTypes`) - useful in federated scenarios where each datasource maintains its own taxonomies
+   - Batch operations (e.g., `getBatchTexts`)
 
 #### Authentication
 

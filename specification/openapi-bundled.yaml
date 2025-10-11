@@ -2653,7 +2653,7 @@ paths:
       operationId: getRootItemTypes
       description: |
         Retrieves a list of all `ItemType` objects that are at the root of the type taxonomy
-        (i.e., types that have no parents within their category).
+        (i.e., types that have no parents).
 
         ### Discussion
         This is the primary action for exploring the ItemType taxonomy. It provides an efficient
@@ -2665,8 +2665,16 @@ paths:
         - Understand the top-level structure of the type system
         - Initialize type navigation interfaces
         - Generate documentation of the type hierarchy
+
+        ### Datasource Filtering
+        Different datasources may maintain their own ItemType taxonomies tailored to their specific
+        document types and organizational structures. The optional `datasources` parameter allows
+        clients to scope the results to specific datasources, which is particularly useful in
+        federated or multi-tenant scenarios where each institution maintains its own type system.
       security:
         - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DatasourcesParameter'
       responses:
         '200':
           description: A list of root ItemType objects.
@@ -2693,8 +2701,13 @@ paths:
 
         ### Discussion
         This is the primary action for an agent or user interface to begin exploring the thematic ontology. It provides an efficient entry point to the taxonomy, allowing a client to render the top-level themes and then "lazy-load" sub-trees by fetching the children of each theme as needed. This approach is highly performant and scalable, avoiding the "N+1 query problem" that would arise from fetching a flat list of all themes.
+
+        ### Datasource Filtering
+        Different datasources may maintain their own thematic taxonomies. The optional `datasources` parameter allows clients to scope the results to specific datasources, which is particularly useful in federated or multi-tenant scenarios.
       security:
         - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DatasourcesParameter'
       responses:
         '200':
           description: A list of the root Theme objects. The list will be empty if no themes are defined.
