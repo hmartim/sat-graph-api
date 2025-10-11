@@ -73,6 +73,12 @@ At the heart of this architecture is a strict separation of concerns that distin
 * **TextUnit**: The concrete textual content. This flexible object holds the text for any entity in any language, enabling the "multi-aspect retrieval" strategy where, beyond text segments, even metadata, alternative identifiers and names, and descriptions are searchable.
 * ![Data Models](imgs/SATGraphModels.png)
 
+**Architectural Note: Unifying Hierarchical Relationships**
+
+A core design decision of the SAT-Graph API is to provide a consistent and predictable interface for navigating all hierarchical structures. While the underlying ontology distinguishes between different semantic types of hierarchy—such as structural composition in Items and Versions (*hasPart/isPartOf*), thematic categorization in Themes (*broader/narrower*), or item type classification (*hasSubclass/isSubclassOf*)—the API deliberately abstracts these into a single, unified pair of properties: `parent` and `children`.
+
+This pragmatic choice simplifies client-side logic, as any tree or graph traversal can be implemented using the same consistent properties, regardless of the entity type. The specific semantic meaning of the hierarchy is implicitly defined by the context of the entity itself (e.g., for a Theme, `parent` represents a broader concept; for an Item, `parent` represents structural containment). This approach prioritizes developer experience and API consistency without sacrificing the semantic richness of the underlying model, which remains intact in the graph's native representation.
+
 For a detailed definition of each field and property, please refer to the individual schema files in the /specification/schemas/ directory.
 
 #### Data Scoping and Datasources
