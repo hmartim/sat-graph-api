@@ -304,4 +304,12 @@ Using structured vocabularies in the `metadata` field transforms it from a gener
 
 ---
 
+## Related Documentation
+
+- **[Scope and Boundaries](SCOPE.md)**: Understand what SAT-Graph does and does not provide (parsing, extraction, implementation)
+- **[README.md](../README.md)**: Overview of SAT-Graph API specification
+- **[OpenAPI Specification](../specification/openapi.yaml)**: Complete API reference
+
+---
+
 *This document is part of the SAT-Graph API specification. For questions or contributions, please see the [main repository](https://github.com/anthropics/sat-graph-api).*
