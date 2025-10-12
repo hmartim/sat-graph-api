@@ -74,3 +74,8 @@ properties:
     description: >-
       A flexible field for any valid JSON data providing more context about the
       action, such as its source of the assertion.
+
+
+      **Best Practice:** Use schema.org vocabularies (e.g., schema.org/LegislationObject)
+      to enable semantic interoperability. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md)
+      for guidance on structuring legislative event metadata.

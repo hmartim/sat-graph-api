@@ -70,7 +70,13 @@ properties:
       A flexible field for any valid JSON data. Used for storing structured,
       atemporal properties of the item, such as jurisdiction, publication data,
       or other domain-specific attributes that don't fit into the other fields.
-      
-      This approach is exemplified in this paper, that proposes a structured 
-      metadata description for legal norm's "Work":
-      [Legal Knowledge Graph Foundations, Part- I: URI-Addressable Abstract Works (LRMoo F1 to schema.org)](https://arxiv.org/abs/2508.00827).
+
+
+      **Best Practice:** Use internationally recognized vocabularies such as schema.org
+      (particularly schema.org/Legislation for legal norms) to enable semantic interoperability
+      and zero-shot understanding by AI agents. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md)
+      for detailed guidance and examples.
+
+
+      This approach is exemplified in:
+      [Legal Knowledge Graph Foundations, Part-I: URI-Addressable Abstract Works (LRMoo F1 to schema.org)](https://arxiv.org/abs/2508.00827).

@@ -188,7 +188,10 @@ components:
           nullable: true
           description: |-
             A flexible field for any valid JSON data. Used for storing structured, atemporal properties of the item, such as jurisdiction, publication data, or other domain-specific attributes that don't fit into the other fields.
-            This approach is exemplified in this paper, that proposes a structured  metadata description for legal norm's "Work": [Legal Knowledge Graph Foundations, Part- I: URI-Addressable Abstract Works (LRMoo F1 to schema.org)](https://arxiv.org/abs/2508.00827).
+
+            **Best Practice:** Use internationally recognized vocabularies such as schema.org (particularly schema.org/Legislation for legal norms) to enable semantic interoperability and zero-shot understanding by AI agents. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md) for detailed guidance and examples.
+
+            This approach is exemplified in: [Legal Knowledge Graph Foundations, Part-I: URI-Addressable Abstract Works (LRMoo F1 to schema.org)](https://arxiv.org/abs/2508.00827).
     Version:
       type: object
       description: |
@@ -218,7 +221,10 @@ components:
         metadata:
           $ref: ../core/JSON.yaml
           nullable: true
-          description: A flexible field for any valid JSON data specific to this version.
+          description: |-
+            A flexible field for any valid JSON data specific to this version.
+
+            **Best Practice:** Use internationally recognized vocabularies such as schema.org to enable semantic interoperability. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md) for guidance on structuring temporal version metadata.
     Theme:
       type: object
       description: |
@@ -267,7 +273,10 @@ components:
         metadata:
           $ref: ../core/JSON.yaml
           nullable: true
-          description: A flexible field for any valid JSON data. Used for storing structured properties of the theme, such as scope, domain-specific attributes, or additional classification information that doesn't fit into other fields.
+          description: |-
+            A flexible field for any valid JSON data. Used for storing structured properties of the theme, such as scope, domain-specific attributes, or additional classification information that doesn't fit into other fields.
+
+            **Best Practice:** Use schema.org vocabularies (e.g., schema.org/DefinedTerm) to enable semantic interoperability. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md) for guidance on structuring thematic metadata.
     ItemType:
       type: object
       description: |
@@ -431,7 +440,10 @@ components:
         metadata:
           $ref: ../core/JSON.yaml
           nullable: true
-          description: A flexible field for any valid JSON data providing more context about the action, such as its source of the assertion.
+          description: |-
+            A flexible field for any valid JSON data providing more context about the action, such as its source of the assertion.
+
+            **Best Practice:** Use schema.org vocabularies (e.g., schema.org/LegislationObject) to enable semantic interoperability. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md) for guidance on structuring legislative event metadata.
     Relation:
       type: object
       description: |
@@ -489,7 +501,10 @@ components:
         metadata:
           $ref: ../core/JSON.yaml
           nullable: true
-          description: A flexible field for any valid JSON data providing more context about the relation, such as its own validity interval or source of the assertion.
+          description: |-
+            A flexible field for any valid JSON data providing more context about the relation, such as its own validity interval or source of the assertion.
+
+            **Best Practice:** Use schema.org vocabularies to enable semantic interoperability. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md) for guidance on structuring relationship metadata.
     SearchItemsRequest:
       type: object
       description: |

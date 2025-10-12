@@ -79,6 +79,8 @@ A core design decision of the SAT-Graph API is to provide a consistent and predi
 
 This pragmatic choice simplifies client-side logic, as any tree or graph traversal can be implemented using the same consistent properties, regardless of the entity type. The specific semantic meaning of the hierarchy is implicitly defined by the context of the entity itself (e.g., for a Theme, `parent` represents a broader concept; for an Item, `parent` represents structural containment). This approach prioritizes developer experience and API consistency without sacrificing the semantic richness of the underlying model, which remains intact in the graph's native representation.
 
+**Metadata Best Practices:** Core entities (Item, Version, Theme, ItemType) include a flexible `metadata` field that accepts any JSON structure. For semantic interoperability and zero-shot AI understanding, we **strongly recommend** using internationally recognized vocabularies such as [schema.org](https://schema.org). See the comprehensive guide: **[Metadata Best Practices](docs/METADATA_BEST_PRACTICES.md)**.
+
 For a detailed definition of each field and property, please refer to the individual schema files in the /specification/schemas/ directory.
 
 #### Data Scoping and Datasources

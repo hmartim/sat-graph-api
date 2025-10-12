@@ -56,3 +56,8 @@ properties:
     nullable: true
     description: >-
       A flexible field for any valid JSON data specific to this version.
+
+
+      **Best Practice:** Use internationally recognized vocabularies such as schema.org
+      to enable semantic interoperability. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md)
+      for guidance on structuring temporal version metadata.

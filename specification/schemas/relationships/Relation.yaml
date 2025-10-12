@@ -67,3 +67,8 @@ properties:
     description: >-
       A flexible field for any valid JSON data providing more context about the
       relation, such as its own validity interval or source of the assertion.
+
+
+      **Best Practice:** Use schema.org vocabularies to enable semantic interoperability.
+      See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md) for guidance
+      on structuring relationship metadata.

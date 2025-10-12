@@ -67,3 +67,8 @@ properties:
       properties of the theme, such as scope, domain-specific attributes, or
       additional classification information that doesn't fit into other fields.
 
+
+      **Best Practice:** Use schema.org vocabularies (e.g., schema.org/DefinedTerm)
+      to enable semantic interoperability. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md)
+      for guidance on structuring thematic metadata.
+
