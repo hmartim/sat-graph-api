@@ -128,6 +128,8 @@ components:
       $ref: './schemas/responses/ImpactReport.yaml'
     TextDiffReport:
       $ref: './schemas/responses/TextDiffReport.yaml'
+    DescendantsResponse:
+      $ref: './schemas/responses/DescendantsResponse.yaml'
 
   # ---------------------------------------------------------------------------
   # Reusable Parameters
@@ -283,6 +285,10 @@ paths:
     $ref: './paths/navigation/get-themes-for-item.yaml'
   /enumerate-items:
     $ref: './paths/navigation/enumerate-items.yaml'
+  /item-types/{itemTypeId}/descendants:
+    $ref: './paths/navigation/get-item-type-descendants.yaml'
+  /themes/{themeId}/descendants:
+    $ref: './paths/navigation/get-theme-descendants.yaml'
 
   # ---------------------------------------------------------------------------
   # Graph Traversal Actions

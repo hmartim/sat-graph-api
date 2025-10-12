@@ -987,6 +987,31 @@ components:
               content_after:
                 type: string
                 description: The content from the second version ('version B'). Empty for deletions.
+    DescendantsResponse:
+      type: object
+      required:
+        - root_id
+        - descendant_ids
+      properties:
+        root_id:
+          $ref: ../core/ID.yaml
+          description: The ID of the root entity (ItemType or Theme) for which descendants were requested.
+        descendant_ids:
+          type: array
+          items:
+            $ref: ../core/ID.yaml
+          description: |-
+            A flat list of all descendant IDs in the taxonomy, including the root_id itself. This list includes all direct children, grandchildren, and deeper descendants.
+            The order is not guaranteed to follow any specific traversal pattern (depth-first or breadth-first). Clients should treat this as an unordered set of IDs.
+            **Use Case:** This list is designed to be passed directly to filter parameters in search or retrieval operations (e.g., `searchItems(type_ids=[...])` or `searchItems(theme_ids=[...])`).
+          example:
+            - item-type:normative-component
+            - item-type:article
+            - item-type:paragraph
+            - item-type:clause
+            - item-type:item
+            - item-type:subitem
+      description: Response containing a flat list of all descendant IDs for a given taxonomy node (ItemType or Theme). Used for hierarchical filtering in search operations.
   parameters:
     DatasourcesParameter:
       name: datasources
@@ -2080,6 +2105,149 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+  /item-types/{itemTypeId}/descendants:
+    get:
+      tags:
+        - Structural Navigation Actions
+      summary: Retrieves all descendant IDs for an ItemType in the taxonomy.
+      operationId: getItemTypeDescendants
+      description: |
+        Returns a flat list of all descendant ItemType IDs for a given ItemType node in the
+        poly-hierarchical taxonomy, including the requested ItemType ID itself.
+
+        ### Use Case: Hierarchical Filtering
+
+        This endpoint is essential for search operations with type-based filtering. When a user
+        specifies a high-level ItemType (e.g., "Normative Component"), the agent needs to include
+        all subtypes (Article, Paragraph, Clause, etc.) in the search filter.
+
+        **Example Workflow:**
+        ```
+        User: "Find all normative components about social security"
+
+        Agent:
+        1. Resolve "normative components" → item_type_id: "normative-component"
+        2. Call getItemTypeDescendants("normative-component")
+           → ["normative-component", "article", "paragraph", "clause", ...]
+        3. Call searchItems(text="social security", type_ids=[...all descendants...])
+        ```
+
+        ### Discussion
+
+        Without this endpoint, agents would need to recursively traverse the taxonomy tree
+        with multiple `getItemType` calls, creating inefficiency and complexity. This single
+        endpoint provides the complete descendant set in one request.
+
+        The returned list is unordered and includes the root ItemType ID itself, making it
+        ready to use directly in filter parameters.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: itemTypeId
+          in: path
+          required: true
+          description: The unique ID of the ItemType whose descendants should be retrieved.
+          schema:
+            $ref: '#/components/schemas/ID'
+          example: item-type:normative-component
+      responses:
+        '200':
+          description: Successfully retrieved all descendant ItemType IDs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DescendantsResponse'
+              example:
+                root_id: item-type:normative-component
+                descendant_ids:
+                  - item-type:normative-component
+                  - item-type:article
+                  - item-type:paragraph
+                  - item-type:clause
+                  - item-type:item
+                  - item-type:subitem
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /themes/{themeId}/descendants:
+    get:
+      tags:
+        - Structural Navigation Actions
+      summary: Retrieves all descendant IDs for a Theme in the taxonomy.
+      operationId: getThemeDescendants
+      description: |
+        Returns a flat list of all descendant Theme IDs for a given Theme node in the
+        poly-hierarchical taxonomy, including the requested Theme ID itself.
+
+        ### Use Case: Hierarchical Thematic Filtering
+
+        This endpoint is essential for search operations with theme-based filtering. When a user
+        specifies a high-level Theme (e.g., "Public Law"), the agent needs to include all
+        sub-themes (Social Security, Tax Law, Administrative Law, etc.) in the search filter.
+
+        **Example Workflow:**
+        ```
+        User: "Find all items about Public Law"
+
+        Agent:
+        1. Resolve "Public Law" → theme_id: "theme:public-law"
+        2. Call getThemeDescendants("theme:public-law")
+           → ["theme:public-law", "theme:social-security", "theme:tax-law", ...]
+        3. Call searchItems(theme_ids=[...all descendants...])
+        ```
+
+        ### Discussion
+
+        Without this endpoint, agents would need to recursively traverse the thematic taxonomy
+        with multiple `getTheme` calls, creating inefficiency and complexity. This single
+        endpoint provides the complete descendant set in one request.
+
+        The returned list is unordered and includes the root Theme ID itself, making it
+        ready to use directly in filter parameters.
+
+        **Note on Poly-Hierarchy:** Since Themes can have multiple parents, the descendant
+        set includes all nodes reachable by following any path downward from the root Theme.
+        This may result in larger sets than expected if the taxonomy has significant overlap.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: themeId
+          in: path
+          required: true
+          description: The unique ID of the Theme whose descendants should be retrieved.
+          schema:
+            $ref: '#/components/schemas/ID'
+          example: theme:public-law
+      responses:
+        '200':
+          description: Successfully retrieved all descendant Theme IDs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DescendantsResponse'
+              example:
+                root_id: theme:public-law
+                descendant_ids:
+                  - theme:public-law
+                  - theme:constitutional-law
+                  - theme:administrative-law
+                  - theme:social-security
+                  - theme:tax-law
+                  - theme:federal-tax
+                  - theme:state-tax
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /entities/{entityId}/related:
     get:
       tags:

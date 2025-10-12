@@ -1,0 +1,76 @@
+get:
+  tags:
+    - "Structural Navigation Actions"
+  summary: "Retrieves all descendant IDs for a Theme in the taxonomy."
+  operationId: "getThemeDescendants"
+  description: |
+    Returns a flat list of all descendant Theme IDs for a given Theme node in the
+    poly-hierarchical taxonomy, including the requested Theme ID itself.
+
+    ### Use Case: Hierarchical Thematic Filtering
+
+    This endpoint is essential for search operations with theme-based filtering. When a user
+    specifies a high-level Theme (e.g., "Public Law"), the agent needs to include all
+    sub-themes (Social Security, Tax Law, Administrative Law, etc.) in the search filter.
+
+    **Example Workflow:**
+    ```
+    User: "Find all items about Public Law"
+
+    Agent:
+    1. Resolve "Public Law" → theme_id: "theme:public-law"
+    2. Call getThemeDescendants("theme:public-law")
+       → ["theme:public-law", "theme:social-security", "theme:tax-law", ...]
+    3. Call searchItems(theme_ids=[...all descendants...])
+    ```
+
+    ### Discussion
+
+    Without this endpoint, agents would need to recursively traverse the thematic taxonomy
+    with multiple `getTheme` calls, creating inefficiency and complexity. This single
+    endpoint provides the complete descendant set in one request.
+
+    The returned list is unordered and includes the root Theme ID itself, making it
+    ready to use directly in filter parameters.
+
+    **Note on Poly-Hierarchy:** Since Themes can have multiple parents, the descendant
+    set includes all nodes reachable by following any path downward from the root Theme.
+    This may result in larger sets than expected if the taxonomy has significant overlap.
+
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: themeId
+      in: path
+      required: true
+      description: "The unique ID of the Theme whose descendants should be retrieved."
+      schema:
+        $ref: '#/components/schemas/ID'
+      example: "theme:public-law"
+
+  responses:
+    '200':
+      description: "Successfully retrieved all descendant Theme IDs."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DescendantsResponse'
+          example:
+            root_id: "theme:public-law"
+            descendant_ids:
+              - "theme:public-law"
+              - "theme:constitutional-law"
+              - "theme:administrative-law"
+              - "theme:social-security"
+              - "theme:tax-law"
+              - "theme:federal-tax"
+              - "theme:state-tax"
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'
+    '404':
+      $ref: '#/components/responses/NotFound'

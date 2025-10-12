@@ -102,8 +102,10 @@ Each step builds upon the previous, creating a transparent, auditable chain.
 | `getItemAncestors` | Item ID | Ordered list of ancestors | Get hierarchical path: Article → Chapter → Title → Work |
 | `getItemContext` | Item ID | StructuralContext object | Get parent + siblings + children in one call |
 | `getThemesForItem` | Item ID | List of Theme objects | Get all themes classifying an item |
+| `getItemTypeDescendants` | ItemType ID | Flat list of descendant ItemType IDs | Get all subtypes of "Normative Component" for filtering |
+| `getThemeDescendants` | Theme ID | Flat list of descendant Theme IDs | Get all sub-themes of "Public Law" for filtering |
 
-**Design Note:** These actions enable context-aware retrieval, essential for legal interpretation.
+**Design Note:** These actions enable context-aware retrieval and hierarchical filtering, essential for legal interpretation and type-based searches.
 
 ---
 
