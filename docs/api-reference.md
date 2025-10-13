@@ -124,10 +124,9 @@ Retrieves a single Item by its canonical ID.
 ```json
 {
   "id": "urn:lex:br:federal:lei:1990-07-20;8069",
-  "category": "Work",
-  "type": "Statute",
+  "type_id": "item-type:statute",
   "label": "Statute of Children and Adolescents",
-  "parent": "urn:lex:br:federal:constituicao:1988-10-05"
+  "parent_id": "urn:lex:br:federal:constituicao:1988-10-05"
 }
 ```
 
@@ -191,12 +190,12 @@ Retrieves the hierarchical ancestors of an Item (parent, grandparent, etc.).
 [
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05",
-    "category": "Work",
+    "type_id": "item-type:constitution",
     "label": "Federal Constitution"
   },
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;tit8",
-    "category": "WorkComponent",
+    "type_id": "item-type:title",
     "label": "Title VIII - Social Order"
   }
 ]
@@ -452,10 +451,9 @@ Timeless, structural entities representing documents, articles, concepts, or nam
 ```json
 {
   "id": "urn:lex:br:federal:lei:1990-07-20;8069",
-  "category": "Work",
-  "type": "Statute",
+  "type_id": "item-type:statute",
   "label": "Statute of Children and Adolescents",
-  "parent": "urn:lex:br:federal:constituicao:1988-10-05",
+  "parent_id": "urn:lex:br:federal:constituicao:1988-10-05",
   "metadata": {
     "jurisdiction": "federal",
     "publication_date": "1990-07-20"

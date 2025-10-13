@@ -56,7 +56,7 @@ properties:
     description: "The human-readable label or title for the item."
     minLength: 1
     example: "Brazilian Constitution of 1988"
-  parent:
+  parent_id:
     $ref: '../core/ID.yaml'
     nullable: true
     description: >-

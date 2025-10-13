@@ -233,31 +233,31 @@ curl -X POST "$BASE_URL/items/batch-get" \
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art156a",
     "type_id": "item-type:article",
     "label": "Article 156-A",
-    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3"
+    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3"
   },
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art149a",
     "type_id": "item-type:article",
     "label": "Article 149-A",
-    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section2"
+    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section2"
   },
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art156b",
     "type_id": "item-type:article",
     "label": "Article 156-B",
-    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3"
+    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3"
   },
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art156c",
     "type_id": "item-type:article",
     "label": "Article 156-C",
-    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3"
+    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3"
   },
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;art153a",
     "type_id": "item-type:article",
     "label": "Article 153-A",
-    "parent": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section2"
+    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section2"
   }
 ]
 ```

@@ -41,7 +41,7 @@ properties:
     description: "The human-readable name or label for this type."
     minLength: 1
     example: "Article"
-  parent:
+  parent_ids:
     type: array
     nullable: true
     description: >-
@@ -52,7 +52,7 @@ properties:
       $ref: '../core/ID.yaml'
     example:
       - "item-type:work-component"
-  children:
+  children_ids:
     type: array
     nullable: true
     description: >-

@@ -694,8 +694,8 @@ POST /items/batch-get
       "id": "urn:lex:br:federal:lei:2020;1234;art10",
       "data": {
         "id": "urn:lex:br:federal:lei:2020;1234;art10",
-        "category": "Work Component",
-        "type": "Article",
+        "type_id": "item-type:article",
+        "label": "Article 10",
         ...
       },
       "status": "success"
@@ -704,8 +704,8 @@ POST /items/batch-get
       "id": "urn:lex:br:federal:lei:2020;5678;art20",
       "data": {
         "id": "urn:lex:br:federal:lei:2020;5678;art20",
-        "category": "Work Component",
-        "type": "Article",
+        "type_id": "item-type:article",
+        "label": "Article 20",
         ...
       },
       "status": "success"

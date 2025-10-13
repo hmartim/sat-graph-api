@@ -32,12 +32,12 @@ required:
 properties:
   id:
     $ref: '../core/ID.yaml'
-    description: "A unique identifier for this specific legislative action."
+    description: "A unique identifier for this specific action."
     example: "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6_cpt"
   type:
     type: string
     description: >-
-      The type of legislative action. The enumerated values represent a baseline
+      The type of action. The enumerated values represent a baseline
       set; a concrete implementation may extend this list.
     enum:
       - "Amendment"

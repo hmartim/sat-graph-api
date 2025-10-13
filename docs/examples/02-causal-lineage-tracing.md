@@ -167,8 +167,7 @@ curl -H "Authorization: $API_KEY" \
 ```json
 {
   "id": "urn:lex:br:federal:emenda.constitucional:1996-06-15;13",
-  "category": "Work",
-  "type": "Constitutional Amendment",
+  "type_id": "item-type:constitutional-amendment",
   "label": "Constitutional Amendment No. 13/1996",
   "metadata": {
     "jurisdiction": "federal",

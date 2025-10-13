@@ -30,7 +30,7 @@ properties:
     type: string
     description: "The human-readable name or label for the theme."
     example: "Social Security"
-  parent:
+  parent_ids:
     type: array
     nullable: true
     description: >-
@@ -40,7 +40,7 @@ properties:
       $ref: '../core/ID.yaml'
     example:
       - "urn:lex:br:federal:tema:direito.publico"
-  children:
+  children_ids:
     type: array
     nullable: true
     description: "An optional list of IDs of more specific themes in the taxonomy."
@@ -49,7 +49,7 @@ properties:
     example:
       - "urn:lex:br:federal:tema:pensoes"
       - "urn:lex:br:federal:tema:saude"
-  members:
+  member_ids:
     type: array
     description: >-
       A list of IDs of the 'Item's that are classified under this theme. The list
