@@ -106,6 +106,8 @@ components:
       $ref: './schemas/requests/GetBatchVersionsRequest.yaml'
     GetBatchValidVersionsRequest:
       $ref: './schemas/requests/GetBatchValidVersionsRequest.yaml'
+    GetBatchTextUnitsRequest:
+      $ref: './schemas/requests/GetBatchTextUnitsRequest.yaml'
     SummarizeImpactRequest:
       $ref: './schemas/requests/SummarizeImpactRequest.yaml'
 

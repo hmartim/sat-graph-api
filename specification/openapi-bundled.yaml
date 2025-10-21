@@ -408,11 +408,11 @@ components:
       properties:
         id:
           $ref: ../core/ID.yaml
-          description: A unique identifier for this specific legislative action.
+          description: A unique identifier for this specific action.
           example: urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6_cpt
         type:
           type: string
-          description: The type of legislative action. The enumerated values represent a baseline set; a concrete implementation may extend this list.
+          description: The type of action. The enumerated values represent a baseline set; a concrete implementation may extend this list.
           enum:
             - Amendment
             - Revocation
@@ -553,52 +553,51 @@ components:
       description: |
         The request body for the searchTextUnits operation.
 
-        **Parameter Modes (Mutually Exclusive):**
+        This endpoint performs **semantic and lexical discovery** within a defined scope. For deterministic fetching of TextUnits by specific Version IDs, use `getBatchTextUnits` instead.
 
-        **Mode 1: Explicit Version Scope**
-        - Use `version_ids` to search within a specific set of versions
-        - `item_ids`, `theme_ids`, and `timestamp` are ignored when `version_ids` is provided
-
-        **Mode 2: Conceptual Scope with Temporal Resolution**
-        - Use `item_ids` and/or `theme_ids` to define scope
+        **Scoping:**
+        - Use `item_ids` and/or `theme_ids` to define the structural or thematic scope
         - Use `timestamp` to constrain temporally (defaults to "now" if omitted)
-        - `version_ids` must be omitted in this mode
+        - If neither `item_ids` nor `theme_ids` is provided, the search applies globally across all accessible data
 
-        You cannot mix `version_ids` with `item_ids`/`theme_ids`/`timestamp`. Choose one mode per request.
+        **Search Queries:**
+        - `semantic_query` for natural language vector search
+        - `lexical_query` for keyword/phrase full-text search
+        - At least one query type should be provided for effective discovery
+
+        **Optional Filters:**
+        - `item_type_ids`: Filter results to only TextUnits from Items of specified types
+        - `metadata_filter`: Apply additional metadata-based filtering
       properties:
-        version_ids:
-          type: array
-          items:
-            $ref: ../core/ID.yaml
-          description: |
-            **Mode 1: Explicit Version Scope**
-            A list of specific Version IDs to search within.
-            When provided, `item_ids`, `theme_ids`, and `timestamp` are ignored.
         item_ids:
           type: array
           items:
             $ref: ../core/ID.yaml
           description: |
-            **Mode 2: Conceptual Scope**
-            A list of Item IDs to define the structural scope.
-            Cannot be used with `version_ids`.
+            Optional. A list of Item IDs to define the structural scope for the search.
+        item_type_ids:
+          type: array
+          items:
+            $ref: ../core/ID.yaml
+          description: |
+            Optional. Filter search results to only TextUnits from Items of the specified types (references to ItemType entities).
+            More efficient than using `metadata_filter` for type-based filtering.
+          example:
+            - item-type:article
+            - item-type:paragraph
         theme_ids:
           type: array
           items:
             $ref: ../core/ID.yaml
           description: |
-            **Mode 2: Conceptual Scope**
-            A list of Theme IDs to define the thematic scope.
-            Cannot be used with `version_ids`.
+            Optional. A list of Theme IDs to define the thematic scope for the search.
         metadata_filter:
           $ref: ../common/MetadataFilter.yaml
         timestamp:
           type: string
           format: date-time
           description: |
-            **Mode 2: Conceptual Scope**
-            A UTC date-time to constrain the search temporally. Defaults to 'now' if omitted.
-            Cannot be used with `version_ids`.
+            Optional. A UTC date-time to constrain the search temporally. Defaults to 'now' if omitted.
         semantic_query:
           type: string
           description: The natural language query string for vector search.
@@ -781,6 +780,45 @@ components:
         policy:
           $ref: ../core/TemporalPolicy.yaml
           description: The temporal resolution policy to apply uniformly to all items.
+        datasources:
+          description: |
+            Optional. A list of datasource identifiers to scope the query.
+
+            **Note:** This parameter is a security/scoping feature applied consistently
+            across all batch operations, though not specified in the canonical model.
+            It filters results to only those from authorized datasources.
+          $ref: ../common/DatasourcesSchema.yaml
+    GetBatchTextUnitsRequest:
+      type: object
+      description: Specifies the criteria for retrieving a batch of TextUnit objects by Version IDs.
+      required:
+        - version_ids
+        - language
+      properties:
+        version_ids:
+          type: array
+          description: A list of identifiers for the Versions of interest.
+          items:
+            $ref: ../core/ID.yaml
+          minItems: 1
+          uniqueItems: true
+        language:
+          type: string
+          description: The language code to retrieve (e.g., 'pt-br', 'en').
+          pattern: ^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$
+          example: pt-br
+        aspects:
+          type: array
+          description: |
+            Optional. A list of textual aspects to retrieve for all Versions
+            (e.g., ["canonical", "summary"]). Defaults to ["canonical"].
+          items:
+            type: string
+          default:
+            - canonical
+          example:
+            - canonical
+            - summary
         datasources:
           description: |
             Optional. A list of datasource identifiers to scope the query.
@@ -1316,12 +1354,19 @@ paths:
       description: |
         Performs a hybrid search to discover `TextUnit` nodes by combining semantic, lexical, and structured criteria, returning a ranked list of the most relevant results. This is the primary, optimized entry point for all standard RAG queries.
 
-        ### Discussion
-        This action's dual-mode design for scoping provides maximum flexibility.
-        - **Conceptual Scope:** The most common mode. The agent defines the "what" (`item_ids`/`theme_ids`) and the "when" (`timestamp`), and the API handles the temporal resolution.
-        - **Explicit Version Scope:** A powerful mode for programmatic workflows where an agent has already identified a specific set of `Version`s and needs to perform a semantic search exclusively within that curated set.
+        ### Scoping
+        Define the search scope using:
+        - `item_ids` and/or `theme_ids` for structural or thematic boundaries
+        - `timestamp` for temporal constraints (defaults to 'now')
+        - Omit all to search globally across accessible data
 
-        The `aspects` parameter enables a truly holistic search, allowing a query to match a `Work`'s 'textual_metadata' just as easily as an `Version`'s 'canonical' text.
+        ### Deterministic Retrieval
+        **Important:** If you already have specific Version IDs and want a deterministic fetch (not a ranked search), use `getBatchTextUnits` instead. That endpoint is optimized for bulk retrieval without search overhead.
+
+        ### Filtering and Aspects
+        Additional optional filters like `item_type_ids` can further narrow results to specific structural components, enabling use cases such as searching only within articles or specific item hierarchies.
+
+        The `aspects` parameter enables a truly holistic search, allowing a query to match a `Work`'s 'textual_metadata' just as easily as a `Version`'s 'canonical' text.
       security:
         - ApiKeyAuth: []
       requestBody:
@@ -1899,47 +1944,12 @@ paths:
       security:
         - ApiKeyAuth: []
       requestBody:
+        description: The criteria for retrieving a batch of TextUnit objects.
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - version_ids
-                - language
-              properties:
-                version_ids:
-                  type: array
-                  description: A list of identifiers for the Versions of interest.
-                  items:
-                    $ref: ../../schemas/core/ID.yaml
-                  minItems: 1
-                  uniqueItems: true
-                language:
-                  type: string
-                  description: The language code to retrieve (e.g., 'pt-br', 'en').
-                  pattern: ^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$
-                  example: pt-br
-                aspects:
-                  type: array
-                  description: |
-                    Optional. A list of textual aspects to retrieve for all Versions
-                    (e.g., ["canonical", "summary"]). Defaults to ["canonical"].
-                  items:
-                    type: string
-                  default:
-                    - canonical
-                  example:
-                    - canonical
-                    - summary
-                datasources:
-                  description: |
-                    Optional. A list of datasource identifiers to scope the query.
-
-                    **Note:** This parameter is a security/scoping feature applied consistently
-                    across all batch operations, though not specified in the canonical model.
-                    It filters results to only those from authorized datasources.
-                  $ref: ../../schemas/common/DatasourcesSchema.yaml
+              $ref: ../../schemas/requests/GetBatchTextUnitsRequest.yaml
       responses:
         '200':
           description: A list of the requested TextUnit objects.

@@ -2,52 +2,49 @@ type: object
 description: |
   The request body for the searchTextUnits operation.
 
-  **Parameter Modes (Mutually Exclusive):**
+  This endpoint performs **semantic and lexical discovery** within a defined scope. For deterministic fetching of TextUnits by specific Version IDs, use `getBatchTextUnits` instead.
 
-  **Mode 1: Explicit Version Scope**
-  - Use `version_ids` to search within a specific set of versions
-  - `item_ids`, `theme_ids`, and `timestamp` are ignored when `version_ids` is provided
-
-  **Mode 2: Conceptual Scope with Temporal Resolution**
-  - Use `item_ids` and/or `theme_ids` to define scope
+  **Scoping:**
+  - Use `item_ids` and/or `theme_ids` to define the structural or thematic scope
   - Use `timestamp` to constrain temporally (defaults to "now" if omitted)
-  - `version_ids` must be omitted in this mode
+  - If neither `item_ids` nor `theme_ids` is provided, the search applies globally across all accessible data
 
-  You cannot mix `version_ids` with `item_ids`/`theme_ids`/`timestamp`. Choose one mode per request.
+  **Search Queries:**
+  - `semantic_query` for natural language vector search
+  - `lexical_query` for keyword/phrase full-text search
+  - At least one query type should be provided for effective discovery
+
+  **Optional Filters:**
+  - `item_type_ids`: Filter results to only TextUnits from Items of specified types
+  - `metadata_filter`: Apply additional metadata-based filtering
 properties:
-  version_ids:
-    type: array
-    items:
-      $ref: '../core/ID.yaml'
-    description: |
-      **Mode 1: Explicit Version Scope**
-      A list of specific Version IDs to search within.
-      When provided, `item_ids`, `theme_ids`, and `timestamp` are ignored.
   item_ids:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: |
-      **Mode 2: Conceptual Scope**
-      A list of Item IDs to define the structural scope.
-      Cannot be used with `version_ids`.
+      Optional. A list of Item IDs to define the structural scope for the search.
+  item_type_ids:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: |
+      Optional. Filter search results to only TextUnits from Items of the specified types (references to ItemType entities).
+      More efficient than using `metadata_filter` for type-based filtering.
+    example: ["item-type:article", "item-type:paragraph"]
   theme_ids:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: |
-      **Mode 2: Conceptual Scope**
-      A list of Theme IDs to define the thematic scope.
-      Cannot be used with `version_ids`.
+      Optional. A list of Theme IDs to define the thematic scope for the search.
   metadata_filter:
     $ref: '../common/MetadataFilter.yaml'
   timestamp:
     type: string
     format: date-time
     description: |
-      **Mode 2: Conceptual Scope**
-      A UTC date-time to constrain the search temporally. Defaults to 'now' if omitted.
-      Cannot be used with `version_ids`.
+      Optional. A UTC date-time to constrain the search temporally. Defaults to 'now' if omitted.
   semantic_query:
     type: string
     description: "The natural language query string for vector search."

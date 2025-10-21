@@ -6,12 +6,19 @@ post:
   description: |
     Performs a hybrid search to discover `TextUnit` nodes by combining semantic, lexical, and structured criteria, returning a ranked list of the most relevant results. This is the primary, optimized entry point for all standard RAG queries.
 
-    ### Discussion
-    This action's dual-mode design for scoping provides maximum flexibility.
-    - **Conceptual Scope:** The most common mode. The agent defines the "what" (`item_ids`/`theme_ids`) and the "when" (`timestamp`), and the API handles the temporal resolution.
-    - **Explicit Version Scope:** A powerful mode for programmatic workflows where an agent has already identified a specific set of `Version`s and needs to perform a semantic search exclusively within that curated set.
+    ### Scoping
+    Define the search scope using:
+    - `item_ids` and/or `theme_ids` for structural or thematic boundaries
+    - `timestamp` for temporal constraints (defaults to 'now')
+    - Omit all to search globally across accessible data
 
-    The `aspects` parameter enables a truly holistic search, allowing a query to match a `Work`'s 'textual_metadata' just as easily as an `Version`'s 'canonical' text.
+    ### Deterministic Retrieval
+    **Important:** If you already have specific Version IDs and want a deterministic fetch (not a ranked search), use `getBatchTextUnits` instead. That endpoint is optimized for bulk retrieval without search overhead.
+
+    ### Filtering and Aspects
+    Additional optional filters like `item_type_ids` can further narrow results to specific structural components, enabling use cases such as searching only within articles or specific item hierarchies.
+
+    The `aspects` parameter enables a truly holistic search, allowing a query to match a `Work`'s 'textual_metadata' just as easily as a `Version`'s 'canonical' text.
 
   security:
     - ApiKeyAuth: []

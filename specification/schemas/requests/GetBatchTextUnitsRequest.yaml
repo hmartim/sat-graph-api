@@ -1,0 +1,35 @@
+type: object
+description: "Specifies the criteria for retrieving a batch of TextUnit objects by Version IDs."
+required:
+  - version_ids
+  - language
+properties:
+  version_ids:
+    type: array
+    description: "A list of identifiers for the Versions of interest."
+    items:
+      $ref: '../core/ID.yaml'
+    minItems: 1
+    uniqueItems: true
+  language:
+    type: string
+    description: "The language code to retrieve (e.g., 'pt-br', 'en')."
+    pattern: "^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$"
+    example: "pt-br"
+  aspects:
+    type: array
+    description: |
+      Optional. A list of textual aspects to retrieve for all Versions
+      (e.g., ["canonical", "summary"]). Defaults to ["canonical"].
+    items:
+      type: string
+    default: ["canonical"]
+    example: ["canonical", "summary"]
+  datasources:
+    description: |
+      Optional. A list of datasource identifiers to scope the query.
+
+      **Note:** This parameter is a security/scoping feature applied consistently
+      across all batch operations, though not specified in the canonical model.
+      It filters results to only those from authorized datasources.
+    $ref: '../common/DatasourcesSchema.yaml'
