@@ -16,9 +16,11 @@ export BASE_URL="https://api.example.com"
 ## Pattern 1: Point-in-Time Retrieval Plan
 
 ### User Query
-_"What was the text of Article 6 of the Constitution in 1999?"_
+
+_"What was the text of Article 6 of the Brazlian Constitution on May 20th, 2001?"_
 
 ### Overview
+
 This fundamental pattern demonstrates how a natural language query is translated into a fully **deterministic and auditable retrieval plan** once the initial probabilistic grounding is complete.
 
 ### Agent Execution Plan
@@ -27,31 +29,33 @@ The agent decomposes this into a clean, sequential plan with the goal of determi
 
 #### Step 1: Ground the Reference
 
-First, resolve the natural language reference to a canonical ID.
+First, resolve the natural language reference to a canonical ID (the agent knows that the text of a article is in its caput).
 
 ```bash
 curl -G "$BASE_URL/resolve-item-reference" \
   -H "Authorization: $API_KEY" \
-  --data-urlencode "reference_text=Article 6 of the Constitution"
+  --data-urlencode "reference_text=Article 6, caput of the Brazilian Constitution"
 ```
 
 **Response:**
+
 ```json
 [
   {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;art6",
-    "label": "Article 6",
-    "type_id": "item-type:article",
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt",
+    "label": "Article 6, caput",
+    "type_id": "item-type:caput",
     "confidence": 0.98
   }
 ]
 ```
 
 **Agent Logic:**
+
 ```python
-candidates = resolve_item_reference(reference_text="Article 6 of the Constitution")
+candidates = resolve_item_reference(reference_text="Article 6, caput of the Brazilian Constitution")
 item_id = candidates[0].id  # Proceed with top candidate
-# item_id = "urn:lex:br:federal:constituicao:1988-10-05;art6"
+# item_id = "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt"
 ```
 
 #### Step 2: Find the Valid Version
@@ -60,34 +64,37 @@ Retrieve the unique historical Version object valid at the target date.
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/items/urn:lex:br:federal:constituicao:1988-10-05;art6/valid-version?timestamp=1999-01-01T12:00:00Z&policy=PointInTime"
+  "$BASE_URL/items/urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt/valid-version?timestamp=2001-05-20T00:00:00Z&policy=PointInTime"
 ```
 
 **Response:**
+
 ```json
 {
-  "id": "urn:lex:br:federal:constituicao:1988-10-05;art6@1998-02-01",
-  "item_id": "urn:lex:br:federal:constituicao:1988-10-05;art6",
+  "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
+  "item_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt",
   "validity_interval": [
-    "1998-02-04T00:00:00Z",
-    "2010-09-16T00:00:00Z"
+    "2000-02-14T00:00:00Z",
+    "2010-02-04T00:00:00Z"
   ]
 }
 ```
 
 **Note:** To retrieve structural relationships, use dedicated endpoints:
+
 - `GET /versions/{versionId}/parent?at={timestamp}` - Get parent Version at specific time
 - `GET /versions/{versionId}/children` - Get child Versions
 
 **Agent Logic:**
+
 ```python
 version = get_valid_version(
     item_id=item_id,
-    timestamp="1999-01-01T12:00:00Z",
+    timestamp="2001-05-20T00:00:00Z",
     temporal_policy="PointInTime"
 )
 version_id = version.id
-# version_id = "urn:lex:br:federal:constituicao:1988-10-05;art6@1998-02-01"
+# version_id = "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
 ```
 
 #### Step 3: Retrieve the Text
@@ -96,21 +103,23 @@ Get the final, correct TextUnit in the desired language.
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/versions/urn:lex:br:federal:constituicao:1988-10-05;art6@1998-02-01/text-unit?language=pt-br"
+  "$BASE_URL/versions/urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt/text-unit?language=pt-br"
 ```
 
 **Response:**
+
 ```json
 {
   "id": "text_unit_abc123",
-  "version_id": "urn:lex:br:federal:constituicao:1988-10-05;art6@1998-02-01",
+  "version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
   "language": "pt-br",
   "aspect": "canonical",
-  "content": "São direitos sociais a educação, a saúde, o trabalho, a moradia, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
+  "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, o trabalho, a moradia, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
 }
 ```
 
 **Agent Logic:**
+
 ```python
 text_unit = get_text_for_version(
     version_id=version_id,
@@ -122,6 +131,7 @@ final_text = text_unit.content
 ### Key Takeaway
 
 This simple chain demonstrates:
+
 - ✅ **Probabilistic → Deterministic:** Only the first step is probabilistic; all subsequent steps are guaranteed
 - ✅ **Auditability:** Every step returns verifiable data with IDs
 - ✅ **Composability:** Three atomic actions compose into a complete workflow
@@ -131,9 +141,11 @@ This simple chain demonstrates:
 ## Pattern 2: Thematic Analysis with Server-Side Aggregation
 
 ### User Query
+
 _"Summarize the evolution of all constitutional provisions related to 'Digital Security' since 2000"_
 
 ### Overview
+
 This pattern demonstrates how the API transforms a potentially massive client-side processing task into a **single, efficient query** using server-side aggregation.
 
 ### Agent Execution Plan
@@ -144,10 +156,11 @@ This pattern demonstrates how the API transforms a potentially massive client-si
 curl -G "$BASE_URL/search-themes" \
   -H "Authorization: $API_KEY" \
   --data-urlencode "semantic_query=Digital Security" \
-  --data-urlencode "top_k=1"
+  --data-urlencode "top_k=5"
 ```
 
 **Response:**
+
 ```json
 [
   {
@@ -162,6 +175,7 @@ curl -G "$BASE_URL/search-themes" \
 ```
 
 **Agent Logic:**
+
 ```python
 themes = search_themes(semantic_query="Digital Security")
 theme_id = themes[0].theme.id
@@ -178,11 +192,13 @@ curl -X POST "$BASE_URL/analysis/impact-summary" \
   -H "Content-Type: application/json" \
   -d '{
     "theme_ids": ["theme_digital_security"],
-    "time_interval": ["2000-01-01T00:00:00Z", "2025-12-31T23:59:59Z"]
+    "time_interval": ["2000-01-01T00:00:00Z", "2025-10-15T23:59:59Z"]
   }'
+# considering 2025-10-15 as today
 ```
 
 **Response:**
+
 ```json
 {
   "total_actions": 12,
@@ -197,18 +213,19 @@ curl -X POST "$BASE_URL/analysis/impact-summary" \
     "..."
   ],
   "affected_items": [
-    "urn:lex:br:federal:constituicao:1988-10-05;art5.inc12",
+    "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12",
     "..."
   ],
-  "time_interval": ["2000-01-01T00:00:00Z", "2025-12-31T23:59:59Z"]
+  "time_interval": ["2000-01-01T00:00:00Z", "2025-10-15T23:59:59Z"]
 }
 ```
 
 **Agent Logic:**
+
 ```python
 report = summarize_impact(
     theme_ids=[theme_id],
-    time_interval=["2000-01-01T00:00:00Z", "2025-12-31T23:59:59Z"]
+    time_interval=["2000-01-01T00:00:00Z", "2025-10-15T23:59:59Z"]
 )
 # Server performs complex aggregation
 ```
@@ -233,11 +250,12 @@ curl -X POST "$BASE_URL/items/batch-get" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "ids": ["urn:lex:br:federal:constituicao:1988-10-05;art5.inc12", "..."]
+    "ids": ["urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12", "..."]
   }'
 ```
 
 **Agent Logic:**
+
 ```python
 # Optional: Hydrate for detailed narrative
 # Note: These calls are independent and can run in parallel
@@ -248,6 +266,7 @@ full_items = get_batch_items(ids=report.affected_items)
 ### Key Takeaway
 
 This pattern demonstrates:
+
 - ✅ **Server-Side Aggregation:** Massive processing task → single API call
 - ✅ **Efficiency:** Avoid N+1 query problem
 - ✅ **Flexibility:** Get aggregate stats first, hydrate details only if needed
@@ -257,9 +276,11 @@ This pattern demonstrates:
 ## Pattern 3: Robustness with Multilingual Fallback
 
 ### User Query
+
 _User prefers Portuguese (pt-BR) but some texts may not be available in that language_
 
 ### Overview
+
 This pattern shows how the API's **atomic nature** enables agents to build **robust and user-friendly behaviors** through graceful fallback strategies.
 
 ### Agent Execution Plan
@@ -276,6 +297,7 @@ curl -H "Authorization: $API_KEY" \
 **Possible Responses:**
 
 **Success Case:**
+
 ```json
 {
   "id": "text_unit_123",
@@ -286,6 +308,7 @@ curl -H "Authorization: $API_KEY" \
 ```
 
 **Failure Case (404):**
+
 ```json
 {
   "code": "TEXT_NOT_FOUND",
@@ -303,6 +326,7 @@ curl -H "Authorization: $API_KEY" \
 ```
 
 **Response:**
+
 ```json
 {
   "id": "text_unit_456",
@@ -315,6 +339,7 @@ curl -H "Authorization: $API_KEY" \
 #### Step 3: Inform User of Substitution
 
 **Agent Logic:**
+
 ```python
 def get_text_with_fallback(version_id, preferred_lang="pt-br", fallback_lang="en"):
     try:
@@ -343,6 +368,7 @@ print(result["content"])
 ```
 
 **User Experience:**
+
 ```
 ⚠️ The requested text was not available in pt-br. Displaying the en version instead.
 
@@ -352,6 +378,7 @@ Text in English...
 ### Key Takeaway
 
 This pattern demonstrates:
+
 - ✅ **Resilience:** Graceful degradation instead of failure
 - ✅ **Transparency:** User is informed about the substitution
 - ✅ **Composability:** Clear separation of concerns enables sophisticated behavior
@@ -362,13 +389,15 @@ This pattern demonstrates:
 
 These three fundamental patterns showcase the power of the SAT-Graph API:
 
-| Pattern | Key Principle | Benefit |
-|---------|--------------|---------|
-| **Point-in-Time Retrieval** | Probabilistic → Deterministic | Auditable, verifiable results |
-| **Thematic Analysis** | Server-Side Aggregation | Massive efficiency gains |
-| **Multilingual Fallback** | Atomic Composability | Robust, user-friendly behaviors |
+
+| Pattern                     | Key Principle                  | Benefit                         |
+| --------------------------- | ------------------------------ | ------------------------------- |
+| **Point-in-Time Retrieval** | Probabilistic → Deterministic | Auditable, verifiable results   |
+| **Thematic Analysis**       | Server-Side Aggregation        | Massive efficiency gains        |
+| **Multilingual Fallback**   | Atomic Composability           | Robust, user-friendly behaviors |
 
 All patterns share common characteristics:
+
 - **Atomic Actions:** Low-level building blocks
 - **Composability:** Combine into complex workflows
 - **Auditability:** Complete trail of IDs and structured data
