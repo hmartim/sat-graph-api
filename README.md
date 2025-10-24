@@ -107,7 +107,7 @@ Access to the API is governed by these Datasources. Each consumer's API Key is g
 2. **Explicit Filtering (Flexibility):** For consumers with access to multiple Datasources, most endpoints include an optional `datasources` parameter. You can use this to narrow your query to a specific subset of your granted Datasources, providing more targeted results. This includes:
    - Search and discovery actions (e.g., `searchItems`, `resolveItemReference`)
    - Introspection endpoints (e.g., `getRootThemes`, `getRootItemTypes`) - useful in federated scenarios where each datasource maintains its own taxonomies
-   - Batch operations (e.g., `getBatchTexts`)
+   - Batch operations (e.g., `getBatchTextUnits`)
 
 #### Authentication
 

@@ -162,7 +162,7 @@ curl -X POST "$BASE_URL/text-units/batch-get" \
 version_ids = [action.produces_version_id for action in history.actions]
 
 # Batch retrieve all texts
-texts = get_batch_texts(
+texts = get_batch_text_units(
     version_ids=version_ids,
     language="pt-br"
 )

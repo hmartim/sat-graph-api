@@ -273,7 +273,7 @@ paths:
   /actions/batch-get:
     $ref: './paths/deterministic-fetch/get-batch-actions.yaml'
   /text-units/batch-get:
-    $ref: './paths/deterministic-fetch/get-batch-texts.yaml'
+    $ref: './paths/deterministic-fetch/get-batch-text-units.yaml'
 
   # ---------------------------------------------------------------------------
   # Navigation Actions

@@ -192,7 +192,7 @@ For efficiency, the API provides batch-enabled versions of core fetch actions:
 | `getBatchItems` | `getItem` | Avoid N+1 queries when hydrating multiple IDs |
 | `getBatchVersions` | `getVersion` | Hydrate multiple Versions efficiently (e.g., from history) |
 | `getBatchValidVersions` | `getValidVersion` | Reconstruct point-in-time structure in one call |
-| `getBatchTexts` | `getTextForVersion` | Retrieve multiple version texts efficiently |
+| `getBatchTextUnits` | `getTextForVersion` | Retrieve multiple version texts efficiently |
 | `getBatchActions` | `getAction` | Hydrate action details from impact summaries |
 
 **Performance Impact:** Batch operations can reduce API calls from O(N) to O(1), providing 10-100x latency improvements for complex queries.

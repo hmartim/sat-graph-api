@@ -710,14 +710,6 @@ components:
             $ref: ../core/ID.yaml
           minItems: 1
           uniqueItems: true
-        datasources:
-          description: |
-            Optional. A list of datasource identifiers to scope the query.
-
-            **Note:** This parameter is a security/scoping feature applied consistently
-            across all batch operations, though not specified in the canonical model.
-            It filters results to only those from authorized datasources.
-          $ref: ../common/DatasourcesSchema.yaml
     GetBatchItemsRequest:
       type: object
       description: Specifies the criteria for retrieving a batch of Item objects.
@@ -731,14 +723,6 @@ components:
             $ref: ../core/ID.yaml
           minItems: 1
           uniqueItems: true
-        datasources:
-          description: |
-            Optional. A list of datasource identifiers to scope the query.
-
-            **Note:** This parameter is a security/scoping feature applied consistently
-            across all batch operations, though not specified in the canonical model.
-            It filters results to only those from authorized datasources.
-          $ref: ../common/DatasourcesSchema.yaml
     GetBatchVersionsRequest:
       type: object
       description: Specifies the criteria for retrieving a batch of Version objects by their IDs.
@@ -752,13 +736,6 @@ components:
             $ref: ../core/ID.yaml
           minItems: 1
           uniqueItems: true
-        datasources:
-          description: |
-            Optional. A list of datasource identifiers to scope the query.
-
-            **Note:** This parameter is a security/scoping feature applied consistently
-            across all batch operations. It filters results to only those from authorized datasources.
-          $ref: ../common/DatasourcesSchema.yaml
     GetBatchValidVersionsRequest:
       type: object
       description: Specifies the criteria for retrieving a batch of valid Version objects.
@@ -780,14 +757,6 @@ components:
         policy:
           $ref: ../core/TemporalPolicy.yaml
           description: The temporal resolution policy to apply uniformly to all items.
-        datasources:
-          description: |
-            Optional. A list of datasource identifiers to scope the query.
-
-            **Note:** This parameter is a security/scoping feature applied consistently
-            across all batch operations, though not specified in the canonical model.
-            It filters results to only those from authorized datasources.
-          $ref: ../common/DatasourcesSchema.yaml
     GetBatchTextUnitsRequest:
       type: object
       description: Specifies the criteria for retrieving a batch of TextUnit objects by Version IDs.
@@ -819,14 +788,6 @@ components:
           example:
             - canonical
             - summary
-        datasources:
-          description: |
-            Optional. A list of datasource identifiers to scope the query.
-
-            **Note:** This parameter is a security/scoping feature applied consistently
-            across all batch operations, though not specified in the canonical model.
-            It filters results to only those from authorized datasources.
-          $ref: ../common/DatasourcesSchema.yaml
     SummarizeImpactRequest:
       type: object
       description: |
@@ -1932,7 +1893,7 @@ paths:
       tags:
         - Deterministic Fetch Actions
       summary: Gets a batch of TextUnit objects by the IDs of their source Versions.
-      operationId: getBatchTexts
+      operationId: getBatchTextUnits
       description: |
         A batch-optimized version of getTextForVersion. Given a list of Version identifiers,
         it efficiently retrieves their corresponding textual content.

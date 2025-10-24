@@ -1,7 +1,7 @@
 post:
   tags: ["Deterministic Fetch Actions"]
   summary: "Gets a batch of TextUnit objects by the IDs of their source Versions."
-  operationId: "getBatchTexts"
+  operationId: "getBatchTextUnits"
   description: |
     A batch-optimized version of getTextForVersion. Given a list of Version identifiers,
     it efficiently retrieves their corresponding textual content.
