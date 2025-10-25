@@ -4,13 +4,13 @@
 
 ## User Query
 
-_"A legal case from 2012 references Article 227, paragraph 4 of the Constitution. Which specific law introduced this paragraph, and is its text still the same today?"_
+_"A legal case from 2022 references Article 6, paragraph 1 of the Brazilian Constitution. Which specific legal norm introduced this paragraph, and is its text still the same today?"_
 
 ## The Challenge
 
 This query has two distinct requirements that are **impossible for standard RAG systems**:
 
-1. ❌ **Historical Provenance:** Determining which specific law introduced a provision
+1. ❌ **Historical Provenance:** Determining which specific legal norm introduced a provision
 2. ❌ **Current Validity:** Confirming with precision that a retrieved text is the most current, valid version
 
 A standard RAG system lacks:
@@ -38,15 +38,15 @@ Both tasks require the canonical identifier for the target item.
 ```bash
 curl -G "$BASE_URL/resolve-item-reference" \
   -H "Authorization: $API_KEY" \
-  --data-urlencode "reference_text=Article 227, paragraph 4 of the Constitution"
+  --data-urlencode "reference_text=Article 6, paragraph 1 of the Brazilian Constitution"
 ```
 
 **Response:**
 ```json
 [
   {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;art227.para4",
-    "label": "Article 227, paragraph 4",
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_par1",
+    "label": "Article 6, paragraph 1",
     "type_id": "item-type:paragraph",
     "confidence": 0.97
   }
@@ -56,10 +56,10 @@ curl -G "$BASE_URL/resolve-item-reference" \
 **Agent Logic:**
 ```python
 candidates = resolve_item_reference(
-    reference_text="Article 227, paragraph 4 of the Constitution"
+    reference_text="Article 6, paragraph 1 of the Brazilian Constitution"
 )
 target_item_id = candidates[0].id
-# target_item_id = "urn:lex:br:federal:constituicao:1988-10-05;art227.para4"
+# target_item_id = "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_par1"
 ```
 
 ---
@@ -76,33 +76,33 @@ target_item_id = candidates[0].id
 
 ### Step A1: Retrieve the Past Version
 
-Get the specific Version that was valid in 2012.
+Get the specific Version that was valid in 2022.
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/items/urn:lex:br:federal:constituicao:1988-10-05;art227.para4/valid-version?timestamp=2012-01-01T12:00:00Z&policy=PointInTime"
+  "$BASE_URL/items/urn:lex:br:federal:constituicao:1988-10-05;1988!art6_par1/valid-version?timestamp=2022-01-01T12:00:00Z&policy=PointInTime"
 ```
 
 **Response:**
 ```json
 {
-  "id": "urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15",
-  "item_id": "urn:lex:br:federal:constituicao:1988-10-05;art227.para4",
+  "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1",
+  "item_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_par1",
   "validity_interval": [
-    "1996-06-15T00:00:00Z",
+    "2021-12-16T00:00:00Z",
     null
-  ],
+  ]
 }
 ```
 
 **Agent Logic:**
 ```python
-version_2012 = get_valid_version(
+version_2022 = get_valid_version(
     item_id=target_item_id,
-    timestamp="2012-01-01T12:00:00Z",
+    timestamp="2022-01-01T12:00:00Z",
     policy="PointInTime"
 )
-# version_2012.id = "urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15"
+# version_2022.id = "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1"
 ```
 
 ### Step A2: Trace Causality to the Source
@@ -111,20 +111,20 @@ Trace this version back to the Action that created it.
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/versions/urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15/causality"
+  "$BASE_URL/versions/urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1/causality"
 ```
 
 **Response:**
 ```json
 {
-  "version_id": "urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15",
+  "version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1",
   "creating_action": {
-    "id": "action_amendment_1996_06_15",
-    "type": "Creation",
-    "date": "1996-06-15T00:00:00Z",
-    "source_version_id": "urn:lex:br:federal:emenda.constitucional:1996-06-15;13",
-    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15",
-    "terminates_version_id": null
+    "id": "action_amendment_2021_...",
+    "type": "Insertion",
+    "date": "2021-12-16T00:00:00Z",
+    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2021-12-16;114@2021-12-16!art1_cpt_alt...",
+    "terminates_version_id": null,
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1"
   },
   "terminating_action": null
 }
@@ -132,47 +132,43 @@ curl -H "Authorization: $API_KEY" \
 
 **Agent Logic:**
 ```python
-causality = trace_causality(version_id=version_2012.id)
+causality = trace_causality(version_id=version_2022.id)
 creating_action = causality.creating_action
 source_law_id = creating_action.source_version_id
-# source_law_id = "urn:lex:br:federal:emenda.constitucional:1996-06-15;13"
+# source_id = "urn:lex:br:federal:emenda.constitucional:2021-12-16;114@2021-12-16!art1_cpt_alt..."
 ```
 
 ### Step A3: Hydrate the Source for Readability
 
-To provide a human-readable answer, hydrate the source law ID to get its full label.
+To provide a human-readable answer, hydrate the source ID to get its full label.
 
 ```bash
 # First, get the Version object
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/versions/urn:lex:br:federal:emenda.constitucional:1996-06-15;13"
+  "$BASE_URL/versions/urn:lex:br:federal:emenda.constitucional:2021-12-16;114@2021-12-16!art1_cpt_alt..."
 ```
 
 **Response:**
 ```json
 {
-  "id": "urn:lex:br:federal:emenda.constitucional:1996-06-15;13",
-  "item_id": "urn:lex:br:federal:emenda.constitucional:1996-06-15;13",
-  "validity_interval": ["1996-06-15T00:00:00Z", null],
+  "id": "urn:lex:br:federal:emenda.constitucional:2021-12-16;114@2021-12-16!art1_cpt_alt...",
+  "item_id": "urn:lex:br:federal:emenda.constitucional:2021-12-16;114!art1_cpt_alt...",
+  "validity_interval": ["2021-12-16T00:00:00Z", null]
 }
 ```
 
 ```bash
 # Then, get the Item to access its label
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/items/urn:lex:br:federal:emenda.constitucional:1996-06-15;13"
+  "$BASE_URL/items/urn:lex:br:federal:emenda.constitucional:2021-12-16;114!art1_cpt_alt..."
 ```
 
 **Response:**
 ```json
 {
-  "id": "urn:lex:br:federal:emenda.constitucional:1996-06-15;13",
-  "type_id": "item-type:constitutional-amendment",
-  "label": "Constitutional Amendment No. 13/1996",
-  "metadata": {
-    "jurisdiction": "federal",
-    "document_type": "constitutional_amendment"
-  }
+  "id": "urn:lex:br:federal:emenda.constitucional:2021-12-16;114!art1_cpt_alt...",
+  "type_id": "item-type:caput",
+  "label": "..."
 }
 ```
 
@@ -182,7 +178,6 @@ curl -H "Authorization: $API_KEY" \
 source_version = get_version(version_id=source_law_id)
 source_item = get_item(item_id=source_version.item_id)
 amending_law_name = source_item.label
-# amending_law_name = "Constitutional Amendment No. 13/1996"
 ```
 
 ---
@@ -197,16 +192,17 @@ Get the version valid as of "now" (current UTC timestamp).
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/items/urn:lex:br:federal:constituicao:1988-10-05;art227.para4/valid-version?timestamp=2025-10-06T10:30:00Z&policy=PointInTime"
+  "$BASE_URL/items/urn:lex:br:federal:constituicao:1988-10-05;1988!art6_par1/valid-version?timestamp=2025-10-06T10:30:00Z&policy=PointInTime"
+  # considering as today
 ```
 
 **Response:**
 ```json
 {
-  "id": "urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15",
-  "item_id": "urn:lex:br:federal:constituicao:1988-10-05;art227.para4",
+  "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1",
+  "item_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_par1",
   "validity_interval": [
-    "1996-06-15T00:00:00Z",
+    "2021-12-16T00:00:00Z",
     null
   ],
 }
@@ -219,7 +215,7 @@ version_current = get_valid_version(
     timestamp="2025-10-06T10:30:00Z",
     policy="PointInTime"
 )
-# version_current.id = "urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15"
+# version_current.id = "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1"
 ```
 
 ### Step B2: Compare Historical and Current Versions
@@ -228,19 +224,19 @@ Check if the text has changed by comparing the two versions.
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/versions/compare?version_id_a=urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15&version_id_b=urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15"
+  "$BASE_URL/versions/compare?version_id_a=urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1&version_id_b=urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1"
 ```
 
 **Response:**
 ```json
 {
   "version_a": {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15",
-    "validity_interval": ["1996-06-15T00:00:00Z", null]
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1",
+    "validity_interval": ["2021-12-16T00:00:00Z", null]
   },
   "version_b": {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15",
-    "validity_interval": ["1996-06-15T00:00:00Z", null]
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1",
+    "validity_interval": ["2021-12-16T00:00:00Z", null]
   },
   "changes": [],
   "summary": "No changes - versions are identical"
@@ -250,7 +246,7 @@ curl -H "Authorization: $API_KEY" \
 **Agent Logic:**
 ```python
 diff_report = compare_versions(
-    version_id_a=version_2012.id,
+    version_id_a=version_2022.id,
     version_id_b=version_current.id
 )
 
@@ -275,7 +271,7 @@ synthesis_data = {
     },
     "task_b": {
         "text_unchanged": text_unchanged,
-        "version_2012_id": version_2012.id,
+        "version_2022_id": version_2022.id,
         "version_current_id": version_current.id
     }
 }
@@ -285,27 +281,27 @@ synthesis_data = {
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/versions/urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15/text-unit?language=pt-br"
+  "$BASE_URL/versions/urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1/text-unit?language=pt-br"
 ```
 
 **Response:**
 ```json
 {
-  "id": "text_unit_227p4",
-  "version_id": "urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15",
+  "id": "text_unit_...",
+  "version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1",
   "language": "pt-br",
   "aspect": "canonical",
-  "content": "The law will punish severely the abuse, violence and sexual exploitation of children and adolescents."
+  "content": "[ Art. 6º ] Parágrafo único. Todo brasileiro em situação de vulnerabilidade social terá direito a uma renda básica familiar, garantida pelo poder público em programa permanente de transferência de renda, cujas normas e requisitos de acesso serão determinados em lei, observada a legislação fiscal e orçamentária."
 }
 ```
 
 ### Generated Response
 
-> "The version of **Article 227, paragraph 4** of the Constitution, valid in 2012, was introduced by **Constitutional Amendment No. 13/1996**, effective on **June 15, 1996**.
+> "The version of **Article 6, paragraph 1** of the Constitution, valid in 2022, was introduced by **Constitutional Amendment No. 114/2021**, effective on **Dec 16, 2021**.
 >
-> A comparison with the current version shows that **the text has not changed** since its creation. Both the 2012 version and today's version are identical (ID: `urn:lex:br:federal:constituicao:1988-10-05;art227.para4@1996-06-15`).
+> A comparison with the current version shows that **the text has not changed** since its creation. Both the 2022 version and today's version are identical (ID: `urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1`).
 >
-> The text reads: _'The law will punish severely the abuse, violence and sexual exploitation of children and adolescents.'_
+> The text reads: _'[ Art. 6º ] Parágrafo único. Todo brasileiro em situação de vulnerabilidade social terá direito a uma renda básica familiar, garantida pelo poder público em programa permanente de transferência de renda, cujas normas e requisitos de acesso serão determinados em lei, observada a legislação fiscal e orçamentária.'_
 >
 > This answer is **precise, verifiable, and causally grounded**—demonstrating how the API enables complete legal audit trails."
 
@@ -342,7 +338,7 @@ Initial Grounding (Sequential):
 
 Parallel Execution (Task A ‖ Task B):
 ├── Task A: Provenance
-│   ├── getValidVersion(2012)
+│   ├── getValidVersion(2022)
 │   ├── traceCausality()
 │   └── getItem() [hydration]
 │
@@ -353,14 +349,6 @@ Parallel Execution (Task A ‖ Task B):
 Synthesis (Sequential):
 └── Combine results + generate answer
 ```
-
----
-
-## Next Steps
-
-- **[Hierarchical Impact Summarization](03-hierarchical-impact-summarization.md)** - Scope-based legislative change analysis
-- **[Structural vs. Normative Predecessors](04-structural-normative-predecessors.md)** - Dual-path disambiguation
-- **[Back to Fundamental Patterns](00-fundamental-patterns.md)** - Review atomic building blocks
 
 ---
 

@@ -35,6 +35,7 @@ First, resolve the natural language reference to a canonical ID (the agent knows
 curl -G "$BASE_URL/resolve-item-reference" \
   -H "Authorization: $API_KEY" \
   --data-urlencode "reference_text=Article 6, caput of the Brazilian Constitution"
+ # Agent knows that the text of a article is in its caput
 ```
 
 **Response:**
@@ -389,7 +390,6 @@ This pattern demonstrates:
 
 These three fundamental patterns showcase the power of the SAT-Graph API:
 
-
 | Pattern                     | Key Principle                  | Benefit                         |
 | --------------------------- | ------------------------------ | ------------------------------- |
 | **Point-in-Time Retrieval** | Probabilistic → Deterministic | Auditable, verifiable results   |
@@ -402,15 +402,6 @@ All patterns share common characteristics:
 - **Composability:** Combine into complex workflows
 - **Auditability:** Complete trail of IDs and structured data
 - **Determinism:** Guaranteed results after initial grounding
-
----
-
-## Next Steps
-
-- **[Point-in-Time Comparison](01-point-in-time-comparison.md)** - Complete use case with causal pinpointing
-- **[Causal Lineage Tracing](02-causal-lineage-tracing.md)** - Legal audit with parallel tasks
-- **[Hierarchical Impact Summarization](03-hierarchical-impact-summarization.md)** - Hierarchical analysis workflow
-- **[Structural vs. Normative Predecessors](04-structural-normative-predecessors.md)** - Dual-path disambiguation
 
 ---
 

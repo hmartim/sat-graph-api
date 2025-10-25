@@ -33,16 +33,17 @@ Ground the query by resolving the textual reference to its canonical identifier.
 ```bash
 curl -G "$BASE_URL/resolve-item-reference" \
   -H "Authorization: $API_KEY" \
-  --data-urlencode "reference_text=Article 6 of the Constitution"
+  --data-urlencode "reference_text=Article 6, caput of the Brazilian Constitution"
+  # Agent knows that the text of a article is in its caput
 ```
 
 **Response:**
 ```json
 [
   {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;art6",
-    "label": "Article 6",
-    "type_id": "item-type:article",
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt",
+    "label": "Article 6, caput",
+    "type_id": "item-type:caput",
     "confidence": 0.98
   }
 ]
@@ -50,9 +51,9 @@ curl -G "$BASE_URL/resolve-item-reference" \
 
 **Agent Logic:**
 ```python
-candidates = resolve_item_reference(reference_text="Article 6 of the Constitution")
+candidates = resolve_item_reference(reference_text="Article 6, caput of the Brazilian Constitution")
 target_item_id = candidates[0].id  # Agent proceeds with top candidate
-# target_item_id = "urn:lex:br:federal:constituicao:1988-10-05;art6"
+# target_item_id = "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt"
 ```
 
 ---
@@ -63,38 +64,38 @@ Fetch the complete, time-ordered history of all legislative events that affected
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/items/urn:lex:br:federal:constituicao:1988-10-05;art6/history"
+  "$BASE_URL/items/urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt/history"
 ```
 
 **Response:**
 ```json
 {
-  "item_id": "urn:lex:br:federal:constituicao:1988-10-05;art6",
+  "item_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt",
   "total_actions": 3,
   "actions": [
     {
-      "id": "action_creation_1988",
-      "type": "Creation",
-      "date": "1988-10-05T00:00:00Z",
-      "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;art6@1988-10-05",
-      "terminates_version_id": null,
-      "source_version_id": "urn:lex:br:federal:constituicao:1988-10-05"
-    },
-    {
-      "id": "action_amendment_2000",
-      "type": "Amendment",
+      "id": "action_amendment_2000_...",
+      "type": "Text_change",
       "date": "2000-02-14T00:00:00Z",
-      "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;art6@2000-02-14",
-      "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;art6@1988-10-05",
-      "source_version_id": "urn:lex:br:federal:emenda.constitucional:2000-02-14;26"
+      "source_version_id": "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt_...",
+      "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt",
+      "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
     },
     {
-      "id": "action_amendment_2010",
-      "type": "Amendment",
-      "date": "2010-09-16T00:00:00Z",
-      "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;art6@2010-09-16",
-      "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;art6@2000-02-14",
-      "source_version_id": "urn:lex:br:federal:emenda.constitucional:2010-09-16;64"
+      "id": "action_amendment_2010_...",
+      "type": "Text_change",
+      "date": "2010-02-04T00:00:00Z",
+      "source_version_id": "urn:lex:br:federal:emenda.constitucional:2010-02-04;64@2010-02-04!art1_cpt_alt_...",
+      "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
+      "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt"
+    },
+    {
+      "id": "action_amendment_2015_...",
+      "type": "Text_change",
+      "date": "2015-09-15T00:00:00Z",
+      "source_version_id": "urn:lex:br:federal:emenda.constitucional:2015-09-15;90@2015-09-15!art1_cpt_alt_...",
+      "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
+      "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt"
     }
   ]
 }
@@ -114,8 +115,8 @@ The agent must find the **first Action** in the history whose resulting text con
 
 To do this efficiently:
 1. Collect all `produces_version_id`s from the history
-2. Make a single `getBatchTexts` call to retrieve all texts at once
-3. Iterate through texts to identify the pivotal Action
+2. Make a single `getBatchTextsUnits` call to retrieve all texts at once
+3. Iterate through texts units to identify the pivotal Action
 
 ```bash
 # Batch retrieve all version texts
@@ -124,9 +125,9 @@ curl -X POST "$BASE_URL/text-units/batch-get" \
   -H "Content-Type: application/json" \
   -d '{
     "version_ids": [
-      "urn:lex:br:federal:constituicao:1988-10-05;art6@1988-10-05",
-      "urn:lex:br:federal:constituicao:1988-10-05;art6@2000-02-14",
-      "urn:lex:br:federal:constituicao:1988-10-05;art6@2010-09-16"
+      "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt"
     ],
     "language": "pt-br"
   }'
@@ -136,22 +137,22 @@ curl -X POST "$BASE_URL/text-units/batch-get" \
 ```json
 [
   {
-    "id": "text_1988",
-    "version_id": "urn:lex:br:federal:constituicao:1988-10-05;art6@1988-10-05",
+    "id": "text_2000_...",
+    "version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
     "language": "pt-br",
-    "content": "São direitos sociais a educação, a saúde, o trabalho, o lazer, a segurança, a previdência social..."
+    "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, o trabalho, a moradia, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
   },
   {
-    "id": "text_2000",
-    "version_id": "urn:lex:br:federal:constituicao:1988-10-05;art6@2000-02-14",
+    "id": "text_2010_...",
+    "version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
     "language": "pt-br",
-    "content": "São direitos sociais a educação, a saúde, o trabalho, a moradia, o lazer, a segurança..."
+    "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, a alimentação, o trabalho, a moradia, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
   },
   {
-    "id": "text_2010",
-    "version_id": "urn:lex:br:federal:constituicao:1988-10-05;art6@2010-09-16",
+    "id": "text_2015_...",
+    "version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt",
     "language": "pt-br",
-    "content": "São direitos sociais a educação, a saúde, a alimentação, o trabalho, a moradia..."
+    "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, a alimentação, o trabalho, a moradia, o transporte, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
   }
 ]
 ```
@@ -174,7 +175,7 @@ for i, text in enumerate(texts):
         pivotal_action = history.actions[i]
         break
 
-# pivotal_action = action_amendment_2000
+# pivotal_action = action_amendment_2000_...
 ```
 
 ---
@@ -185,19 +186,19 @@ The pivotal Action object contains direct references to the state it terminated 
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/versions/compare?version_id_a=urn:lex:br:federal:constituicao:1988-10-05;art6@1988-10-05&version_id_b=urn:lex:br:federal:constituicao:1988-10-05;art6@2000-02-14"
+  "$BASE_URL/versions/compare?version_id_a=urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt&version_id_b=urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
 ```
 
 **Response:**
 ```json
 {
   "version_a": {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;art6@1988-10-05",
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt",
     "validity_interval": ["1988-10-05T00:00:00Z", "2000-02-14T00:00:00Z"]
   },
   "version_b": {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;art6@2000-02-14",
-    "validity_interval": ["2000-02-14T00:00:00Z", "2010-09-16T00:00:00Z"]
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
+    "validity_interval": ["2000-02-14T00:00:00Z", "2010-02-04T00:00:00Z"]
   },
   "changes": [
     {
@@ -242,7 +243,7 @@ synthesis_data = {
     },
     "version_after": {
         "id": version_id_after,
-        "validity_period": "2000-02-14 to 2010-09-16"
+        "validity_period": "2000-02-14 to 2010-02-04"
     },
     "diff_report": diff_report
 }
@@ -252,7 +253,7 @@ synthesis_data = {
 
 ### Generated Response
 
-> "The right to 'housing' (moradia) was introduced into Article 6 by **Constitutional Amendment No. 26/2000**, effective on **February 14, 2000**, which terminated the validity of version `urn:lex:br:federal:constituicao:1988-10-05;art6@1988-10-05` and created version `urn:lex:br:federal:constituicao:1988-10-05;art6@2000-02-14`.
+> "The right to 'housing' (moradia) was introduced into Article 6 by **Constitutional Amendment No. 26/2000**, effective on **February 14, 2000**, which terminated the validity of version `urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt` and created version `urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt`.
 >
 > **Exact Change:** The word 'moradia' (housing) was inserted after 'o trabalho,' (work) in the list of social rights.
 >
@@ -266,7 +267,7 @@ synthesis_data = {
 
 ## Key Takeaways
 
-✅ **Causal Precision:** The API enables pinpointing the exact legislative event
+✅ **Causal Precision:** The API enables pinpointing the exact event
 ✅ **Temporal Accuracy:** Deterministic before/after state identification
 ✅ **Verifiability:** Every claim is backed by canonical IDs and structured data
 ✅ **Efficiency:** Batch operations prevent N+1 query problems
@@ -275,15 +276,6 @@ This workflow demonstrates capabilities **impossible for standard RAG systems**:
 - Causal understanding (linking word introduction to specific amendment)
 - Deterministic versioning (exact before/after states)
 - Auditable trail (every step traceable via IDs)
-
----
-
-## Next Steps
-
-- **[Causal Lineage Tracing](02-causal-lineage-tracing.md)** - Trace legal provenance with parallel tasks
-- **[Hierarchical Impact Summarization](03-hierarchical-impact-summarization.md)** - Analyze hierarchical legislative changes
-- **[Structural vs. Normative Predecessors](04-structural-normative-predecessors.md)** - Dual-path disambiguation
-- **[Back to Fundamental Patterns](00-fundamental-patterns.md)** - Review atomic building blocks
 
 ---
 
