@@ -46,8 +46,6 @@ curl -G "$BASE_URL/resolve-item-reference" \
 [
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_par1",
-    "label": "Article 6, paragraph 1",
-    "type_id": "item-type:paragraph",
     "confidence": 0.97
   }
 ]
@@ -117,7 +115,6 @@ curl -H "Authorization: $API_KEY" \
 **Response:**
 ```json
 {
-  "version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1",
   "creating_action": {
     "id": "action_amendment_2021_...",
     "type": "Insertion",
@@ -288,7 +285,8 @@ curl -H "Authorization: $API_KEY" \
 ```json
 {
   "id": "text_unit_...",
-  "version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1",
+  "source_type": "Version",
+  "source_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-12-16!art6_par1",
   "language": "pt-br",
   "aspect": "canonical",
   "content": "[ Art. 6º ] Parágrafo único. Todo brasileiro em situação de vulnerabilidade social terá direito a uma renda básica familiar, garantida pelo poder público em programa permanente de transferência de renda, cujas normas e requisitos de acesso serão determinados em lei, observada a legislação fiscal e orçamentária."

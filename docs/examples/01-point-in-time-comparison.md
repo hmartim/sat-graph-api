@@ -42,8 +42,6 @@ curl -G "$BASE_URL/resolve-item-reference" \
 [
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt",
-    "label": "Article 6, caput",
-    "type_id": "item-type:caput",
     "confidence": 0.98
   }
 ]
@@ -69,42 +67,38 @@ curl -H "Authorization: $API_KEY" \
 
 **Response:**
 ```json
-{
-  "item_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt",
-  "total_actions": 3,
-  "actions": [
-    {
-      "id": "action_amendment_2000_...",
-      "type": "Text_change",
-      "date": "2000-02-14T00:00:00Z",
-      "source_version_id": "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt_...",
-      "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt",
-      "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
-    },
-    {
-      "id": "action_amendment_2010_...",
-      "type": "Text_change",
-      "date": "2010-02-04T00:00:00Z",
-      "source_version_id": "urn:lex:br:federal:emenda.constitucional:2010-02-04;64@2010-02-04!art1_cpt_alt_...",
-      "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
-      "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt"
-    },
-    {
-      "id": "action_amendment_2015_...",
-      "type": "Text_change",
-      "date": "2015-09-15T00:00:00Z",
-      "source_version_id": "urn:lex:br:federal:emenda.constitucional:2015-09-15;90@2015-09-15!art1_cpt_alt_...",
-      "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
-      "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt"
-    }
-  ]
-}
+[
+  {
+    "id": "action_amendment_2000_...",
+    "type": "Amendment",
+    "date": "2000-02-14T00:00:00Z",
+    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt_...",
+    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
+  },
+  {
+    "id": "action_amendment_2010_...",
+    "type": "Amendment",
+    "date": "2010-02-04T00:00:00Z",
+    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2010-02-04;64@2010-02-04!art1_cpt_alt_...",
+    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt"
+  },
+  {
+    "id": "action_amendment_2015_...",
+    "type": "Amendment",
+    "date": "2015-09-15T00:00:00Z",
+    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2015-09-15;90@2015-09-15!art1_cpt_alt_...",
+    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt"
+  }
+]
 ```
 
 **Agent Logic:**
 ```python
 history = get_item_history(item_id=target_item_id)  # Returns list[Action]
-# history.actions contains all legislative events in chronological order
+# history contains all legislative events in chronological order
 ```
 
 ---
@@ -138,20 +132,26 @@ curl -X POST "$BASE_URL/text-units/batch-get" \
 [
   {
     "id": "text_2000_...",
-    "version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
+    "source_type": "Version",
+    "source_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
     "language": "pt-br",
+    "aspect": "canonical",
     "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, o trabalho, a moradia, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
   },
   {
     "id": "text_2010_...",
-    "version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
+    "source_type": "Version",
+    "source_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
     "language": "pt-br",
+    "aspect": "canonical",
     "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, a alimentação, o trabalho, a moradia, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
   },
   {
     "id": "text_2015_...",
-    "version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt",
+    "source_type": "Version",
+    "source_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt",
     "language": "pt-br",
+    "aspect": "canonical",
     "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, a alimentação, o trabalho, a moradia, o transporte, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
   }
 ]
@@ -160,7 +160,7 @@ curl -X POST "$BASE_URL/text-units/batch-get" \
 **Agent Logic:**
 ```python
 # Collect all version IDs produced by actions
-version_ids = [action.produces_version_id for action in history.actions]
+version_ids = [action.produces_version_id for action in history]
 
 # Batch retrieve all texts
 texts = get_batch_text_units(
@@ -172,7 +172,7 @@ texts = get_batch_text_units(
 pivotal_action = None
 for i, text in enumerate(texts):
     if "moradia" in text.content.lower():
-        pivotal_action = history.actions[i]
+        pivotal_action = history[i]
         break
 
 # pivotal_action = action_amendment_2000_...

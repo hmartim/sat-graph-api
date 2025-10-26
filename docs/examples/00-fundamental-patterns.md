@@ -44,8 +44,6 @@ curl -G "$BASE_URL/resolve-item-reference" \
 [
   {
     "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt",
-    "label": "Article 6, caput",
-    "type_id": "item-type:caput",
     "confidence": 0.98
   }
 ]
@@ -112,7 +110,8 @@ curl -H "Authorization: $API_KEY" \
 ```json
 {
   "id": "text_unit_abc123",
-  "version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
+  "source_type": "Version",
+  "source_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
   "language": "pt-br",
   "aspect": "canonical",
   "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, o trabalho, a moradia, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
@@ -165,10 +164,12 @@ curl -G "$BASE_URL/search-themes" \
 ```json
 [
   {
-    "theme": {
+    "item": {
       "id": "theme_digital_security",
       "label": "Digital Security and Privacy",
-      "description": "Constitutional provisions related to digital rights..."
+      "parent_ids": ["theme_digital_rights"],
+      "children_ids": null,
+      "member_ids": []
     },
     "score": 0.94
   }
@@ -179,7 +180,7 @@ curl -G "$BASE_URL/search-themes" \
 
 ```python
 themes = search_themes(semantic_query="Digital Security")
-theme_id = themes[0].theme.id
+theme_id = themes[0].item.id
 # theme_id = "theme_digital_security"
 ```
 
@@ -302,8 +303,10 @@ curl -H "Authorization: $API_KEY" \
 ```json
 {
   "id": "text_unit_123",
-  "version_id": "version_id_xyz",
+  "source_type": "Version",
+  "source_id": "version_id_xyz",
   "language": "pt-br",
+  "aspect": "canonical",
   "content": "Texto em português..."
 }
 ```
@@ -331,8 +334,10 @@ curl -H "Authorization: $API_KEY" \
 ```json
 {
   "id": "text_unit_456",
-  "version_id": "version_id_xyz",
+  "source_type": "Version",
+  "source_id": "version_id_xyz",
   "language": "en",
+  "aspect": "canonical",
   "content": "Text in English..."
 }
 ```
