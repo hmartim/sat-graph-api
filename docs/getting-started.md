@@ -81,7 +81,11 @@ curl -X POST "https://api.example.com/search-items" \
      -H "Authorization: YOUR_API_KEY" \
      -H "Content-Type: application/json" \
      -d '{
-       "semantic_query": "tax law amendments",
+       "content_query": {
+         "semantic": {
+           "query_text": "tax law amendments"
+         }
+       },
        "top_k": 5
      }'
 ```
@@ -98,7 +102,11 @@ curl -X POST "https://api.example.com/search-items" \
      -H "Authorization: YOUR_API_KEY" \
      -H "Content-Type: application/json" \
      -d '{
-       "semantic_query": "constitutional amendments",
+       "content_query": {
+         "semantic": {
+           "query_text": "constitutional amendments"
+         }
+       },
        "top_k": 3
      }'
 

@@ -153,10 +153,17 @@ This pattern demonstrates how the API transforms a potentially massive client-si
 #### Step 1: Discover the Thematic Node
 
 ```bash
-curl -G "$BASE_URL/search-themes" \
+curl -X POST "$BASE_URL/search-themes" \
   -H "Authorization: $API_KEY" \
-  --data-urlencode "semantic_query=Digital Security" \
-  --data-urlencode "top_k=5"
+  -H "Content-Type: application/json" \
+  -d '{
+    "content_query": {
+      "semantic": {
+        "query_text": "Digital Security"
+      }
+    },
+    "top_k": 5
+  }'
 ```
 
 **Response:**
@@ -179,7 +186,11 @@ curl -G "$BASE_URL/search-themes" \
 **Agent Logic:**
 
 ```python
-themes = search_themes(semantic_query="Digital Security")
+themes = search_themes(
+    content_query={
+        "semantic": {"query_text": "Digital Security"}
+    }
+)
 theme_id = themes[0].item.id
 # theme_id = "theme_digital_security"
 ```

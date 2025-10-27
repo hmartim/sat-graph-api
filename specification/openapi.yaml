@@ -64,6 +64,8 @@ components:
       $ref: './schemas/common/MetadataFilter.yaml'
     ItemMetadataFilterSchema:
       $ref: './schemas/common/ItemMetadataFilterSchema.yaml'
+    ContentQuery:
+      $ref: './schemas/common/ContentQuery.yaml'
 
     # -------------------------------------------------------------------------
     # Entity Schemas - Core domain models (graph nodes)
@@ -94,6 +96,8 @@ components:
       $ref: './schemas/requests/SearchItemsRequest.yaml'
     SearchTextUnitsRequest:
       $ref: './schemas/requests/SearchTextUnitsRequest.yaml'
+    SearchThemesRequest:
+      $ref: './schemas/requests/SearchThemesRequest.yaml'
     EnumerateItemsRequest:
       $ref: './schemas/requests/EnumerateItemsRequest.yaml'
     GetRelationsRequest:

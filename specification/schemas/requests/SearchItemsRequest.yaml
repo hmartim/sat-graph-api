@@ -25,12 +25,8 @@ properties:
     example: ["item-type:article", "item-type:paragraph"]
   item_metadata_filter:
     $ref: '../common/ItemMetadataFilterSchema.yaml'
-  semantic_query:
-    type: string
-    description: "The natural language query string for vector search."
-  lexical_query:
-    type: string
-    description: "Keywords or phrases for a full-text syntactic search."
+  content_query:
+    $ref: '../common/ContentQuery.yaml'
   top_k:
     type: integer
     format: int32

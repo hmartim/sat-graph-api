@@ -493,10 +493,15 @@ POST /items/batch-valid-versions
 ```bash
 curl -X POST "$BASE_URL/search-text-units" \
   -H "Authorization: $API_KEY" \
+  -H "Content-Type: application/json" \
   -d '{
     "item_ids": ["urn:lex:br:federal:constituicao:1988"],
     "timestamp": "2020-06-15T00:00:00Z",
-    "semantic_query": "housing rights"
+    "content_query": {
+      "semantic": {
+        "query_text": "housing rights"
+      }
+    }
   }'
 ```
 

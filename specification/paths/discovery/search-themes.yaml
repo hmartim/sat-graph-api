@@ -1,47 +1,29 @@
-get:
+post:
   tags:
     - "Discovery and Search Actions"
   summary: "Performs a hybrid search for Themes based on their descriptions."
   operationId: "searchThemes"
   description: |
-    Performs a hybrid (semantic and/or lexical) search to discover `Theme` nodes based on a descriptive query. 
-    This action **searches exclusively on the textual descriptions associated with the themes themselves**.
-    
-    At least one of `semantic_query` or `lexical_query` must be provided.
-    
-    ### Discussion
-    This action's purpose is to map a user's description of a topic to the most appropriate formal concept in the graph. 
-    The design allows for both broad conceptual matching (via `semantic_query`) and high-precision keyword filtering (via `lexical_query`).
+    Performs a hybrid search to discover `Theme` nodes based on a descriptive query, combining semantic and lexical search capabilities with advanced filtering.
+
+    This action **searches exclusively on the textual descriptions associated with the themes themselves**, mapping a user's description to the most appropriate formal concept in the knowledge graph.
+
+    ### Search Strategy
+    The unified `content_query` parameter leverages Oracle 23ai's native hybrid search with Reciprocal Rank Fusion (RRF), allowing for:
+    - Broad conceptual matching via semantic search
+    - High-precision keyword filtering via lexical search
+    - Advanced clauses for mandatory terms, boosting, and exclusions
+
   security:
     - ApiKeyAuth: []
 
-  parameters:
-    - name: semantic_query
-      in: query
-      required: false
-      description: "The natural language query string for vector-based semantic search."
-      schema:
-        type: string
-        minLength: 1
-      example: "laws about consumer protection"
-    - name: lexical_query
-      in: query
-      required: false
-      description: "Keywords or a specific phrase for a full-text syntactic search."
-      schema:
-        type: string
-        minLength: 1
-      example: "\"environmental impact report\""
-    - name: top_k
-      in: query
-      required: false
-      description: "The maximum number of candidate themes to return."
-      schema:
-        type: integer
-        format: int32
-        default: 5
-        minimum: 1
-    - $ref: '#/components/parameters/DatasourcesParameter'
+  requestBody:
+    description: "The search criteria for discovering themes."
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/SearchThemesRequest'
 
   responses:
     '200':

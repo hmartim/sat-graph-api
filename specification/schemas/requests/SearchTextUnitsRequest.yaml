@@ -9,10 +9,9 @@ description: |
   - Use `timestamp` to constrain temporally (defaults to "now" if omitted)
   - If neither `item_ids` nor `theme_ids` is provided, the search applies globally across all accessible data
 
-  **Search Queries:**
-  - `semantic_query` for natural language vector search
-  - `lexical_query` for keyword/phrase full-text search
-  - At least one query type should be provided for effective discovery
+  **Search Query:**
+  - `content_query`: A unified JSON structure for hybrid search combining semantic and lexical queries with advanced filtering
+  - Required for effective discovery
 
   **Optional Filters:**
   - `item_type_ids`: Filter results to only TextUnits from Items of specified types
@@ -45,12 +44,8 @@ properties:
     format: date-time
     description: |
       Optional. A UTC date-time to constrain the search temporally. Defaults to 'now' if omitted.
-  semantic_query:
-    type: string
-    description: "The natural language query string for vector search."
-  lexical_query:
-    type: string
-    description: "Keywords or phrases for a full-text syntactic search."
+  content_query:
+    $ref: '../common/ContentQuery.yaml'
   language:
     type: string
     description: "The IETF BCP 47 language code for the content."

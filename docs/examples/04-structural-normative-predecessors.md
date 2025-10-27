@@ -210,7 +210,11 @@ curl -X POST "$BASE_URL/search-text-units" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "semantic_query": "Public servants and their spouses shall disclose financial assets within 60 days of appointment, including holdings in trusts and offshore entities.",
+    "content_query": {
+      "semantic": {
+        "query_text": "Public servants and their spouses shall disclose financial assets within 60 days of appointment, including holdings in trusts and offshore entities."
+      }
+    },
     "timestamp": "2023-03-19T23:59:59Z",
     "language": "pt-br",
     "top_k": 5
@@ -257,7 +261,9 @@ curl -X POST "$BASE_URL/search-text-units" \
 ```python
 # Search for semantically similar texts valid before change_date
 candidates = search_text_units(
-    semantic_query=current_text,
+    content_query={
+        "semantic": {"query_text": current_text}
+    },
     timestamp="2023-03-19T23:59:59Z",  # One second before change
     language="pt-br",
     top_k=5

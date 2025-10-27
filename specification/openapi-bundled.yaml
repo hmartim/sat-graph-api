@@ -149,6 +149,193 @@ components:
       example:
         jurisdiction: federal
         type: Statute
+    ContentQuery:
+      type: object
+      description: |
+        A unified query structure for hybrid search that combines semantic (vector) and lexical (full-text) search capabilities.
+
+        This schema leverages Oracle 23ai's native hybrid search with Reciprocal Rank Fusion (RRF), allowing the database to optimally merge and rank results from both semantic and lexical searches in a single operation.
+
+        **Search Strategies:**
+        - `hybrid`: Combines both semantic and lexical search with database-managed ranking fusion (default)
+        - `semantic_only`: Uses only vector similarity search
+        - `lexical_only`: Uses only full-text keyword search
+
+        **Basic Usage:**
+        For simple queries, only specify the query_text for the desired search type. The system will apply sensible defaults for weights and operators.
+
+        **Advanced Usage:**
+        Fine-tune the search with weights, mandatory clauses, boosting terms, and citation-aware scoring to match complex legal domain requirements.
+      properties:
+        strategy:
+          type: string
+          enum:
+            - hybrid
+            - semantic_only
+            - lexical_only
+          default: hybrid
+          description: |
+            The search strategy to employ:
+            - `hybrid`: Leverage both semantic and lexical search with RRF (recommended for most use cases)
+            - `semantic_only`: Only perform vector similarity search
+            - `lexical_only`: Only perform keyword/phrase full-text search
+          example: hybrid
+        semantic:
+          type: object
+          description: Configuration for semantic (vector embedding) search
+          properties:
+            query_text:
+              type: string
+              description: |
+                The natural language query string that will be embedded and used for vector similarity search.
+                Use complete sentences or phrases that express the semantic intent.
+              example: políticas de garantia de renda mínima para famílias vulneráveis
+            weight:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+              default: 0.5
+              description: |
+                The relative weight (importance) of the semantic score in hybrid search mode.
+                Should sum to 1.0 with lexical.weight for balanced results.
+                Higher values prioritize conceptual similarity over exact keyword matches.
+              example: 0.7
+            top_k:
+              type: integer
+              format: int32
+              minimum: 1
+              description: |
+                Optional. The number of top candidates to retrieve from semantic search before RRF fusion.
+                Useful for tuning performance vs. recall trade-offs in large corpora.
+              example: 100
+          required:
+            - query_text
+        lexical:
+          type: object
+          description: Configuration for lexical (full-text keyword) search
+          properties:
+            query_text:
+              type: string
+              description: |
+                Keywords or phrases for full-text search. Supports exact phrase matching with quotes.
+                Examples: "renda básica", "\"artigo 6º\" OR \"artigo 7º\""
+              example: '"artigo 6º" OR "renda básica"'
+            weight:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+              default: 0.5
+              description: |
+                The relative weight of the lexical score in hybrid search mode.
+                Should sum to 1.0 with semantic.weight for balanced results.
+                Higher values prioritize exact keyword/phrase matches.
+              example: 0.3
+            operator:
+              type: string
+              enum:
+                - AND
+                - OR
+              default: OR
+              description: |
+                Logical operator for combining multiple keywords in the lexical query.
+                - `AND`: All keywords must be present (more restrictive)
+                - `OR`: Any keyword can match (more permissive)
+              example: OR
+            top_k:
+              type: integer
+              format: int32
+              minimum: 1
+              description: |
+                Optional. The number of top candidates to retrieve from lexical search before RRF fusion.
+              example: 100
+          required:
+            - query_text
+        clauses:
+          type: array
+          description: |
+            Advanced clauses for mandatory, boosting, or exclusion conditions.
+            These map directly to Oracle 23ai's MUST_CONTAIN, SHOULD_CONTAIN, and exclusion operators.
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                  - must_contain
+                  - should_contain
+                  - must_not_contain
+                description: |
+                  - `must_contain`: Results MUST include this term/phrase (filters out non-matching documents)
+                  - `should_contain`: Results containing this term/phrase receive a score boost
+                  - `must_not_contain`: Results containing this term/phrase are excluded
+                example: must_contain
+              text:
+                type: string
+                description: The term or phrase for this clause. Use quotes for exact phrases.
+                example: Constituição Federal
+              boost:
+                type: number
+                format: float
+                minimum: 0
+                default: 1.5
+                description: |
+                  Score multiplier for `should_contain` clauses. Ignored for other clause types.
+                  Values > 1.0 increase relevance; values < 1.0 decrease it.
+                example: 2
+            required:
+              - type
+              - text
+          example:
+            - type: must_contain
+              text: Constituição Federal
+            - type: should_contain
+              text: direitos sociais
+              boost: 1.8
+        citation_boost:
+          type: object
+          description: |
+            Optional. Boost results containing legal citations (e.g., "artigo 6º", "Lei 8.742/1993").
+            Particularly useful in legal/constitutional domains where cited documents carry more authority.
+          properties:
+            enabled:
+              type: boolean
+              default: false
+              description: Whether to enable citation-aware scoring
+            multiplier:
+              type: number
+              format: float
+              minimum: 1
+              default: 1.5
+              description: Score multiplier for documents containing detected legal citations
+              example: 1.8
+            patterns:
+              type: array
+              items:
+                type: string
+              description: |
+                Optional. Custom regex patterns to detect citations beyond the defaults.
+                Default patterns include: "artigo \d+", "Lei \d+", "§ \d+", etc.
+              example:
+                - CF/\d{2}
+                - Decreto \d+
+      anyOf:
+        - required:
+            - semantic
+        - required:
+            - lexical
+      example:
+        strategy: hybrid
+        semantic:
+          query_text: políticas de garantia de renda mínima para famílias vulneráveis
+          weight: 0.7
+        lexical:
+          query_text: '"artigo 6º" OR "renda básica"'
+          weight: 0.3
+        clauses:
+          - type: must_contain
+            text: Constituição Federal
     Item:
       type: object
       description: |
@@ -534,12 +721,8 @@ components:
             - item-type:paragraph
         item_metadata_filter:
           $ref: ../common/ItemMetadataFilterSchema.yaml
-        semantic_query:
-          type: string
-          description: The natural language query string for vector search.
-        lexical_query:
-          type: string
-          description: Keywords or phrases for a full-text syntactic search.
+        content_query:
+          $ref: ../common/ContentQuery.yaml
         top_k:
           type: integer
           format: int32
@@ -560,10 +743,9 @@ components:
         - Use `timestamp` to constrain temporally (defaults to "now" if omitted)
         - If neither `item_ids` nor `theme_ids` is provided, the search applies globally across all accessible data
 
-        **Search Queries:**
-        - `semantic_query` for natural language vector search
-        - `lexical_query` for keyword/phrase full-text search
-        - At least one query type should be provided for effective discovery
+        **Search Query:**
+        - `content_query`: A unified JSON structure for hybrid search combining semantic and lexical queries with advanced filtering
+        - Required for effective discovery
 
         **Optional Filters:**
         - `item_type_ids`: Filter results to only TextUnits from Items of specified types
@@ -598,12 +780,8 @@ components:
           format: date-time
           description: |
             Optional. A UTC date-time to constrain the search temporally. Defaults to 'now' if omitted.
-        semantic_query:
-          type: string
-          description: The natural language query string for vector search.
-        lexical_query:
-          type: string
-          description: Keywords or phrases for a full-text syntactic search.
+        content_query:
+          $ref: ../common/ContentQuery.yaml
         language:
           type: string
           description: The IETF BCP 47 language code for the content.
@@ -624,6 +802,27 @@ components:
         datasources:
           $ref: ../common/DatasourcesSchema.yaml
           description: Optional. Scopes the search to a specific list of granted datasources.
+    SearchThemesRequest:
+      type: object
+      description: |
+        The request body for the searchThemes operation.
+
+        This endpoint performs hybrid search to discover Themes based on their descriptions,
+        mapping user descriptions to formal concepts in the knowledge graph.
+      properties:
+        content_query:
+          $ref: ../common/ContentQuery.yaml
+        top_k:
+          type: integer
+          format: int32
+          default: 5
+          minimum: 1
+          description: The maximum number of candidate themes to return.
+        datasources:
+          $ref: ../common/DatasourcesSchema.yaml
+          description: Optional. Scopes the search to a specific list of granted datasources.
+      required:
+        - content_query
     EnumerateItemsRequest:
       type: object
       description: |
@@ -1204,34 +1403,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                item_ids:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/ID'
-                  description: Optional. A list of 'Item' IDs to define the search scope.
-                theme_ids:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/ID'
-                  description: Optional. A list of 'Theme' IDs to expand the search scope.
-                item_metadata_filter:
-                  $ref: '#/components/schemas/ItemMetadataFilterSchema'
-                semantic_query:
-                  type: string
-                  description: The natural language query string for vector search.
-                lexical_query:
-                  type: string
-                  description: Keywords or phrases for a full-text syntactic search.
-                top_k:
-                  type: integer
-                  format: int32
-                  default: 10
-                  minimum: 1
-                  description: The maximum number of results to return.
-                datasources:
-                  $ref: '#/components/schemas/DatasourcesSchema'
+              $ref: '#/components/schemas/SearchItemsRequest'
       responses:
         '200':
           description: Search executed successfully. Returns a ranked list of Items.
@@ -1248,49 +1420,30 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
   /search-themes:
-    get:
+    post:
       tags:
         - Discovery and Search Actions
       summary: Performs a hybrid search for Themes based on their descriptions.
       operationId: searchThemes
       description: |
-        Performs a hybrid (semantic and/or lexical) search to discover `Theme` nodes based on a descriptive query. 
-        This action **searches exclusively on the textual descriptions associated with the themes themselves**.
+        Performs a hybrid search to discover `Theme` nodes based on a descriptive query, combining semantic and lexical search capabilities with advanced filtering.
 
-        At least one of `semantic_query` or `lexical_query` must be provided.
+        This action **searches exclusively on the textual descriptions associated with the themes themselves**, mapping a user's description to the most appropriate formal concept in the knowledge graph.
 
-        ### Discussion
-        This action's purpose is to map a user's description of a topic to the most appropriate formal concept in the graph. 
-        The design allows for both broad conceptual matching (via `semantic_query`) and high-precision keyword filtering (via `lexical_query`).
+        ### Search Strategy
+        The unified `content_query` parameter leverages Oracle 23ai's native hybrid search with Reciprocal Rank Fusion (RRF), allowing for:
+        - Broad conceptual matching via semantic search
+        - High-precision keyword filtering via lexical search
+        - Advanced clauses for mandatory terms, boosting, and exclusions
       security:
         - ApiKeyAuth: []
-      parameters:
-        - name: semantic_query
-          in: query
-          required: false
-          description: The natural language query string for vector-based semantic search.
-          schema:
-            type: string
-            minLength: 1
-          example: laws about consumer protection
-        - name: lexical_query
-          in: query
-          required: false
-          description: Keywords or a specific phrase for a full-text syntactic search.
-          schema:
-            type: string
-            minLength: 1
-          example: '"environmental impact report"'
-        - name: top_k
-          in: query
-          required: false
-          description: The maximum number of candidate themes to return.
-          schema:
-            type: integer
-            format: int32
-            default: 5
-            minimum: 1
-        - $ref: '#/components/parameters/DatasourcesParameter'
+      requestBody:
+        description: The search criteria for discovering themes.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchThemesRequest'
       responses:
         '200':
           description: A ranked list of matching Theme candidates was successfully returned.

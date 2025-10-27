@@ -45,7 +45,11 @@ The `/search-text-units` endpoint supports two **mutually exclusive** parameter 
 ```json
 {
   "version_ids": ["urn:lex:...:art6@2020-01-15"],
-  "semantic_query": "tax exemption",
+  "content_query": {
+    "semantic": {
+      "query_text": "tax exemption"
+    }
+  },
   "top_k": 5
 }
 ```
@@ -61,7 +65,11 @@ The `/search-text-units` endpoint supports two **mutually exclusive** parameter 
   "item_ids": ["urn:lex:...:lei:2020;1234"],
   "theme_ids": ["theme:tax_law"],
   "timestamp": "2020-06-15T00:00:00Z",
-  "semantic_query": "tax exemption",
+  "content_query": {
+    "semantic": {
+      "query_text": "tax exemption"
+    }
+  },
   "top_k": 5
 }
 ```
@@ -540,8 +548,17 @@ Actual textual content associated with entities in multiple languages and aspect
   "item_ids": ["urn:lex:br:federal:lei:1990-07-20;8069"],
   "theme_ids": ["theme:children_rights"],
   "timestamp": "2020-01-01T00:00:00Z",
-  "semantic_query": "children protection laws",
-  "lexical_query": "statute children adolescents",
+  "content_query": {
+    "strategy": "hybrid",
+    "semantic": {
+      "query_text": "children protection laws",
+      "weight": 0.6
+    },
+    "lexical": {
+      "query_text": "statute children adolescents",
+      "weight": 0.4
+    }
+  },
   "language": "pt-BR",
   "aspects": ["canonical", "summary"],
   "top_k": 10,
@@ -685,7 +702,11 @@ All requests are automatically scoped to datasources granted to your API key. Ma
 # Search within specific datasources
 POST /search-items
 {
-  "semantic_query": "tax law",
+  "content_query": {
+    "semantic": {
+      "query_text": "tax law"
+    }
+  },
   "datasources": ["datasource_Senate", "datasource_Chamber"]
 }
 ```
@@ -709,7 +730,11 @@ Some endpoints support pagination for large result sets:
 # Paginated search results
 POST /search-items
 {
-  "semantic_query": "legal provisions",
+  "content_query": {
+    "semantic": {
+      "query_text": "legal provisions"
+    }
+  },
   "top_k": 100,
   "offset": 50
 }
