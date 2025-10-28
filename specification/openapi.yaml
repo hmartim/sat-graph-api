@@ -289,8 +289,8 @@ paths:
     $ref: './paths/navigation/get-item-context.yaml'
   /items/{itemId}/themes:
     $ref: './paths/navigation/get-themes-for-item.yaml'
-  /enumerate-items:
-    $ref: './paths/navigation/enumerate-items.yaml'
+  /hierarchy-items:
+    $ref: './paths/navigation/hierarchy-items.yaml'
   /item-types/{itemTypeId}/descendants:
     $ref: './paths/navigation/get-item-type-descendants.yaml'
   /themes/{themeId}/descendants:

@@ -228,9 +228,9 @@ all_theme_ids = get_theme_descendants(root_theme_id)
 # all_theme_ids = ["theme_digital_security", "theme_data_protection", ...]
 ```
 
-**Step 1.3: Discover Constitutional Corpus (Corpus-First Approach)**
+**Step 1.3: Get Constitutional ItemType Descendants**
 
-Rather than starting with theme-tagged items (which may be incomplete), discover **all constitutional-level items first**, then filter by theme. Get ItemType descendants for "constitutional-legislation" to understand what counts as constitutional (rule 3: Corpus Scope).
+Get the full ItemType tree for "constitutional-legislation" to understand what counts as constitutional (rule 3: Corpus Scope).
 
 ```bash
 curl -G "$BASE_URL/item-types/item-type:constitutional-legislation/descendants" \
@@ -255,21 +255,32 @@ constitutional_item_types = get_item_type_descendants("item-type:constitutional-
 # constitutional_item_types = ["item-type:constitution", "item-type:constitutional-amendment", ...]
 ```
 
-**Step 1.4: Enumerate All Constitutional Root Items**
+**Step 1.4: Search for Constitutional Items Linked to Themes (Single Efficient Query)**
 
-Find all Items of the constitutional ItemTypes discovered in 1.3. These are the root-level constitutional documents (e.g., the Constitution itself, each Constitutional Amendment).
+Use a single `search-items` call to find all items that satisfy BOTH criteria:
+- Are of constitutional ItemTypes (Corpus Scope - rule 3)
+- Are linked to any theme in the Digital Security tree (Thematic Scope - rule 1)
+
+This single call efficiently finds the "anchor items" (items that are both constitutional AND thematic) without enumerating everything first.
 
 ```bash
-curl -X POST "$BASE_URL/enumerate-items" \
+curl -X POST "$BASE_URL/search-items" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "item_type_ids": [
-      "item-type:constitutional-legislation",
+      "item-type:constitutional-legislation"
       "item-type:constitution",
       "item-type:constitutional-amendment",
       "item-type:constitutional-act"
-    ]
+    ],
+    "theme_ids": [
+      "theme_digital_security",
+      "theme_data_protection",
+      "theme_cybersecurity",
+      "theme_digital_privacy"
+    ],
+    "top_k": -1
   }'
 ```
 
@@ -278,14 +289,18 @@ curl -X POST "$BASE_URL/enumerate-items" \
 ```json
 [
   {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988",
-    "type": "item-type:constitution",
-    "label": "Federal Constitution of Brazil (1988)"
+    "item": {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988",
+      "type": "item-type:constitution"
+    },
+    "score": 1
   },
   {
-    "id": "urn:lex:br:federal:emenda.constitucional:1992-03-31;1",
-    "type": "item-type:constitutional-amendment",
-    "label": "Constitutional Amendment No. 1 of 1992"
+    "item": {
+      "id": "urn:lex:br:federal:emenda.constitucional:1992-03-31;1",
+      "type": "item-type:constitutional-amendment"
+    },
+    "score": 1
   }
 ]
 ```
@@ -293,25 +308,25 @@ curl -X POST "$BASE_URL/enumerate-items" \
 **Agent Logic:**
 
 ```python
-constitutional_roots = enumerate_items(item_type_ids=constitutional_item_types)
-root_item_ids = [item.id for item in constitutional_roots]
-# root_item_ids = ["urn:lex:br:federal:constituicao:1988-10-05;1988",
-# "urn:lex:br:federal:emenda.constitucional:1992-03-31;1", ...]
+# Single search-items call finds constitutional items linked to themes
+anchor_items = search_items(
+    item_type_ids=constitutional_item_types,
+    theme_ids=all_theme_ids,
+    top_k=-1
+)
+anchor_item_ids = [result.item.id for result in anchor_items]
+# anchor_item_ids = ["urn:lex:br:federal:constituicao:1988-10-05;1988", ...]
 ```
 
-**Step 1.5: Expand Hierarchically and Filter by Theme (Parallel Execution)**
+**Step 1.5: Enumerate Descendants (Parallel Execution for Hierarchical Expansion)**
 
-For **each** constitutional root discovered in 1.4, enumerate all descendants to get component-level items (titles, articles, paragraphs, clauses). This can be done in **parallel** since there are no dependencies.
+For **each** anchor item discovered in 1.4, enumerate all descendants to implement rule 2 (Hierarchical Scope): "if a parent is linked to a theme, include all its children".
 
-Then filter results to keep only items that:
-- Are directly linked to any theme in `all_theme_ids`, OR
-- Have an ancestor that is directly linked to any theme in `all_theme_ids`
-
-(This implements rule 2: Hierarchical Scope)
+These enumeration calls can run in **parallel** since there are no dependencies.
 
 ```bash
-# Executed in parallel, one call per constitutional root
-curl -X POST "$BASE_URL/enumerate-items" \
+# Executed in parallel, one call per anchor item
+curl -X POST "$BASE_URL/hierarchy-items" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -319,75 +334,53 @@ curl -X POST "$BASE_URL/enumerate-items" \
     "depth": -1
   }'
 
-curl -X POST "$BASE_URL/enumerate-items" \
+curl -X POST "$BASE_URL/hierarchy-items" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "item_ids": ["urn:lex:br:federal:emenda.constitucional:1992-03-31;1"],
     "depth": -1
   }'
-# ... one call per root item
+# ... one call per anchor item
 ```
 
-**Response (per root):**
+**Response (per anchor):**
 
 ```json
 [
-  {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art1",
-    "type": "item-type:article",
-    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;1988"
-  },
-  {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art1_cpt",
-    "type": "item-type:caput",
-    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art1"
-  }
+  "urn:lex:br:federal:constituicao:1988-10-05;1988!art1",
+  "urn:lex:br:federal:constituicao:1988-10-05;1988!art1_capt",
+  "urn:lex:br:federal:constituicao:1988-10-05;1988!art1_par1",
+  "urn:lex:br:federal:constituicao:1988-10-05;1988!art1_par2"
 ]
 ```
 
-**Agent Logic (Client-side Filtering):**
+**Agent Logic (Building Final Scope):**
 
 ```python
-# Step 1: Collect all descendants from all roots, maintaining root association
-# These calls are parallel (one per root, typically 2-10 roots)
-root_descendants = {}
-for root_id in root_item_ids:
-    descendants = enumerate_items(item_ids=[root_id], depth=-1)
-    root_descendants[root_id] = descendants
-
-# Step 2: Build a set of items directly linked to the thematic scope
-# Scan ALL descendants to identify which items are theme-linked
-theme_linked_items = set()
-for root_id, descendants in root_descendants.items():
-    for item in descendants:
-        # Get themes associated with this item
-        item_themes = get_themes_for_item(item.id)
-        if any(theme.id in all_theme_ids for theme in item_themes):
-            theme_linked_items.add(item.id)
-
-# Step 3: Apply hierarchical rule and build final scope per root
-# This maintains the root-to-items association for efficient action queries
-root_scoped_items = {}
-for root_id, descendants in root_descendants.items():
-    scoped_items = set()
-    for item in descendants:
-        # Include if directly theme-linked
-        if item.id in theme_linked_items:
-            scoped_items.add(item.id)
-        # Include if any ancestor is theme-linked (hierarchical propagation)
-        elif any(ancestor.id in theme_linked_items for ancestor in get_ancestors(item.id)):
-            scoped_items.add(item.id)
-
-    root_scoped_items[root_id] = scoped_items
-
-# Union of all scoped items for later reference
+# Enumerate descendants for each anchor item (parallel execution)
+# Returns only IDs (strings) - efficient for hierarchy traversal
+# Each anchor item is theme-linked, so all its descendants are included (hierarchical rule)
 final_item_ids = set()
-for scoped_items in root_scoped_items.values():
-    final_item_ids.update(scoped_items)
+
+for anchor_item in anchor_items:
+    # Enumerate the full subtree rooted at this anchor item via /hierarchy-items
+    # Returns: ["id1", "id2", "id3", ...]
+    descendant_ids = get_hierarchy_items(
+        item_ids=[anchor_item.id],
+        depth=-1
+    )
+
+    # Add all descendants to final scope
+    final_item_ids.update(descendant_ids)
+
+# final_item_ids now contains all items satisfying all three scope rules:
+# 1. Thematic Scope: All items in subtrees rooted at theme-linked items
+# 2. Hierarchical Scope: All descendants of theme-linked items included
+# 3. Corpus Scope: All items from search-items (filtered by constitutional ItemTypes)
 ```
 
-> **Efficiency Note:** Steps 1.4-1.5 enumerate all constitutional descendants in parallel (one call per root), then apply theme filtering client-side. By maintaining the root-to-items association, we enable efficient parallel queries in Phase 2 (see below).
+> **Efficiency Note:** Step 1.4 uses `search-items` with combined filters to efficiently find anchor items (constitutional AND thematic). Step 1.5 enumerates only the subtrees rooted at these anchors. This approach avoids enumerating everything and filtering afterwards—we only enumerate what matters.
 
 #### Phase 2: Historical Analysis (Parallel Root-Scoped Queries)
 
@@ -409,8 +402,8 @@ curl -X POST "$BASE_URL/query-actions" \
   -H "Content-Type: application/json" \
   -d '{
     "item_ids": [
-      "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12",
-      "urn:lex:br:federal:constituicao:1988-10-05;1988!art220",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!art1",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!art1_cpt",
       "..."
     ],
     "time_interval": {
@@ -424,8 +417,8 @@ curl -X POST "$BASE_URL/query-actions" \
   -H "Content-Type: application/json" \
   -d '{
     "item_ids": [
-      "urn:lex:br:federal:constituicao:1988-10-05;1988!ec1_1992!sec1",
-      "urn:lex:br:federal:constituicao:1988-10-05;1988!ec1_1992!art1",
+      "urn:lex:br:federal:emenda.constitucional:1992-03-31;1",
+      "urn:lex:br:federal:emenda.constitucional:1992-03-31;1!art1",
       "..."
     ],
     "time_interval": {
@@ -441,21 +434,14 @@ curl -X POST "$BASE_URL/query-actions" \
 ```json
 [
   {
-    "id": "action_ec_115_2022",
+    "id": "action_ec_115_2022_...",
     "type": "Amendment",
     "effective_time": "2022-02-10T00:00:00Z",
-    "target_item_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12",
-    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art5_inc12",
-    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2022-02-10!art5_inc12"
+    "source_item_id": "...",
+    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art5_cpt_inc12",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2022-02-10!art5_cpt_inc12"
   },
-  {
-    "id": "action_ec_32_2001",
-    "type": "Amendment",
-    "effective_time": "2001-09-11T00:00:00Z",
-    "target_item_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art220",
-    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art220",
-    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2001-09-11!art220"
-  }
+  { ... }
 ]
 ```
 
@@ -484,7 +470,6 @@ action_by_type = {}
 for action in all_relevant_actions:
     action_type = action.type
     action_by_type[action_type] = action_by_type.get(action_type, 0) + 1
-# action_by_type = {"Amendment": 12, "Creation": 3, "Revocation": 1}
 
 # Build item-to-actions mapping for later synthesis
 item_actions = {}
@@ -494,15 +479,6 @@ for action in all_relevant_actions:
         item_actions[item_id] = []
     item_actions[item_id].append(action)
 ```
-
-> **Efficiency Advantage:**
-> - **N parallel calls** (one per constitutional root, typically 2-10) instead of:
->   - M individual `/items/{itemId}/history` calls (where M = 500+), OR
->   - 1 massive call with 500+ item_ids
-> - Each request has manageable payload size
-> - Server can process N queries in parallel with different workers
-> - Maintains logical grouping by constitutional source document
-
 #### Phase 3: Hydration and Synthesis (Optional)
 
 If a detailed narrative is required, batch-fetch full objects to enrich the action data.
@@ -514,8 +490,7 @@ curl -X POST "$BASE_URL/items/batch-get" \
   -H "Content-Type: application/json" \
   -d '{
     "ids": [
-      "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12",
-      "urn:lex:br:federal:constituicao:1988-10-05;1988!art220",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_cpt_inc12",
       "..."
     ]
   }'
@@ -526,8 +501,7 @@ curl -X POST "$BASE_URL/versions/batch-get" \
   -H "Content-Type: application/json" \
   -d '{
     "ids": [
-      "urn:lex:br:federal:constituicao:1988-10-05;1988@2022-02-10!art5_inc12",
-      "urn:lex:br:federal:constituicao:1988-10-05;1988@2001-09-11!art220",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988@2022-02-10!art5_cpt_inc12",
       "..."
     ]
   }'
@@ -538,8 +512,7 @@ curl -X POST "$BASE_URL/text-units/batch-get" \
   -H "Content-Type: application/json" \
   -d '{
     "ids": [
-      "text_unit_v1_art5",
-      "text_unit_v2_art220",
+      "text_unit_v1_art5_cpt_inc12_...",
       "..."
     ]
   }'
@@ -579,8 +552,8 @@ narrative = synthesize_narrative(summary)
 #   "summary": "Between 2000 and 2025, 12 constitutional amendments affected 8 provisions related to Digital Security...",
 #   "by_provision": [
 #     {
-#       "item_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12",
-#       "label": "Art. 5, Inc. 12 - Right to inviolability of privacy",
+#       "item_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_cpt_inc12",
+#       "label": "Art. 5, caput, Inc. 12 - Right to inviolability of privacy",
 #       "actions": [
 #         {"date": "2022-02-10", "type": "Amendment", "description": "EC 115/2022 modified..."}
 #       ]
@@ -598,15 +571,17 @@ This pattern demonstrates:
   - Hierarchical Scope: Propagates theme membership down to all descendants
   - Corpus Scope: Filters to only constitutional-legislation items
 
-- ✅ **Corpus-First Discovery:** Enumerates all constitutional roots first, then filters by theme (avoiding incomplete theme tagging)
+- ✅ **Efficient Anchor Item Discovery:** Uses single `search-items` call with combined filters (`item_type_ids` AND `theme_ids`) to find items that are both constitutional AND thematic, avoiding enumerate-everything-then-filter approach
+
+- ✅ **Lightweight Hierarchy Traversal:** `/hierarchy-items` returns only Item IDs (strings), not full objects, enabling efficient traversal of hierarchies with minimal payload
 
 - ✅ **Optimal Parallel Architecture:**
-  - Phase 1: One `enumerate-items` call per constitutional root (2-10 roots, parallel)
-  - Phase 2: **N parallel `/query-actions` calls** (one per root) instead of:
+  - Phase 1: Single `search-items` call + N parallel `/hierarchy-items` calls (one per anchor item, returning IDs only)
+  - Phase 2: **N parallel `/query-actions` calls** (one per anchor item) instead of:
     - M individual `/items/{id}/history` calls (M = 500+), OR
     - 1 massive call with 500+ item_ids in payload
   - Phase 3: Batch operations executed in parallel
-  - **Result:** Manages scale naturally through root-based partitioning
+  - **Result:** Minimal redundant work - only enumerate relevant subtrees with efficient ID-only responses
 
 - ✅ **Payload Efficiency:**
   - Each `/query-actions` call has modest item_ids list (50-500 items per root)
@@ -617,7 +592,7 @@ This pattern demonstrates:
 
 - ✅ **Root-Associated Context:** Maintains root-to-items mapping throughout, enabling logical grouping by constitutional source and easier narrative synthesis
 
-- ✅ **Composable Primitives:** Uses atomic, well-defined operations (`search-themes`, `get_theme_descendants`, `enumerate-items`, `/query-actions`) that can be independently tested and evolved
+- ✅ **Composable Primitives:** Uses atomic, well-defined operations (`search-themes`, `get_theme_descendants`, `/hierarchy-items`, `/query-actions`) that can be independently tested and evolved
 
 - ✅ **Complete Evolutionary Analysis:** All actions affecting constitutional provisions related to Digital Security since 2000 are captured, aggregated, and synthesized into a structured narrative organized by source document
 

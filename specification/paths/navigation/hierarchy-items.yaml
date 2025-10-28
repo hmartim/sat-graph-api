@@ -1,0 +1,51 @@
+post:
+  tags:
+    - "Structural Navigation Actions"
+  summary: "Gets Item IDs within a structural or thematic scope (hierarchy traversal)."
+  operationId: "getHierarchyItems"
+  description: |
+    Enumerates and returns **Item IDs** for all items within a specified structural or thematic scope. This is an efficient operation optimized for traversing hierarchies and collecting item references without the overhead of returning full Item objects.
+
+    At least one of `item_ids` or `theme_ids` must be provided.
+
+    ### Scope Logic
+    - If both `item_ids` and `theme_ids` are provided, the function returns the **union** of all items found in both scopes (without duplicates).
+    - The `depth` parameter applies exclusively to scopes defined by `item_ids`.
+
+    ### Use Cases
+    This action is ideal for:
+    - Traversing structural hierarchies to collect all descendant IDs
+    - Building item ID lists for use in other operations (e.g., `/query-actions`, `search-items`)
+    - Efficient batch processing where only IDs are needed
+    - Hierarchical navigation with minimal payload overhead
+
+    ### Discussion
+    This action's purpose is **structural enumeration and navigation**, not search filtering. It is the correct tool for tasks like collecting all items in a subtree for further processing. For performing content-based searches within a scope, agents should pass the scope's ID directly to the search functions (`searchTextUnits`, `searchItems`), as this is significantly more performant.
+
+    **Efficiency Note:** Returns only IDs (strings) rather than full Item objects, making it ideal for hierarchical traversal workflows where IDs are subsequently used in batch operations.
+  security:
+    - ApiKeyAuth: []
+
+  requestBody:
+    description: "The scope definition for the enumeration."
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/EnumerateItemsRequest'
+
+  responses:
+    '200':
+      description: "A list of Item IDs (strings) within the specified scope, ordered by hierarchical depth and position."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ID'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'

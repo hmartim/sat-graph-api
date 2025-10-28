@@ -4,14 +4,14 @@
 
 ## User Query
 
-_"Provide a summary of all legislative changes, specifically creations and revocations, within the 'National Tax System' chapter of the Constitution between January 1, 2019, and December 31, 2022."_
+_"Provide a summary of all legislative changes, specifically creations and revocations, within the 'Social Rights' ('dos Direitos Sociais') chapter of the Brazilian Constitution between January 1, 2019, and December 31, 2022."_
 
 ## The Challenge
 
 This query is **impossible for systems that are not hierarchy-aware**:
 
 ❌ **Flat-Text Systems:**
-- Would perform keyword search for "tax"
+- Would perform keyword search for "social rights"
 - Retrieve irrelevant articles from unrelated chapters
 - Miss the implicit scope of a specific constitutional chapter
 - Cannot differentiate between action types (creation vs. amendment vs. revocation)
@@ -24,7 +24,7 @@ This query is **impossible for systems that are not hierarchy-aware**:
 
 ## Agent Execution Plan
 
-The agent leverages the API's **powerful server-side aggregation capabilities** to construct a highly specific and efficient query plan.
+The agent uses a **composable, multi-phase approach** to analyze hierarchical impact without relying on pre-aggregated endpoints. This demonstrates how atomic primitives (`/hierarchy-items`, `/query-actions`) can be combined to achieve efficient hierarchical impact analysis.
 
 ### Prerequisites
 
@@ -42,15 +42,15 @@ Resolve the natural language reference to get the canonical ID of the chapter.
 ```bash
 curl -G "$BASE_URL/resolve-item-reference" \
   -H "Authorization: $API_KEY" \
-  --data-urlencode "reference_text=National Tax System chapter of the Constitution"
+  --data-urlencode "reference_text=Social Rights chapter of the Brazilian Constitution"
 ```
 
 **Response:**
 ```json
 [
   {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1",
-    "label": "Chapter I - National Tax System",
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!tit2.cap2",
+    "label": "Chapter II - Social Rights",
     "type_id": "item-type:chapter",
     "confidence": 0.96
   }
@@ -60,91 +60,123 @@ curl -G "$BASE_URL/resolve-item-reference" \
 **Agent Logic:**
 ```python
 candidates = resolve_item_reference(
-    reference_text="National Tax System chapter of the Constitution"
+    reference_text="Social Rights chapter of the Brazilian Constitution"
 )
 scope_id = candidates[0].id
-# scope_id = "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1"
 ```
 
 ---
 
-## Step 2: Request a Filtered Impact Summary
+## Step 2: Enumerate All Items in the Chapter (Hierarchical Scope)
 
-Instead of fetching all items and their individual histories (highly inefficient), make a **single powerful call** to the aggregate analysis action.
-
-> **Critical Design Decision:** This demonstrates the power of **server-side aggregation**. Without this, the client would need to:
-> 1. Enumerate all items in the chapter (potentially hundreds)
-> 2. Get history for each item (N API calls)
-> 3. Filter by date range (client-side processing)
-> 4. Filter by action type (client-side processing)
->
-> **Result:** O(N) complexity vs. O(1) with server-side aggregation.
+Use `/hierarchy-items` to efficiently collect all Item IDs within the scope, then query their actions.
 
 ```bash
-curl -X POST "$BASE_URL/analysis/impact-summary" \
+curl -X POST "$BASE_URL/hierarchy-items" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "item_ids": ["urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1"],
-    "time_interval": [
-      "2019-01-01T00:00:00Z",
-      "2022-12-31T23:59:59Z"
-    ],
-    "action_types": ["Creation", "Revocation"]
+    "item_ids": ["urn:lex:br:federal:constituicao:1988-10-05;1988!tit2_cap2"],
+    "depth": -1
   }'
 ```
 
 **Response:**
 ```json
-{
-  "total_actions": 5,
-  "action_type_counts": {
-    "Creation": 3,
-    "Revocation": 2
-  },
-  "actions": [
-    "action_creation_156a_2019",
-    "action_revocation_149a_2021",
-    "action_creation_156b_2020",
-    "action_revocation_156c_2022",
-    "action_creation_153a_2019"
-  ],
-  "affected_items": [
-    "urn:lex:br:federal:constituicao:1988-10-05;art156a",
-    "urn:lex:br:federal:constituicao:1988-10-05;art149a",
-    "urn:lex:br:federal:constituicao:1988-10-05;art156b",
-    "urn:lex:br:federal:constituicao:1988-10-05;art156c",
-    "urn:lex:br:federal:constituicao:1988-10-05;art153a"
-  ],
-  "time_interval": [
-    "2019-01-01T00:00:00Z",
-    "2022-12-31T23:59:59Z"
-  ]
-}
+[
+  "urn:lex:br:federal:constituicao:1988-10-05;1988!tit2_cap2",
+  "urn:lex:br:federal:constituicao:1988-10-05;1988!art6",
+  "urn:lex:br:federal:constituicao:1988-10-05;1988!art7",
+  "urn:lex:br:federal:constituicao:1988-10-05;1988!art8",
+  "urn:lex:br:federal:constituicao:1988-10-05;1988!art9",
+  "urn:lex:br:federal:constituicao:1988-10-05;1988!art10",
+  "urn:lex:br:federal:constituicao:1988-10-05;1988!art11"
+]
 ```
 
 **Agent Logic:**
 ```python
-report = summarize_impact(
+# Enumerate all descendants of the chapter
+chapter_items = get_hierarchy_items(
     item_ids=[scope_id],
-    time_interval=["2019-01-01T00:00:00Z", "2022-12-31T23:59:59Z"],
-    action_types=["Creation", "Revocation"]
+    depth=-1
 )
 
-# Server performs complex aggregation:
-# - Enumerates all descendants of the chapter
-# - Filters actions by date range
-# - Filters actions by type
-# - Returns lightweight summary
+# chapter_items now contains all items within the Social Rights chapter
+# as a flat list of IDs for efficient use in further queries
 ```
 
 ---
 
-## Step 3: Hydrate Details for Reporting
+## Step 3: Query Actions Affecting Those Items
 
-The returned `ImpactReport` contains **lightweight lists of identifiers**. To build a rich, human-readable narrative, the agent "hydrates" these IDs into full objects using **efficient batch calls**.
+Use `/query-actions` to retrieve all actions that affected these items during the target time period.
 
-> **Note:** These two batch calls are **independent** and can be executed in parallel for maximum efficiency (DAG execution pattern).
+```bash
+curl -X POST "$BASE_URL/query-actions" \
+  -H "Authorization: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "item_ids": [
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!art6",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!art7",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!art8",
+      "..."
+    ],
+    "time_interval": {
+      "start_time": "2019-01-01T00:00:00Z",
+      "end_time": "2022-12-31T23:59:59Z"
+    }
+  }'
+```
+
+**Response:**
+```json
+[
+  {
+    "id": "action_creation_11a_2019_...",
+    "type": "Creation",
+    "date": "2019-11-06T00:00:00Z",
+    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2019-11-06;11@2019-11-06...",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2019-11-06!art11a"
+  },
+  {
+    "id": "action_revocation_5_2022_...",
+    "type": "Revocation",
+    "date": "2022-06-22T00:00:00Z",
+    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2022-06-22;115@2022-06-22...",
+    "produces_version_id": null,
+    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-01-01!art5"
+  }
+]
+```
+
+**Agent Logic:**
+```python
+# Query actions affecting all chapter items
+actions = query_actions(
+    item_ids=chapter_items,
+    time_interval={
+        "start_time": "2019-01-01T00:00:00Z",
+        "end_time": "2022-12-31T23:59:59Z"
+    }
+)
+
+# Aggregate statistics
+total_actions = len(actions)
+action_counts = {}
+for action in actions:
+    action_type = action.type
+    action_counts[action_type] = action_counts.get(action_type, 0) + 1
+```
+
+---
+
+## Step 4: Hydrate Details for Reporting
+
+The `/query-actions` result contains Action references. To build a rich, human-readable narrative, the agent "hydrates" these IDs into full objects using **efficient batch calls**.
+
+> **Note:** These batch calls are **independent** and can be executed in parallel for maximum efficiency (DAG execution pattern).
 
 ### Get Full Action Details
 
@@ -154,11 +186,8 @@ curl -X POST "$BASE_URL/actions/batch-get" \
   -H "Content-Type: application/json" \
   -d '{
     "ids": [
-      "action_creation_156a_2019",
-      "action_revocation_149a_2021",
-      "action_creation_156b_2020",
-      "action_revocation_156c_2022",
-      "action_creation_153a_2019"
+      "action_creation_11a_2019_...",
+      "action_revocation_5_2022_..."
     ]
   }'
 ```
@@ -167,44 +196,20 @@ curl -X POST "$BASE_URL/actions/batch-get" \
 ```json
 [
   {
-    "id": "action_creation_156a_2019",
+    "id": "action_creation_11a_2019_...",
     "type": "Creation",
     "date": "2019-11-06T00:00:00Z",
-    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2019-11-06;110",
-    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;art156a@2019-11-06",
-    "terminates_version_id": null
+    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2019-11-06;110...",
+    "terminates_version_id": null,
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2019-11-06;art11a"
   },
   {
-    "id": "action_revocation_149a_2021",
-    "type": "Revocation",
-    "date": "2021-03-15T00:00:00Z",
-    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2021-03-15;109",
-    "produces_version_id": null,
-    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;art149a@1988-10-05"
-  },
-  {
-    "id": "action_creation_156b_2020",
-    "type": "Creation",
-    "date": "2020-07-14T00:00:00Z",
-    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2020-07-14;112",
-    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;art156b@2020-07-14",
-    "terminates_version_id": null
-  },
-  {
-    "id": "action_revocation_156c_2022",
+    "id": "action_revocation_5_2022_...",
     "type": "Revocation",
     "date": "2022-06-22T00:00:00Z",
-    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2022-06-22;115",
-    "produces_version_id": null,
-    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;art156c@2021-01-01"
-  },
-  {
-    "id": "action_creation_153a_2019",
-    "type": "Creation",
-    "date": "2019-12-20T00:00:00Z",
-    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2019-12-20;110",
-    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;art153a@2019-12-20",
-    "terminates_version_id": null
+    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2022-06-22;115...",
+    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2021-01-01!art5",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2022-06-22!art5"
   }
 ]
 ```
@@ -217,11 +222,8 @@ curl -X POST "$BASE_URL/items/batch-get" \
   -H "Content-Type: application/json" \
   -d '{
     "ids": [
-      "urn:lex:br:federal:constituicao:1988-10-05;art156a",
-      "urn:lex:br:federal:constituicao:1988-10-05;art149a",
-      "urn:lex:br:federal:constituicao:1988-10-05;art156b",
-      "urn:lex:br:federal:constituicao:1988-10-05;art156c",
-      "urn:lex:br:federal:constituicao:1988-10-05;art153a"
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!art5",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!art11a"
     ]
   }'
 ```
@@ -230,34 +232,16 @@ curl -X POST "$BASE_URL/items/batch-get" \
 ```json
 [
   {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;art156a",
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art5",
     "type_id": "item-type:article",
-    "label": "Article 156-A",
-    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3"
+    "label": "Article 5",
+    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!tit2_cap2"
   },
   {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;art149a",
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art11a",
     "type_id": "item-type:article",
-    "label": "Article 149-A",
-    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section2"
-  },
-  {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;art156b",
-    "type_id": "item-type:article",
-    "label": "Article 156-B",
-    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3"
-  },
-  {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;art156c",
-    "type_id": "item-type:article",
-    "label": "Article 156-C",
-    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section3"
-  },
-  {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;art153a",
-    "type_id": "item-type:article",
-    "label": "Article 153-A",
-    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;title6.chapter1.section2"
+    "label": "Article 11-A",
+    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!tit2_cap2"
   }
 ]
 ```
@@ -283,44 +267,26 @@ The agent now possesses a **complete, structured dataset** of all relevant chang
 
 ```python
 synthesis_data = {
-    "scope": "National Tax System chapter",
+    "scope": "Social Rights",
     "time_range": "2019-01-01 to 2022-12-31",
-    "filter": "Creations and Revocations only",
     "summary": {
-        "total_changes": 5,
-        "creations": 3,
-        "revocations": 2
+        "total_changes": 2,
+        "creations": 1,
+        "revocations": 1
     },
     "changes": [
         {
             "type": "Creation",
-            "article": "Article 156-A",
+            "article": "Article 11-A",
             "date": "2019-11-06",
-            "law": "Constitutional Amendment No. 110/2019"
+            "source": "Constitutional Amendment No. 110/2019"
         },
-        {
-            "type": "Creation",
-            "article": "Article 153-A",
-            "date": "2019-12-20",
-            "law": "Constitutional Amendment No. 110/2019"
-        },
-        {
-            "type": "Creation",
-            "article": "Article 156-B",
-            "date": "2020-07-14",
-            "law": "Constitutional Amendment No. 112/2020"
-        },
+
         {
             "type": "Revocation",
-            "article": "Article 149-A",
+            "article": "Article 5",
             "date": "2021-03-15",
-            "law": "Constitutional Amendment No. 109/2021"
-        },
-        {
-            "type": "Revocation",
-            "article": "Article 156-C",
-            "date": "2022-06-22",
-            "law": "Constitutional Amendment No. 115/2022"
+            "source": "Constitutional Amendment No. 109/2021"
         }
     ]
 }
@@ -328,16 +294,13 @@ synthesis_data = {
 
 ### Generated Response
 
-> "Between **January 1, 2019** and **December 31, 2022**, the **National Tax System** chapter of the Constitution saw **5 legislative changes** matching your criteria (creations and revocations):
+> "Between **January 1, 2019** and **December 31, 2022**, the **Social Rights** chapter of the Constitution saw **2 legislative changes** matching your criteria (creations and revocations):
 >
 > **Creations (3):**
-> 1. **Article 156-A** was created by Constitutional Amendment No. 110/2019, effective November 6, 2019
-> 2. **Article 153-A** was created by Constitutional Amendment No. 110/2019, effective December 20, 2019
-> 3. **Article 156-B** was created by Constitutional Amendment No. 112/2020, effective July 14, 2020
+> 1. **Article 11-A** was created by Constitutional Amendment No. 110/2019, effective November 6, 2019
 >
 > **Revocations (2):**
-> 1. **Article 149-A** was revoked by Constitutional Amendment No. 109/2021, effective March 15, 2021
-> 2. **Article 156-C** was revoked by Constitutional Amendment No. 115/2022, effective June 22, 2022
+> 1. **Article 5** was revoked by Constitutional Amendment No. 109/2021, effective March 15, 2021
 >
 > This is not a guess, but a **factual report grounded in the graph**, demonstrating complete, efficient, and auditable workflow from high-level aggregation to detailed reporting."
 
@@ -345,24 +308,41 @@ synthesis_data = {
 
 ## Key Takeaways
 
-✅ **Server-Side Aggregation:** Transforms O(N) client-side processing into O(1) server call
+✅ **Composable Primitives:** Uses atomic operations (`/hierarchy-items`, `/query-actions`) that can be independently tested and evolved
 
-✅ **Hierarchical Filtering:** Automatically includes all descendants of the specified chapter
+✅ **Hierarchical Traversal:** Efficiently collects all descendants of the chapter scope without full object hydration
 
-✅ **Multi-Dimensional Filtering:** Filters by scope + time range + action type simultaneously
+✅ **Multi-Dimensional Filtering:** Filters by scope + time range + action type using `/query-actions`
 
-✅ **Efficient Hydration:** Batch operations prevent N+1 query problem
+✅ **Efficient Hydration:** Batch operations prevent N+1 query problem for detail enrichment
 
 ✅ **Complete Auditability:** Every claim backed by specific Action and Item IDs
 
+✅ **Flexible Filtering:** Can adapt action type filters, time ranges, and item sets without API changes
+
+### Execution Flow
+
+```
+Step 1: resolveItemReference()
+    ↓
+Step 2: get_hierarchy_items() [returns IDs only]
+    ↓
+Step 3: query_actions() [with time + type filters]
+    ↓
+Step 4 (Parallel): getBatchActions() ‖ getBatchItems()
+    ↓
+Synthesis
+```
+
 ### Efficiency Comparison
 
-| Approach | API Calls | Processing |
-|----------|-----------|------------|
-| **Without Server Aggregation** | 1 (enumerate) + N (histories) + N (items) = **2N+1** | Client-side filtering |
-| **With Server Aggregation** | 1 (summarizeImpact) + 2 (batch hydration) = **3** | Server-side filtering |
+| Approach | API Calls | Payload Size | Processing |
+|----------|-----------|--------------|------------|
+| **Naive** (N+1 histories) | 1 (enumerate) + N (histories) = **N+1** | Large (full objects) | Client-side aggregation |
+| **Composite** (this pattern) | 1 (hierarchy) + 1 (query-actions) + 2 (batch hydration) = **4** | Minimal IDs → Rich hydration | Server-side query optimization |
+| **Aggregated** (if available) | 1 (summarizeImpact) + 2 (batch) = **3** | Lightweight summaries | Pre-computed aggregation |
 
-For a chapter with 100 articles, this is **201 calls vs. 3 calls** — a **67x reduction**.
+For a chapter with 100 articles and 50 actions: **151 calls vs. 4 calls** — a **~38x reduction** with composable primitives.
 
 ---
 
@@ -370,30 +350,35 @@ For a chapter with 100 articles, this is **201 calls vs. 3 calls** — a **67x r
 
 | Capability | Flat-Text System | Standard RAG | SAT-Graph API |
 |------------|------------------|--------------|---------------|
-| **Hierarchical scope filtering** | ❌ Keyword search only | ❌ No structure awareness | ✅ enumerateItems() descendants |
-| **Action type differentiation** | ❌ Cannot distinguish | ❌ No causal model | ✅ action_types filter |
-| **Temporal precision** | ❌ No versioning | ❌ Probabilistic retrieval | ✅ time_interval filter |
-| **Server-side aggregation** | ❌ N/A | ❌ Client-side only | ✅ summarizeImpact() |
+| **Hierarchical scope filtering** | ❌ Keyword search only | ❌ No structure awareness | ✅ `/hierarchy-items` traversal |
+| **Action type differentiation** | ❌ Cannot distinguish | ❌ No causal model | ✅ `action_types` filter in `/query-actions` |
+| **Temporal precision** | ❌ No versioning | ❌ Probabilistic retrieval | ✅ `time_interval` filter in `/query-actions` |
+| **Composable efficiency** | ❌ N/A | ❌ Limited primitives | ✅ Combines `/hierarchy-items` + `/query-actions` |
 
 ---
 
 ## Execution Pattern Summary
 
 ```
-Sequential Execution:
+Composite Execution:
 ├── Step 1: resolveItemReference() [Probabilistic grounding]
 │
-├── Step 2: summarizeImpact() [Deterministic aggregation]
+├── Step 2: get_hierarchy_items() [Deterministic traversal]
+│   └── Returns flat list of Item IDs in hierarchical scope
+│
+├── Step 3: query_actions() [Deterministic filtering]
 │   └── Server performs:
-│       ├── Enumerate all descendants of scope
+│       ├── Filter by item_ids
 │       ├── Filter by time_interval
 │       ├── Filter by action_types
-│       └── Return lightweight summary
+│       └── Return lightweight Action list
 │
-└── Step 3: Parallel hydration
-    ├── getBatchActions() ‖ getBatchItems()
+└── Step 4: Parallel hydration
+    ├── getBatchActions(ids=[action IDs]) ‖ getBatchItems(ids=[affected items])
     └── Synthesis
 ```
+
+This pattern demonstrates how **composable primitives** (`/hierarchy-items` + `/query-actions`) achieve similar efficiency to pre-aggregated endpoints while maintaining flexibility and auditability.
 
 ---
 
