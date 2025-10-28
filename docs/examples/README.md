@@ -17,6 +17,8 @@ All examples are based on the research paper and demonstrate real-world legal an
 - **[02-causal-lineage-tracing.md](./02-causal-lineage-tracing.md)** - Use Case 2: Legal audit with parallel task execution
 - **[03-hierarchical-impact-summarization.md](./03-hierarchical-impact-summarization.md)** - Use Case 3: Hierarchical legislative change analysis
 - **[04-structural-normative-predecessors.md](./04-structural-normative-predecessors.md)** - Use Case 4: Dual-path disambiguation for legal succession
+- **[05-thematic-legal-scope-discovery.md](./05-thematic-legal-scope-discovery.md)** - Use Case 5: Multi-document legal scope discovery via structural navigation
+- **[06-cascading-impact-analysis-social-rights.md](./06-cascading-impact-analysis-social-rights.md)** - Use Case 6: Cascading impact analysis - temporal evolution of social rights
 
 ## Getting Started
 

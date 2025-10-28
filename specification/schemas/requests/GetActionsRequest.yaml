@@ -1,0 +1,42 @@
+type: object
+description: "Specifies the criteria for querying Action objects. If all optional filters are omitted, the query runs against the entire corpus of actions."
+properties:
+  item_ids:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: "Optional. A list of Item IDs. Returns actions that affected any of these items."
+
+  produces_version_ids:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: "Optional. A list of Version IDs. Returns actions that produced any of these versions."
+
+  action_types:
+    type: array
+    items:
+      type: string
+      enum:
+        - Amendment
+        - Revocation
+        - Creation
+        - Repeal
+    description: "Optional. Filters actions to only those of the specified types."
+
+  time_interval:
+    type: object
+    description: "Optional but recommended. Filters actions by their effective date. At least one of 'start_time' or 'end_time' should be provided."
+    properties:
+      start_time:
+        type: string
+        format: date-time
+        description: "Optional. Includes actions with effective_time >= start_time."
+      end_time:
+        type: string
+        format: date-time
+        description: "Optional. Includes actions with effective_time <= end_time."
+
+  datasources:
+    $ref: '../common/DatasourcesSchema.yaml'
+    description: "Optional. Restricts results to specified datasources."

@@ -17,11 +17,11 @@ export BASE_URL="https://api.example.com"
 
 ### User Query
 
-_"What was the text of Article 6 of the Brazlian Constitution on May 20th, 2001?"_
+_"What was the text of Article 6 of the Brazilian Constitution on May 20th, 2001?"_
 
 ### Overview
 
-This fundamental pattern demonstrates how a natural language query is translated into a fully **deterministic and auditable retrieval plan** once the initial probabilistic grounding is complete.
+This fundamental pattern demonstrates how a natural language query is translated into a **deterministic and auditable retrieval plan** once the initial probabilistic grounding is complete.
 
 ### Agent Execution Plan
 
@@ -136,33 +136,46 @@ This simple chain demonstrates:
 - ✅ **Auditability:** Every step returns verifiable data with IDs
 - ✅ **Composability:** Three atomic actions compose into a complete workflow
 
+**Contrast with RAG-based approaches:** Even with temporal markers on text chunks, RAG-based retrieval relies on probabilistic chance to surface the correct article text. The SAT-Graph API shifts this luck to a single point—identifying the right Item component—while the rest of the retrieval becomes fully deterministic.
+
 ---
 
-## Pattern 2: Thematic Analysis with Server-Side Aggregation
+## Pattern 2: Constitutional Evolutionary Analysis with Thematic Filtering
 
 ### User Query
 
-_"Summarize the evolution of all constitutional provisions related to 'Digital Security' since 2000"_
+_"Summarize the evolution of all constitutional provisions related to the theme 'Digital Security' since 2000"_
 
 ### Overview
 
-This pattern demonstrates how the API transforms a potentially massive client-side processing task into a **single, efficient query** using server-side aggregation.
+This pattern demonstrates how to efficiently discover and track the complete evolution of constitutional provisions within a specific thematic domain. It combines **corpus-first discovery** (ensuring we get all constitutional items) with **thematic filtering** (ensuring relevance to the specific theme), then expands hierarchically to capture all component-level provisions.
+
+### Key Strategy
+
+The query requires satisfying **three scoping rules simultaneously**:
+
+1. **Thematic Scope (Inclusive Expansion)**: Start with theme "Digital Security" and expand to include all sub-themes (entire sub-tree in the theme taxonomy)
+2. **Hierarchical Scope (Descendant Propagation)**: If an Item (e.g., Norm, Title, Article) is linked to any theme in the thematic scope, include all its descendant Items (paragraphs, clauses) even if not directly theme-linked
+3. **Corpus Scope (Restrictive Filter)**: All resulting Items must belong to the "constitutional-legislation" corpus (directly or via ItemType hierarchy)
+
+This combination ensures we capture:
+- All constitutional provisions (by corpus constraint)
+- That relate to Digital Security (by thematic scope)
+- Including nested provisions under theme-linked parents (by hierarchical expansion)
 
 ### Agent Execution Plan
 
-#### Step 1: Discover the Thematic Node
+#### Phase 1: Scope Resolution (Finding All Relevant Item IDs)
+
+**Step 1.1: Discover the Thematic Node**
 
 ```bash
 curl -X POST "$BASE_URL/search-themes" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "content_query": {
-      "semantic": {
-        "query_text": "Digital Security"
-      }
-    },
-    "top_k": 5
+    "content_query": "Digital Security",
+    "top_k": 1
   }'
 ```
 
@@ -173,12 +186,9 @@ curl -X POST "$BASE_URL/search-themes" \
   {
     "item": {
       "id": "theme_digital_security",
-      "label": "Digital Security and Privacy",
-      "parent_ids": ["theme_digital_rights"],
-      "children_ids": null,
-      "member_ids": []
+      "label": "Digital Security and Privacy"
     },
-    "score": 0.94
+    "score": 0.95
   }
 ]
 ```
@@ -186,103 +196,373 @@ curl -X POST "$BASE_URL/search-themes" \
 **Agent Logic:**
 
 ```python
-themes = search_themes(
-    content_query={
-        "semantic": {"query_text": "Digital Security"}
-    }
-)
-theme_id = themes[0].item.id
-# theme_id = "theme_digital_security"
+themes = search_themes(content_query="Digital Security", top_k=1)
+root_theme_id = themes[0].item.id
+# root_theme_id = "theme_digital_security"
 ```
 
-#### Step 2: Request Aggregate Impact Summary
+**Step 1.2: Expand Thematic Scope (Get All Sub-Themes)**
 
-Instead of fetching all items and their individual histories (highly inefficient), make a single powerful call.
+Retrieve all sub-themes to ensure inclusive thematic coverage (rule 1: Thematic Scope).
 
 ```bash
-curl -X POST "$BASE_URL/analysis/impact-summary" \
-  -H "Authorization: $API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "theme_ids": ["theme_digital_security"],
-    "time_interval": ["2000-01-01T00:00:00Z", "2025-10-15T23:59:59Z"]
-  }'
-# considering 2025-10-15 as today
+curl -G "$BASE_URL/themes/theme_digital_security/descendants" \
+  -H "Authorization: $API_KEY"
 ```
 
 **Response:**
 
 ```json
-{
-  "total_actions": 12,
-  "action_type_counts": {
-    "Amendment": 8,
-    "Creation": 3,
-    "Revocation": 1
-  },
-  "actions": [
-    "action_id_1",
-    "action_id_2",
-    "..."
-  ],
-  "affected_items": [
-    "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12",
-    "..."
-  ],
-  "time_interval": ["2000-01-01T00:00:00Z", "2025-10-15T23:59:59Z"]
-}
+[
+  "theme_digital_security",
+  "theme_data_protection",
+  "theme_cybersecurity",
+  "theme_digital_privacy"
+]
 ```
 
 **Agent Logic:**
 
 ```python
-report = summarize_impact(
-    theme_ids=[theme_id],
-    time_interval=["2000-01-01T00:00:00Z", "2025-10-15T23:59:59Z"]
-)
-# Server performs complex aggregation
+all_theme_ids = get_theme_descendants(root_theme_id)
+# all_theme_ids = ["theme_digital_security", "theme_data_protection", ...]
 ```
 
-#### Step 3: Hydrate Details (If Needed)
+**Step 1.3: Discover Constitutional Corpus (Corpus-First Approach)**
 
-If a more detailed narrative is required, make targeted batch calls.
-
-> **Note:** These two batch calls are **independent** and can be executed in parallel for maximum efficiency (DAG execution pattern).
+Rather than starting with theme-tagged items (which may be incomplete), discover **all constitutional-level items first**, then filter by theme. Get ItemType descendants for "constitutional-legislation" to understand what counts as constitutional (rule 3: Corpus Scope).
 
 ```bash
-# Get full action details
-curl -X POST "$BASE_URL/actions/batch-get" \
+curl -G "$BASE_URL/item-types/item-type:constitutional-legislation/descendants" \
+  -H "Authorization: $API_KEY"
+```
+
+**Response:**
+
+```json
+[
+  "item-type:constitutional-legislation",
+  "item-type:constitution",
+  "item-type:constitutional-amendment",
+  "item-type:constitutional-act"
+]
+```
+
+**Agent Logic:**
+
+```python
+constitutional_item_types = get_item_type_descendants("item-type:constitutional-legislation")
+# constitutional_item_types = ["item-type:constitution", "item-type:constitutional-amendment", ...]
+```
+
+**Step 1.4: Enumerate All Constitutional Root Items**
+
+Find all Items of the constitutional ItemTypes discovered in 1.3. These are the root-level constitutional documents (e.g., the Constitution itself, each Constitutional Amendment).
+
+```bash
+curl -X POST "$BASE_URL/enumerate-items" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "ids": ["action_id_1", "action_id_2", "..."]
+    "item_type_ids": [
+      "item-type:constitution",
+      "item-type:constitutional-amendment",
+      "item-type:constitutional-act"
+    ]
+  }'
+```
+
+**Response:**
+
+```json
+[
+  {
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988",
+    "type": "item-type:constitution",
+    "label": "Federal Constitution of Brazil (1988)"
+  },
+  {
+    "id": "urn:lex:br:federal:emenda.constitucional:1992-03-31;1",
+    "type": "item-type:constitutional-amendment",
+    "label": "Constitutional Amendment No. 1 of 1992"
+  }
+]
+```
+
+**Agent Logic:**
+
+```python
+constitutional_roots = enumerate_items(item_type_ids=constitutional_item_types)
+root_item_ids = [item.id for item in constitutional_roots]
+# root_item_ids = ["urn:lex:br:federal:constituicao:1988-10-05;1988",
+#                  "urn:lex:br:federal:constituicao:1988-10-05;1988!ec1_1992", ...]
+```
+
+**Step 1.5: Expand Hierarchically and Filter by Theme (Parallel Execution)**
+
+For **each** constitutional root discovered in 1.4, enumerate all descendants to get component-level items (articles, paragraphs, clauses). This can be done in **parallel** since there are no dependencies.
+
+Then filter results to keep only items that:
+- Are directly linked to any theme in `all_theme_ids`, OR
+- Have an ancestor that is directly linked to any theme in `all_theme_ids`
+
+(This implements rule 2: Hierarchical Scope)
+
+```bash
+# Executed in parallel, one call per constitutional root
+curl -X POST "$BASE_URL/enumerate-items" \
+  -H "Authorization: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "item_ids": ["urn:lex:br:federal:constituicao:1988-10-05;1988"],
+    "depth": -1
   }'
 
-# Get affected item details
+curl -X POST "$BASE_URL/enumerate-items" \
+  -H "Authorization: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "item_ids": ["urn:lex:br:federal:emenda.constitucional:1992-03-31;1"],
+    "depth": -1
+  }'
+# ... one call per root item
+```
+
+**Response (per root):**
+
+```json
+[
+  {
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art1",
+    "type": "item-type:article",
+    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;1988"
+  },
+  {
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art1_cpt",
+    "type": "item-type:caput",
+    "parent_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art1"
+  }
+]
+```
+
+**Agent Logic (Client-side Filtering):**
+
+```python
+# Collect all descendants from all roots (these calls are parallel)
+all_descendants = []
+for root_id in root_item_ids:
+    descendants = enumerate_items(item_ids=[root_id], depth=-1)
+    all_descendants.extend(descendants)
+
+# Build a set of items directly linked to the thematic scope
+theme_linked_items = set()
+for item in all_descendants:
+    # Get themes associated with this item
+    item_themes = get_themes_for_item(item.id)
+    if any(theme.id in all_theme_ids for theme in item_themes):
+        theme_linked_items.add(item.id)
+
+# Apply hierarchical rule: include all descendants of theme-linked items
+final_item_ids = set()
+for root_id in root_item_ids:
+    descendants = enumerate_items(item_ids=[root_id], depth=-1)
+    for item in descendants:
+        # Include if directly theme-linked
+        if item.id in theme_linked_items:
+            final_item_ids.add(item.id)
+        # Include if any ancestor is theme-linked
+        elif any(ancestor.id in theme_linked_items for ancestor in get_ancestors(item.id)):
+            final_item_ids.add(item.id)
+
+# final_item_ids now contains all items satisfying all three scope rules
+```
+
+> **Efficiency Note:** Steps 1.4-1.5 enumerate all constitutional descendants in parallel (one call per root), then apply theme filtering client-side. This is more efficient than trying to do filtered enumeration server-side, as it avoids repeated traversals.
+
+#### Phase 2: Historical Analysis (Single Efficient Query)
+
+**Step 2.1: Query All Relevant Actions Since 2000**
+
+Instead of making individual `/items/{itemId}/history` calls for each discovered item, use a single powerful `/query-actions` call to retrieve all actions affecting the discovered items in one operation.
+
+```bash
+curl -X POST "$BASE_URL/query-actions" \
+  -H "Authorization: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "item_ids": [
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!art220",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!ec1_1992",
+      "..."
+    ],
+    "time_interval": {
+      "start_time": "2000-01-01T00:00:00Z"
+    }
+  }'
+```
+
+**Response:**
+
+```json
+[
+  {
+    "id": "action_ec_115_2022",
+    "type": "Amendment",
+    "effective_time": "2022-02-10T00:00:00Z",
+    "target_item_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12",
+    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art5_inc12",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2022-02-10!art5_inc12"
+  },
+  {
+    "id": "action_ec_32_2001",
+    "type": "Amendment",
+    "effective_time": "2001-09-11T00:00:00Z",
+    "target_item_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art220",
+    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art220",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2001-09-11!art220"
+  }
+]
+```
+
+**Agent Logic:**
+
+```python
+# Single efficient query: retrieve all relevant actions in one call
+all_relevant_actions = query_actions(
+    item_ids=list(final_item_ids),
+    time_interval={
+        "start_time": "2000-01-01T00:00:00Z"
+    }
+)
+
+# Aggregate statistics
+total_actions = len(all_relevant_actions)
+action_by_type = {}
+for action in all_relevant_actions:
+    action_type = action.type
+    action_by_type[action_type] = action_by_type.get(action_type, 0) + 1
+# action_by_type = {"Amendment": 12, "Creation": 3, "Revocation": 1}
+
+# Build item-to-actions mapping for later synthesis
+item_actions = {}
+for action in all_relevant_actions:
+    item_id = action.target_item_id
+    if item_id not in item_actions:
+        item_actions[item_id] = []
+    item_actions[item_id].append(action)
+```
+
+> **Efficiency Advantage:** This single `/query-actions` call replaces what would have been M individual `/items/{itemId}/history` calls (where M = |final_item_ids|). For typical constitutional analysis with 500+ items, this means one request instead of 500+, dramatically improving both latency and throughput.
+
+#### Phase 3: Hydration and Synthesis (Optional)
+
+If a detailed narrative is required, batch-fetch full objects to enrich the action data.
+
+```bash
+# Get all item details (parallel)
 curl -X POST "$BASE_URL/items/batch-get" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "ids": ["urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12", "..."]
+    "ids": [
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!art220",
+      "..."
+    ]
+  }'
+
+# Get version details for produced versions (parallel)
+curl -X POST "$BASE_URL/versions/batch-get" \
+  -H "Authorization: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ids": [
+      "urn:lex:br:federal:constituicao:1988-10-05;1988@2022-02-10!art5_inc12",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988@2001-09-11!art220",
+      "..."
+    ]
+  }'
+
+# Get text units for narrative generation (parallel)
+curl -X POST "$BASE_URL/text-units/batch-get" \
+  -H "Authorization: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ids": [
+      "text_unit_v1_art5",
+      "text_unit_v2_art220",
+      "..."
+    ]
   }'
 ```
 
 **Agent Logic:**
 
 ```python
-# Optional: Hydrate for detailed narrative
-# Note: These calls are independent and can run in parallel
-full_actions = get_batch_actions(ids=report.actions)
-full_items = get_batch_items(ids=report.affected_items)
+# Collect unique IDs from actions and items
+version_ids = [action.produces_version_id for action in all_relevant_actions]
+
+# Batch hydrate (parallel)
+full_items = get_batch_items(ids=list(final_item_ids))
+full_versions = get_batch_versions(ids=version_ids)
+
+# Generate structured summary
+summary = {
+    "query": "Constitutional provisions related to Digital Security since 2000",
+    "scope": {
+        "themes": all_theme_ids,
+        "corpus": "constitutional-legislation",
+        "items_found": len(final_item_ids),
+        "actions_found": total_actions
+    },
+    "action_summary": action_by_type,
+    "timeline": sorted(all_relevant_actions, key=lambda x: x.effective_time),
+    "affected_items": {item.id: item for item in full_items},
+    "affected_versions": {version.id: version for version in full_versions},
+    "actions_by_item": item_actions
+}
+
+# Pass to LLM for narrative synthesis
+narrative = synthesize_narrative(summary)
+
+# Example output structure:
+# {
+#   "summary": "Between 2000 and 2025, 12 constitutional amendments affected 8 provisions related to Digital Security...",
+#   "by_provision": [
+#     {
+#       "item_id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12",
+#       "label": "Art. 5, Inc. 12 - Right to inviolability of privacy",
+#       "actions": [
+#         {"date": "2022-02-10", "type": "Amendment", "description": "EC 115/2022 modified..."}
+#       ]
+#     }
+#   ]
+# }
 ```
 
 ### Key Takeaway
 
 This pattern demonstrates:
 
-- ✅ **Server-Side Aggregation:** Massive processing task → single API call
-- ✅ **Efficiency:** Avoid N+1 query problem
-- ✅ **Flexibility:** Get aggregate stats first, hydrate details only if needed
+- ✅ **Three Scope Rules Applied Simultaneously:**
+  - Thematic Scope: Expands to include all sub-themes of "Digital Security"
+  - Hierarchical Scope: Propagates theme membership down to all descendants
+  - Corpus Scope: Filters to only constitutional-legislation items
+
+- ✅ **Corpus-First Discovery:** Enumerates all constitutional roots first, then filters by theme (avoiding incomplete theme tagging)
+
+- ✅ **Extreme Efficiency:**
+  - Phase 1: One `enumerate-items` call per constitutional root (typically 2-10 roots, in parallel)
+  - Phase 2: **One single `/query-actions` call** instead of M individual `/items/{id}/history` calls
+    - For 500+ discovered items, this means **1 request instead of 500+**
+  - Phase 3: Batch operations executed in parallel
+
+- ✅ **Client-Side Filtering:** Theme membership checks done locally after hierarchical enumeration, reducing server-side complexity
+
+- ✅ **Composable Primitives:** Uses atomic, well-defined operations (`search-themes`, `get_theme_descendants`, `enumerate-items`, `/query-actions`) that can be independently tested and evolved
+
+- ✅ **Complete Evolutionary Analysis:** All actions affecting constitutional provisions related to Digital Security since 2000 are captured, aggregated, and synthesized into a structured narrative
 
 ---
 
@@ -406,11 +686,12 @@ This pattern demonstrates:
 
 These three fundamental patterns showcase the power of the SAT-Graph API:
 
-| Pattern                     | Key Principle                  | Benefit                         |
-| --------------------------- | ------------------------------ | ------------------------------- |
-| **Point-in-Time Retrieval** | Probabilistic → Deterministic | Auditable, verifiable results   |
-| **Thematic Analysis**       | Server-Side Aggregation        | Massive efficiency gains        |
-| **Multilingual Fallback**   | Atomic Composability           | Robust, user-friendly behaviors |
+
+| Pattern                              | Key Principle                    | Benefit                               |
+| ------------------------------------ | -------------------------------- | ------------------------------------- |
+| **Point-in-Time Retrieval**          | Probabilistic → Deterministic   | Auditable, verifiable results         |
+| **Comprehensive Evolutionary Analysis** | Dual-Path Discovery + Parallelization | Complete coverage, maximum efficiency |
+| **Multilingual Fallback**            | Atomic Composability             | Robust, user-friendly behaviors       |
 
 All patterns share common characteristics:
 

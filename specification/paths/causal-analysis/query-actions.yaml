@@ -1,0 +1,49 @@
+post:
+  tags:
+    - "Causal Analysis Actions"
+  summary: "Queries for Action objects based on complex criteria including items, versions, types, and temporal filters."
+  operationId: "getActions"
+  description: |
+    A powerful action to query and retrieve complete `Action` objects based on a variety of criteria, including affected items, produced versions, action types, and temporal validity.
+
+    This action enables efficient batch retrieval of actions across multiple items and versions, supporting complex impact analysis workflows without needing to call per-item endpoints repeatedly.
+
+    ### Filtering Logic
+
+    - **item_ids**: If provided, returns actions that affected any of the specified items
+    - **produces_version_ids**: If provided, returns actions that produced any of the specified versions
+    - **action_types**: If provided, filters to only actions of the specified types
+    - **time_interval**: Filters actions by effective date. If only `start_time` is provided, returns all actions from that date onwards. If only `end_time` is provided, returns all actions up to that date.
+
+    When multiple filter types are provided, results are the **union** of all matching actions (OR logic).
+
+    ### Discussion
+
+    This action is essential for comprehensive impact analysis at scale. Rather than making individual `/items/{itemId}/history` or `/items/{sourceWorkId}/actions-caused` calls, a single `/query-actions` call can retrieve all relevant actions across multiple items and versions, dramatically improving efficiency for temporal and causal analysis workflows.
+
+  security:
+    - ApiKeyAuth: []
+
+  requestBody:
+    description: "The criteria for the Action query."
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/GetActionsRequest'
+
+  responses:
+    '200':
+      description: "A time-ordered list of Action objects matching the criteria. The list may be empty if no actions are found."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Action'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'
