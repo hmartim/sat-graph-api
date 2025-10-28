@@ -265,6 +265,7 @@ curl -X POST "$BASE_URL/enumerate-items" \
   -H "Content-Type: application/json" \
   -d '{
     "item_type_ids": [
+      "item-type:constitutional-legislation",
       "item-type:constitution",
       "item-type:constitutional-amendment",
       "item-type:constitutional-act"
@@ -295,12 +296,12 @@ curl -X POST "$BASE_URL/enumerate-items" \
 constitutional_roots = enumerate_items(item_type_ids=constitutional_item_types)
 root_item_ids = [item.id for item in constitutional_roots]
 # root_item_ids = ["urn:lex:br:federal:constituicao:1988-10-05;1988",
-#                  "urn:lex:br:federal:constituicao:1988-10-05;1988!ec1_1992", ...]
+# "urn:lex:br:federal:emenda.constitucional:1992-03-31;1", ...]
 ```
 
 **Step 1.5: Expand Hierarchically and Filter by Theme (Parallel Execution)**
 
-For **each** constitutional root discovered in 1.4, enumerate all descendants to get component-level items (articles, paragraphs, clauses). This can be done in **parallel** since there are no dependencies.
+For **each** constitutional root discovered in 1.4, enumerate all descendants to get component-level items (titles, articles, paragraphs, clauses). This can be done in **parallel** since there are no dependencies.
 
 Then filter results to keep only items that:
 - Are directly linked to any theme in `all_theme_ids`, OR
@@ -348,44 +349,61 @@ curl -X POST "$BASE_URL/enumerate-items" \
 **Agent Logic (Client-side Filtering):**
 
 ```python
-# Collect all descendants from all roots (these calls are parallel)
-all_descendants = []
+# Step 1: Collect all descendants from all roots, maintaining root association
+# These calls are parallel (one per root, typically 2-10 roots)
+root_descendants = {}
 for root_id in root_item_ids:
     descendants = enumerate_items(item_ids=[root_id], depth=-1)
-    all_descendants.extend(descendants)
+    root_descendants[root_id] = descendants
 
-# Build a set of items directly linked to the thematic scope
+# Step 2: Build a set of items directly linked to the thematic scope
+# Scan ALL descendants to identify which items are theme-linked
 theme_linked_items = set()
-for item in all_descendants:
-    # Get themes associated with this item
-    item_themes = get_themes_for_item(item.id)
-    if any(theme.id in all_theme_ids for theme in item_themes):
-        theme_linked_items.add(item.id)
+for root_id, descendants in root_descendants.items():
+    for item in descendants:
+        # Get themes associated with this item
+        item_themes = get_themes_for_item(item.id)
+        if any(theme.id in all_theme_ids for theme in item_themes):
+            theme_linked_items.add(item.id)
 
-# Apply hierarchical rule: include all descendants of theme-linked items
-final_item_ids = set()
-for root_id in root_item_ids:
-    descendants = enumerate_items(item_ids=[root_id], depth=-1)
+# Step 3: Apply hierarchical rule and build final scope per root
+# This maintains the root-to-items association for efficient action queries
+root_scoped_items = {}
+for root_id, descendants in root_descendants.items():
+    scoped_items = set()
     for item in descendants:
         # Include if directly theme-linked
         if item.id in theme_linked_items:
-            final_item_ids.add(item.id)
-        # Include if any ancestor is theme-linked
+            scoped_items.add(item.id)
+        # Include if any ancestor is theme-linked (hierarchical propagation)
         elif any(ancestor.id in theme_linked_items for ancestor in get_ancestors(item.id)):
-            final_item_ids.add(item.id)
+            scoped_items.add(item.id)
 
-# final_item_ids now contains all items satisfying all three scope rules
+    root_scoped_items[root_id] = scoped_items
+
+# Union of all scoped items for later reference
+final_item_ids = set()
+for scoped_items in root_scoped_items.values():
+    final_item_ids.update(scoped_items)
 ```
 
-> **Efficiency Note:** Steps 1.4-1.5 enumerate all constitutional descendants in parallel (one call per root), then apply theme filtering client-side. This is more efficient than trying to do filtered enumeration server-side, as it avoids repeated traversals.
+> **Efficiency Note:** Steps 1.4-1.5 enumerate all constitutional descendants in parallel (one call per root), then apply theme filtering client-side. By maintaining the root-to-items association, we enable efficient parallel queries in Phase 2 (see below).
 
-#### Phase 2: Historical Analysis (Single Efficient Query)
+#### Phase 2: Historical Analysis (Parallel Root-Scoped Queries)
 
-**Step 2.1: Query All Relevant Actions Since 2000**
+**Step 2.1: Query Actions Per Root (Parallel Execution)**
 
-Instead of making individual `/items/{itemId}/history` calls for each discovered item, use a single powerful `/query-actions` call to retrieve all actions affecting the discovered items in one operation.
+Rather than querying all items in a single large request, make N parallel `/query-actions` calls (one per constitutional root), each scoped to that root's thematic items. This approach:
+
+- Keeps request payloads small and manageable
+- Enables server-side parallelization (N workers processing N queries)
+- Respects HTTP limits naturally
+- Maintains logical grouping by constitutional source
 
 ```bash
+# Executed in parallel, one call per constitutional root
+
+# For Constitution root
 curl -X POST "$BASE_URL/query-actions" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
@@ -393,16 +411,32 @@ curl -X POST "$BASE_URL/query-actions" \
     "item_ids": [
       "urn:lex:br:federal:constituicao:1988-10-05;1988!art5_inc12",
       "urn:lex:br:federal:constituicao:1988-10-05;1988!art220",
-      "urn:lex:br:federal:constituicao:1988-10-05;1988!ec1_1992",
       "..."
     ],
     "time_interval": {
       "start_time": "2000-01-01T00:00:00Z"
     }
   }'
+
+# For Constitutional Amendment #1 root
+curl -X POST "$BASE_URL/query-actions" \
+  -H "Authorization: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "item_ids": [
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!ec1_1992!sec1",
+      "urn:lex:br:federal:constituicao:1988-10-05;1988!ec1_1992!art1",
+      "..."
+    ],
+    "time_interval": {
+      "start_time": "2000-01-01T00:00:00Z"
+    }
+  }'
+
+# ... one call per root
 ```
 
-**Response:**
+**Response (per root):**
 
 ```json
 [
@@ -428,13 +462,21 @@ curl -X POST "$BASE_URL/query-actions" \
 **Agent Logic:**
 
 ```python
-# Single efficient query: retrieve all relevant actions in one call
-all_relevant_actions = query_actions(
-    item_ids=list(final_item_ids),
-    time_interval={
-        "start_time": "2000-01-01T00:00:00Z"
-    }
-)
+# Parallel execution: one query-actions call per root
+# Each call is independent and can run concurrently
+all_relevant_actions = []
+root_actions = {}
+
+for root_id, scoped_items in root_scoped_items.items():
+    # Each call queries only the items scoped to this root
+    actions = query_actions(
+        item_ids=list(scoped_items),
+        time_interval={
+            "start_time": "2000-01-01T00:00:00Z"
+        }
+    )
+    root_actions[root_id] = actions
+    all_relevant_actions.extend(actions)
 
 # Aggregate statistics
 total_actions = len(all_relevant_actions)
@@ -453,7 +495,13 @@ for action in all_relevant_actions:
     item_actions[item_id].append(action)
 ```
 
-> **Efficiency Advantage:** This single `/query-actions` call replaces what would have been M individual `/items/{itemId}/history` calls (where M = |final_item_ids|). For typical constitutional analysis with 500+ items, this means one request instead of 500+, dramatically improving both latency and throughput.
+> **Efficiency Advantage:**
+> - **N parallel calls** (one per constitutional root, typically 2-10) instead of:
+>   - M individual `/items/{itemId}/history` calls (where M = 500+), OR
+>   - 1 massive call with 500+ item_ids
+> - Each request has manageable payload size
+> - Server can process N queries in parallel with different workers
+> - Maintains logical grouping by constitutional source document
 
 #### Phase 3: Hydration and Synthesis (Optional)
 
@@ -552,17 +600,26 @@ This pattern demonstrates:
 
 - ✅ **Corpus-First Discovery:** Enumerates all constitutional roots first, then filters by theme (avoiding incomplete theme tagging)
 
-- ✅ **Extreme Efficiency:**
-  - Phase 1: One `enumerate-items` call per constitutional root (typically 2-10 roots, in parallel)
-  - Phase 2: **One single `/query-actions` call** instead of M individual `/items/{id}/history` calls
-    - For 500+ discovered items, this means **1 request instead of 500+**
+- ✅ **Optimal Parallel Architecture:**
+  - Phase 1: One `enumerate-items` call per constitutional root (2-10 roots, parallel)
+  - Phase 2: **N parallel `/query-actions` calls** (one per root) instead of:
+    - M individual `/items/{id}/history` calls (M = 500+), OR
+    - 1 massive call with 500+ item_ids in payload
   - Phase 3: Batch operations executed in parallel
+  - **Result:** Manages scale naturally through root-based partitioning
+
+- ✅ **Payload Efficiency:**
+  - Each `/query-actions` call has modest item_ids list (50-500 items per root)
+  - Avoids HTTP size limits
+  - Enables server-side query optimization (per-root database indices)
 
 - ✅ **Client-Side Filtering:** Theme membership checks done locally after hierarchical enumeration, reducing server-side complexity
 
+- ✅ **Root-Associated Context:** Maintains root-to-items mapping throughout, enabling logical grouping by constitutional source and easier narrative synthesis
+
 - ✅ **Composable Primitives:** Uses atomic, well-defined operations (`search-themes`, `get_theme_descendants`, `enumerate-items`, `/query-actions`) that can be independently tested and evolved
 
-- ✅ **Complete Evolutionary Analysis:** All actions affecting constitutional provisions related to Digital Security since 2000 are captured, aggregated, and synthesized into a structured narrative
+- ✅ **Complete Evolutionary Analysis:** All actions affecting constitutional provisions related to Digital Security since 2000 are captured, aggregated, and synthesized into a structured narrative organized by source document
 
 ---
 
