@@ -58,7 +58,7 @@ specification/
 │   ├── requests/            # Request body schemas (8 files)
 │   │   ├── SearchItemsRequest.yaml
 │   │   ├── SearchTextUnitsRequest.yaml
-│   │   ├── EnumerateItemsRequest.yaml
+│   │   ├── GetItemHierarchyRequest.yaml
 │   │   ├── GetRelationsRequest.yaml
 │   │   ├── GetBatchActionsRequest.yaml
 │   │   ├── GetBatchItemsRequest.yaml

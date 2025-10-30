@@ -1,8 +1,8 @@
 get:
   tags:
     - "Structural Navigation Actions"
-  summary: "Retrieves all descendant IDs for a Theme in the taxonomy."
-  operationId: "getThemeDescendants"
+  summary: "Retrieves the hierarchy (all descendant IDs) for a Theme in the taxonomy."
+  operationId: "getThemeHierarchy"
   description: |
     Returns a flat list of all descendant Theme IDs for a given Theme node in the
     poly-hierarchical taxonomy, including the requested Theme ID itself.
@@ -19,7 +19,7 @@ get:
 
     Agent:
     1. Resolve "Public Law" → theme_id: "theme:public-law"
-    2. Call getThemeDescendants("theme:public-law")
+    2. Call getThemeHierarchy("theme:public-law")
        → ["theme:public-law", "theme:social-security", "theme:tax-law", ...]
     3. Call searchItems(theme_ids=[...all descendants...])
     ```

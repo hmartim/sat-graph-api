@@ -1,8 +1,8 @@
 get:
   tags:
     - "Structural Navigation Actions"
-  summary: "Retrieves all descendant IDs for an ItemType in the taxonomy."
-  operationId: "getItemTypeDescendants"
+  summary: "Retrieves the hierarchy (all descendant IDs) for an ItemType in the taxonomy."
+  operationId: "getItemTypeHierarchy"
   description: |
     Returns a flat list of all descendant ItemType IDs for a given ItemType node in the
     poly-hierarchical taxonomy, including the requested ItemType ID itself.
@@ -19,7 +19,7 @@ get:
 
     Agent:
     1. Resolve "normative components" → item_type_id: "normative-component"
-    2. Call getItemTypeDescendants("normative-component")
+    2. Call getItemTypeHierarchy("normative-component")
        → ["normative-component", "article", "paragraph", "clause", ...]
     3. Call searchItems(text="social security", type_ids=[...all descendants...])
     ```

@@ -10,7 +10,7 @@ The SAT-Graph API actions are organized into seven functional categories. Unders
 |----------|---------|-------------|----------|
 | **Discovery & Search** | Probabilistic entry points for finding entities | Non-deterministic | `searchItems`, `resolveItemReference`, `searchTextUnits`, `searchThemes` |
 | **Deterministic Fetch** | ID-based retrieval of full data objects | Fully deterministic | `getItem`, `getItemType`, `getTheme`, `getVersion`, `getAction` |
-| **Structural Navigation** | Hierarchy traversal and context retrieval | Fully deterministic | `getItemAncestors`, `enumerateItems`, `getItemContext` |
+| **Structural Navigation** | Hierarchy traversal and context retrieval | Fully deterministic | `getItemAncestors`, `getItemHierarchy`, `getItemContext` |
 | **Temporal Resolution** | Point-in-time queries across versions | Fully deterministic | `getValidVersion`, `getVersionsInInterval` |
 | **Causal Analysis** | Event tracing and lineage analysis | Fully deterministic | `traceCausality`, `compareVersions`, `getItemHistory` |
 | **Aggregate Analysis** | Server-side computation and summarization | Fully deterministic | `summarizeImpact`, `getActionsBySource` |
@@ -98,12 +98,12 @@ Each step builds upon the previous, creating a transparent, auditable chain.
 
 | Action | Input | Output | Use Case |
 |--------|-------|--------|----------|
-| `enumerateItems` | Scope (Item IDs or Theme IDs) + depth | List of Item objects | Get all articles in a chapter |
+| `getItemHierarchy` | Scope (Item IDs or Theme IDs) + depth | List of Item objects | Get all articles in a chapter |
 | `getItemAncestors` | Item ID | Ordered list of ancestors | Get hierarchical path: Article → Chapter → Title → Work |
 | `getItemContext` | Item ID | StructuralContext object | Get parent + siblings + children in one call |
 | `getThemesForItem` | Item ID | List of Theme objects | Get all themes classifying an item |
-| `getItemTypeDescendants` | ItemType ID | Flat list of descendant ItemType IDs | Get all subtypes of "Normative Component" for filtering |
-| `getThemeDescendants` | Theme ID | Flat list of descendant Theme IDs | Get all sub-themes of "Public Law" for filtering |
+| `getItemTypeHierarchy` | ItemType ID | Flat list of descendant ItemType IDs | Get all subtypes of "Normative Component" for filtering |
+| `getThemeHierarchy` | Theme ID | Flat list of descendant Theme IDs | Get all sub-themes of "Public Law" for filtering |
 
 **Design Note:** These actions enable context-aware retrieval and hierarchical filtering, essential for legal interpretation and type-based searches.
 
@@ -231,7 +231,7 @@ For efficiency, the API provides batch-enabled versions of core fetch actions:
 
 ```
 1. [Discovery]  resolveItemReference("Tax System chapter") → chapter_id
-2. [Navigation] enumerateItems(chapter_id) → all descendant items
+2. [Navigation] getItemHierarchy(chapter_id) → all descendant items
 3. [Temporal]   getBatchValidVersions(item_ids, "2020-01-01") → versions
 4. [Search]     searchTextUnits(version_ids, "exemption") → relevant texts
 ```

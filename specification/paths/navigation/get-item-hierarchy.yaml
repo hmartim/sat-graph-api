@@ -2,7 +2,7 @@ post:
   tags:
     - "Structural Navigation Actions"
   summary: "Gets Item IDs within a structural or thematic scope (hierarchy traversal)."
-  operationId: "getHierarchyItems"
+  operationId: "getItemHierarchy"
   description: |
     Enumerates and returns **Item IDs** for all items within a specified structural or thematic scope. This is an efficient operation optimized for traversing hierarchies and collecting item references without the overhead of returning full Item objects.
 
@@ -32,7 +32,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/EnumerateItemsRequest'
+          $ref: '#/components/schemas/GetItemHierarchyRequest'
 
   responses:
     '200':

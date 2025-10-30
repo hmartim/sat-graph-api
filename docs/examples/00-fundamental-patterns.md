@@ -206,7 +206,7 @@ root_theme_id = themes[0].item.id
 Retrieve all sub-themes to ensure inclusive thematic coverage (rule 1: Thematic Scope).
 
 ```bash
-curl -G "$BASE_URL/themes/theme_digital_security/descendants" \
+curl -G "$BASE_URL/themes/theme_digital_security/hierarchy" \
   -H "Authorization: $API_KEY"
 ```
 
@@ -224,7 +224,7 @@ curl -G "$BASE_URL/themes/theme_digital_security/descendants" \
 **Agent Logic:**
 
 ```python
-all_theme_ids = get_theme_descendants(root_theme_id)
+all_theme_ids = get_theme_hierarchy(root_theme_id)
 # all_theme_ids = ["theme_digital_security", "theme_data_protection", ...]
 ```
 
@@ -233,7 +233,7 @@ all_theme_ids = get_theme_descendants(root_theme_id)
 Get the full ItemType tree for "constitutional-legislation" to understand what counts as constitutional (rule 3: Corpus Scope).
 
 ```bash
-curl -G "$BASE_URL/item-types/item-type:constitutional-legislation/descendants" \
+curl -G "$BASE_URL/item-types/item-type:constitutional-legislation/hierarchy" \
   -H "Authorization: $API_KEY"
 ```
 
@@ -251,7 +251,7 @@ curl -G "$BASE_URL/item-types/item-type:constitutional-legislation/descendants" 
 **Agent Logic:**
 
 ```python
-constitutional_item_types = get_item_type_descendants("item-type:constitutional-legislation")
+constitutional_item_types = get_item_type_hierarchy("item-type:constitutional-legislation")
 # constitutional_item_types = ["item-type:constitution", "item-type:constitutional-amendment", ...]
 ```
 
@@ -326,7 +326,7 @@ These enumeration calls can run in **parallel** since there are no dependencies.
 
 ```bash
 # Executed in parallel, one call per anchor item
-curl -X POST "$BASE_URL/hierarchy-items" \
+curl -X POST "$BASE_URL/item-hierarchy" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -334,7 +334,7 @@ curl -X POST "$BASE_URL/hierarchy-items" \
     "depth": -1
   }'
 
-curl -X POST "$BASE_URL/hierarchy-items" \
+curl -X POST "$BASE_URL/item-hierarchy" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -364,9 +364,9 @@ curl -X POST "$BASE_URL/hierarchy-items" \
 final_item_ids = set()
 
 for anchor_item in anchor_items:
-    # Enumerate the full subtree rooted at this anchor item via /hierarchy-items
+    # Enumerate the full subtree rooted at this anchor item via /item-hierarchy
     # Returns: ["id1", "id2", "id3", ...]
-    descendant_ids = get_hierarchy_items(
+    descendant_ids = get_item_hierarchy(
         item_ids=[anchor_item.id],
         depth=-1
     )
@@ -573,10 +573,10 @@ This pattern demonstrates:
 
 - ✅ **Efficient Anchor Item Discovery:** Uses single `search-items` call with combined filters (`item_type_ids` AND `theme_ids`) to find items that are both constitutional AND thematic, avoiding enumerate-everything-then-filter approach
 
-- ✅ **Lightweight Hierarchy Traversal:** `/hierarchy-items` returns only Item IDs (strings), not full objects, enabling efficient traversal of hierarchies with minimal payload
+- ✅ **Lightweight Hierarchy Traversal:** `/item-hierarchy` returns only Item IDs (strings), not full objects, enabling efficient traversal of hierarchies with minimal payload
 
 - ✅ **Optimal Parallel Architecture:**
-  - Phase 1: Single `search-items` call + N parallel `/hierarchy-items` calls (one per anchor item, returning IDs only)
+  - Phase 1: Single `search-items` call + N parallel `/item-hierarchy` calls (one per anchor item, returning IDs only)
   - Phase 2: **N parallel `/query-actions` calls** (one per anchor item) instead of:
     - M individual `/items/{id}/history` calls (M = 500+), OR
     - 1 massive call with 500+ item_ids in payload
@@ -592,7 +592,7 @@ This pattern demonstrates:
 
 - ✅ **Root-Associated Context:** Maintains root-to-items mapping throughout, enabling logical grouping by constitutional source and easier narrative synthesis
 
-- ✅ **Composable Primitives:** Uses atomic, well-defined operations (`search-themes`, `get_theme_descendants`, `/hierarchy-items`, `/query-actions`) that can be independently tested and evolved
+- ✅ **Composable Primitives:** Uses atomic, well-defined operations (`search-themes`, `get_theme_hierarchy`, `/item-hierarchy`, `/query-actions`) that can be independently tested and evolved
 
 - ✅ **Complete Evolutionary Analysis:** All actions affecting constitutional provisions related to Digital Security since 2000 are captured, aggregated, and synthesized into a structured narrative organized by source document
 

@@ -98,8 +98,8 @@ components:
       $ref: './schemas/requests/SearchTextUnitsRequest.yaml'
     SearchThemesRequest:
       $ref: './schemas/requests/SearchThemesRequest.yaml'
-    EnumerateItemsRequest:
-      $ref: './schemas/requests/EnumerateItemsRequest.yaml'
+    GetItemHierarchyRequest:
+      $ref: './schemas/requests/GetItemHierarchyRequest.yaml'
     GetRelationsRequest:
       $ref: './schemas/requests/GetRelationsRequest.yaml'
     GetBatchActionsRequest:
@@ -289,12 +289,12 @@ paths:
     $ref: './paths/navigation/get-item-context.yaml'
   /items/{itemId}/themes:
     $ref: './paths/navigation/get-themes-for-item.yaml'
-  /hierarchy-items:
-    $ref: './paths/navigation/hierarchy-items.yaml'
-  /item-types/{itemTypeId}/descendants:
-    $ref: './paths/navigation/get-item-type-descendants.yaml'
-  /themes/{themeId}/descendants:
-    $ref: './paths/navigation/get-theme-descendants.yaml'
+  /item-hierarchy:
+    $ref: './paths/navigation/get-item-hierarchy.yaml'
+  /item-types/{itemTypeId}/hierarchy:
+    $ref: './paths/navigation/get-item-type-hierarchy.yaml'
+  /themes/{themeId}/hierarchy:
+    $ref: './paths/navigation/get-theme-hierarchy.yaml'
 
   # ---------------------------------------------------------------------------
   # Graph Traversal Actions

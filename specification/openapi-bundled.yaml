@@ -823,7 +823,7 @@ components:
           description: Optional. Scopes the search to a specific list of granted datasources.
       required:
         - content_query
-    EnumerateItemsRequest:
+    GetItemHierarchyRequest:
       type: object
       description: |
         Specifies the scope and filters for enumerating Item objects.
@@ -896,45 +896,6 @@ components:
           description: Optional. Key-value pairs to filter against the 'metadata' of the Relation.
         datasources:
           $ref: ../common/DatasourcesSchema.yaml
-    GetActionsRequest:
-      type: object
-      description: Specifies the criteria for querying Action objects. If all optional filters are omitted, the query runs against the entire corpus of actions.
-      properties:
-        item_ids:
-          type: array
-          items:
-            $ref: ../core/ID.yaml
-          description: Optional. A list of Item IDs. Returns actions that affected any of these items.
-        produces_version_ids:
-          type: array
-          items:
-            $ref: ../core/ID.yaml
-          description: Optional. A list of Version IDs. Returns actions that produced any of these versions.
-        action_types:
-          type: array
-          items:
-            type: string
-            enum:
-              - Amendment
-              - Revocation
-              - Creation
-              - Repeal
-          description: Optional. Filters actions to only those of the specified types.
-        time_interval:
-          type: object
-          description: Optional but recommended. Filters actions by their effective date. At least one of 'start_time' or 'end_time' should be provided.
-          properties:
-            start_time:
-              type: string
-              format: date-time
-              description: Optional. Includes actions with effective_time >= start_time.
-            end_time:
-              type: string
-              format: date-time
-              description: Optional. Includes actions with effective_time <= end_time.
-        datasources:
-          $ref: ../common/DatasourcesSchema.yaml
-          description: Optional. Restricts results to specified datasources.
     GetBatchActionsRequest:
       type: object
       description: Specifies the criteria for retrieving a batch of Action objects.
@@ -2229,12 +2190,12 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /hierarchy-items:
+  /item-hierarchy:
     post:
       tags:
         - Structural Navigation Actions
       summary: Gets Item IDs within a structural or thematic scope (hierarchy traversal).
-      operationId: getHierarchyItems
+      operationId: getItemHierarchy
       description: |
         Enumerates and returns **Item IDs** for all items within a specified structural or thematic scope. This is an efficient operation optimized for traversing hierarchies and collecting item references without the overhead of returning full Item objects.
 
@@ -2263,7 +2224,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EnumerateItemsRequest'
+              $ref: '#/components/schemas/GetItemHierarchyRequest'
       responses:
         '200':
           description: A list of Item IDs (strings) within the specified scope, ordered by hierarchical depth and position.
@@ -2279,12 +2240,12 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-  /item-types/{itemTypeId}/descendants:
+  /item-types/{itemTypeId}/hierarchy:
     get:
       tags:
         - Structural Navigation Actions
-      summary: Retrieves all descendant IDs for an ItemType in the taxonomy.
-      operationId: getItemTypeDescendants
+      summary: Retrieves the hierarchy (all descendant IDs) for an ItemType in the taxonomy.
+      operationId: getItemTypeHierarchy
       description: |
         Returns a flat list of all descendant ItemType IDs for a given ItemType node in the
         poly-hierarchical taxonomy, including the requested ItemType ID itself.
@@ -2301,7 +2262,7 @@ paths:
 
         Agent:
         1. Resolve "normative components" → item_type_id: "normative-component"
-        2. Call getItemTypeDescendants("normative-component")
+        2. Call getItemTypeHierarchy("normative-component")
            → ["normative-component", "article", "paragraph", "clause", ...]
         3. Call searchItems(text="social security", type_ids=[...all descendants...])
         ```
@@ -2348,12 +2309,12 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /themes/{themeId}/descendants:
+  /themes/{themeId}/hierarchy:
     get:
       tags:
         - Structural Navigation Actions
-      summary: Retrieves all descendant IDs for a Theme in the taxonomy.
-      operationId: getThemeDescendants
+      summary: Retrieves the hierarchy (all descendant IDs) for a Theme in the taxonomy.
+      operationId: getThemeHierarchy
       description: |
         Returns a flat list of all descendant Theme IDs for a given Theme node in the
         poly-hierarchical taxonomy, including the requested Theme ID itself.
@@ -2370,7 +2331,7 @@ paths:
 
         Agent:
         1. Resolve "Public Law" → theme_id: "theme:public-law"
-        2. Call getThemeDescendants("theme:public-law")
+        2. Call getThemeHierarchy("theme:public-law")
            → ["theme:public-law", "theme:social-security", "theme:tax-law", ...]
         3. Call searchItems(theme_ids=[...all descendants...])
         ```
@@ -2490,53 +2451,6 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /query-actions:
-    post:
-      tags:
-        - Causal Analysis Actions
-      summary: Queries for Action objects based on complex criteria including items, versions, types, and temporal filters.
-      operationId: getActions
-      description: |
-        A powerful action to query and retrieve complete `Action` objects based on a variety of criteria, including affected items, produced versions, action types, and temporal validity.
-
-        This action enables efficient batch retrieval of actions across multiple items and versions, supporting complex impact analysis workflows without needing to call per-item endpoints repeatedly.
-
-        ### Filtering Logic
-
-        - **item_ids**: If provided, returns actions that affected any of the specified items
-        - **produces_version_ids**: If provided, returns actions that produced any of the specified versions
-        - **action_types**: If provided, filters to only actions of the specified types
-        - **time_interval**: Filters actions by effective date. If only `start_time` is provided, returns all actions from that date onwards. If only `end_time` is provided, returns all actions up to that date.
-
-        When multiple filter types are provided, results are the **union** of all matching actions (OR logic).
-
-        ### Discussion
-
-        This action is essential for comprehensive impact analysis at scale. Rather than making individual `/items/{itemId}/history` or `/items/{sourceWorkId}/actions-caused` calls, a single `/query-actions` call can retrieve all relevant actions across multiple items and versions, dramatically improving efficiency for temporal and causal analysis workflows.
-      security:
-        - ApiKeyAuth: []
-      requestBody:
-        description: The criteria for the Action query.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetActionsRequest'
-      responses:
-        '200':
-          description: A time-ordered list of Action objects matching the criteria. The list may be empty if no actions are found.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Action'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
   /query-relations:
     post:
       tags:
