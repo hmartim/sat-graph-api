@@ -112,8 +112,6 @@ components:
       $ref: './schemas/requests/GetBatchValidVersionsRequest.yaml'
     GetBatchTextUnitsRequest:
       $ref: './schemas/requests/GetBatchTextUnitsRequest.yaml'
-    SummarizeImpactRequest:
-      $ref: './schemas/requests/SummarizeImpactRequest.yaml'
 
     # -------------------------------------------------------------------------
     # Response Schemas - Output data transfer objects
@@ -130,8 +128,6 @@ components:
       $ref: './schemas/responses/ErrorResponse.yaml'
     CausalityTrace:
       $ref: './schemas/responses/CausalityTrace.yaml'
-    ImpactReport:
-      $ref: './schemas/responses/ImpactReport.yaml'
     TextDiffReport:
       $ref: './schemas/responses/TextDiffReport.yaml'
     HierarchyResponse:
@@ -325,13 +321,6 @@ paths:
     $ref: './paths/causal-analysis/compare-versions.yaml'
   /items/{sourceWorkId}/actions-caused:
     $ref: './paths/causal-analysis/get-actions-by-source.yaml'
-
-  # ---------------------------------------------------------------------------
-  # Aggregate Analysis Actions
-  # Summary and impact analysis operations
-  # ---------------------------------------------------------------------------
-  /analysis/impact-summary:
-    $ref: './paths/aggregate-analysis/summarize-impact.yaml'
 
   # ---------------------------------------------------------------------------
   # Introspection & Metadata Actions

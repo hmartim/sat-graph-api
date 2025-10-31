@@ -820,6 +820,39 @@ components:
           description: Optional. Scopes the search to a specific list of granted datasources.
       required:
         - content_query
+    GetItemHierarchyRequest:
+      type: object
+      description: |
+        Specifies the scope and filters for enumerating Item objects.
+
+        Filters are applied after scope resolution (item_ids/theme_ids/depth).
+      properties:
+        item_ids:
+          type: array
+          items:
+            $ref: ../core/ID.yaml
+          description: Optional. A list of 'Item' IDs to define a structural scope. The function will return these items and/or their descendants.
+        theme_ids:
+          type: array
+          items:
+            $ref: ../core/ID.yaml
+          description: Optional. A list of 'Theme' IDs to define a thematic scope. The function will return all member items of these themes.
+        depth:
+          type: integer
+          description: |
+            Controls traversal depth for 'item_ids' scopes. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively. This parameter is ignored for 'theme_ids' scopes.
+          default: -1
+        item_type_ids:
+          type: array
+          items:
+            $ref: ../core/ID.yaml
+          description: |
+            Optional. Filter results to only items of the specified types (references to ItemType entities).
+          example:
+            - item-type:article
+            - item-type:paragraph
+        datasources:
+          $ref: ../common/DatasourcesSchema.yaml
     GetRelationsRequest:
       type: object
       description: Specifies the criteria for querying Relation objects. If 'entity_id' is omitted, the query runs against the entire corpus of relations.
@@ -951,50 +984,6 @@ components:
           example:
             - canonical
             - summary
-    SummarizeImpactRequest:
-      type: object
-      description: |
-        Specifies the criteria for summarizing impact.
-
-        **Filter Logic:**
-        - All filters (item_type_ids, action_types) are combined with AND logic.
-      required:
-        - time_interval
-      properties:
-        item_ids:
-          type: array
-          items:
-            $ref: ../core/ID.yaml
-          description: Optional. A list of 'Item' IDs to define the structural scope of the analysis.
-        theme_ids:
-          type: array
-          items:
-            $ref: ../core/ID.yaml
-          description: Optional. A list of 'Theme' IDs to define the thematic scope of the analysis.
-        time_interval:
-          $ref: ../core/TimeInterval.yaml
-          description: A start and end UTC date-time for the analysis window.
-        item_type_ids:
-          type: array
-          items:
-            $ref: ../core/ID.yaml
-          description: |
-            Optional. Filter impact analysis to only items of the specified types (references to ItemType entities).
-          example:
-            - item-type:article
-            - item-type:paragraph
-        action_types:
-          type: array
-          items:
-            type: string
-            enum:
-              - Amendment
-              - Revocation
-              - Creation
-              - Repeal
-          description: Optional. Filters the summary to specific action types. If omitted, all action types are included.
-        datasources:
-          $ref: ../common/DatasourcesSchema.yaml
     StructuralContext:
       type: object
       description: Contains the complete, immediate structural context of a single Item.
@@ -1092,29 +1081,6 @@ components:
           $ref: ../relationships/Action.yaml
           nullable: true
           description: The Action that terminated the validity of this Version. This will be null if the Version is still valid.
-    ImpactReport:
-      type: object
-      description: |
-        A structured summary of changes. It contains aggregate statistics and lightweight lists of identifiers for the relevant Actions and affected Items.
-      properties:
-        statistics:
-          type: object
-          description: Aggregate counts of actions, grouped by type.
-          additionalProperties:
-            type: integer
-          example:
-            Amendment: 12
-            Revocation: 5
-        actions:
-          type: array
-          description: A list of unique identifiers for all `Action`s that match the query criteria.
-          items:
-            $ref: ../core/ID.yaml
-        affected_items:
-          type: array
-          description: A list of unique identifiers for all `Item`s that were affected by the actions in the report.
-          items:
-            $ref: ../core/ID.yaml
     TextDiffReport:
       type: object
       description: |
@@ -1979,7 +1945,7 @@ paths:
         A batch-optimized version of `getAction`. Given a list of action identifiers, it efficiently retrieves the full data object for each corresponding `Action` in a single request.
 
         ### Discussion
-        This action is essential for the "hydration" step of analytical queries. After an agent discovers a set of relevant `Action` IDs via a function like `summarizeImpact`, this batch operation allows it to retrieve the full details of each action to build a complete and auditable report without the high performance cost of N+1 individual requests.
+        This action is essential for the "hydration" step of analytical queries. After an agent discovers a set of relevant `Action` IDs via discovery functions, this batch operation allows it to retrieve the full details of each action to build a complete and auditable report without the high performance cost of N+1 individual requests.
       security:
         - ApiKeyAuth: []
       requestBody:
@@ -2857,39 +2823,6 @@ paths:
           $ref: ../../openapi.yaml#/components/responses/Forbidden
         '404':
           $ref: ../../openapi.yaml#/components/responses/NotFound
-  /analysis/impact-summary:
-    post:
-      tags:
-        - Aggregate Analysis Actions
-      summary: Provides a high-level summary of impact over a scope and time period.
-      operationId: summarizeImpact
-      description: |
-        An aggregate analysis action that provides a high-level summary of changes that occurred within a specific scope during a defined time period.
-
-        ### Discussion
-        This powerful action enables macro-level analysis by offloading complex processing to the server. It is the primary primitive for answering broad questions about evolution. The `ImpactReport` intentionally contains lightweight identifiers, allowing an agent to selectively hydrate full details using batch operations as needed.
-      security:
-        - ApiKeyAuth: []
-      requestBody:
-        description: The criteria for the impact summary.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: ../../schemas/requests/SummarizeImpactRequest.yaml
-      responses:
-        '200':
-          description: Successfully generated and returned the impact report.
-          content:
-            application/json:
-              schema:
-                $ref: ../../schemas/responses/ImpactReport.yaml
-        '400':
-          $ref: ../../openapi.yaml#/components/responses/BadRequest
-        '401':
-          $ref: ../../openapi.yaml#/components/responses/Unauthorized
-        '403':
-          $ref: ../../openapi.yaml#/components/responses/Forbidden
   /items/{itemId}/temporal-coverage:
     get:
       tags:
@@ -2963,7 +2896,7 @@ paths:
         Returns a list of all legislative action types (e.g., `Amendment`, `Revocation`) recognized by the graph's ontology.
 
         ### Discussion
-        This action provides the canonical list of values that can be used in the `action_types` filter of other functions like `summarizeImpact` and `getItemHistory`. It allows a client application to dynamically build filtering interfaces without hardcoding ontology-specific values.
+        This action provides the canonical list of values that can be used in the `action_types` filter of other functions like `getItemHistory`. It allows a client application to dynamically build filtering interfaces without hardcoding ontology-specific values.
       security:
         - ApiKeyAuth: []
       responses:

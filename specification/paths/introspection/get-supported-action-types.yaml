@@ -7,7 +7,7 @@ get:
     Returns a list of all legislative action types (e.g., `Amendment`, `Revocation`) recognized by the graph's ontology.
 
     ### Discussion
-    This action provides the canonical list of values that can be used in the `action_types` filter of other functions like `summarizeImpact` and `getItemHistory`. It allows a client application to dynamically build filtering interfaces without hardcoding ontology-specific values.
+    This action provides the canonical list of values that can be used in the `action_types` filter of other functions like `getItemHistory`. It allows a client application to dynamically build filtering interfaces without hardcoding ontology-specific values.
   security:
     - ApiKeyAuth: []
 

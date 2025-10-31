@@ -7,7 +7,7 @@ post:
     A batch-optimized version of `getAction`. Given a list of action identifiers, it efficiently retrieves the full data object for each corresponding `Action` in a single request.
 
     ### Discussion
-    This action is essential for the "hydration" step of analytical queries. After an agent discovers a set of relevant `Action` IDs via a function like `summarizeImpact`, this batch operation allows it to retrieve the full details of each action to build a complete and auditable report without the high performance cost of N+1 individual requests.
+    This action is essential for the "hydration" step of analytical queries. After an agent discovers a set of relevant `Action` IDs via discovery functions, this batch operation allows it to retrieve the full details of each action to build a complete and auditable report without the high performance cost of N+1 individual requests.
   security:
     - ApiKeyAuth: []
 
