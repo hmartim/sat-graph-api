@@ -24,7 +24,7 @@ This query is **impossible for systems that are not hierarchy-aware**:
 
 ## Agent Execution Plan
 
-The agent uses a **composable, multi-phase approach** to analyze hierarchical impact without relying on pre-aggregated endpoints. This demonstrates how atomic primitives (`/item-hierarchy`, `/query-actions`) can be combined to achieve efficient hierarchical impact analysis.
+The agent uses a **composable, multi-phase approach** to analyze hierarchical impact without relying on pre-aggregated endpoints. This demonstrates how atomic primitives (`/items-hierarchy`, `/query-actions`) can be combined to achieve efficient hierarchical impact analysis.
 
 ### Prerequisites
 
@@ -69,10 +69,10 @@ scope_id = candidates[0].id
 
 ## Step 2: Enumerate All Items in the Chapter (Hierarchical Scope)
 
-Use `/item-hierarchy` to efficiently collect all Item IDs within the scope, then query their actions.
+Use `/items-hierarchy` to efficiently collect all Item IDs within the scope, then query their actions.
 
 ```bash
-curl -X POST "$BASE_URL/item-hierarchy" \
+curl -X POST "$BASE_URL/items-hierarchy" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -308,7 +308,7 @@ synthesis_data = {
 
 ## Key Takeaways
 
-✅ **Composable Primitives:** Uses atomic operations (`/item-hierarchy`, `/query-actions`) that can be independently tested and evolved
+✅ **Composable Primitives:** Uses atomic operations (`/items-hierarchy`, `/query-actions`) that can be independently tested and evolved
 
 ✅ **Hierarchical Traversal:** Efficiently collects all descendants of the chapter scope without full object hydration
 
@@ -350,10 +350,10 @@ For a chapter with 100 articles and 50 actions: **151 calls vs. 4 calls** — a 
 
 | Capability | Flat-Text System | Standard RAG | SAT-Graph API |
 |------------|------------------|--------------|---------------|
-| **Hierarchical scope filtering** | ❌ Keyword search only | ❌ No structure awareness | ✅ `/item-hierarchy` traversal |
+| **Hierarchical scope filtering** | ❌ Keyword search only | ❌ No structure awareness | ✅ `/items-hierarchy` traversal |
 | **Action type differentiation** | ❌ Cannot distinguish | ❌ No causal model | ✅ `action_types` filter in `/query-actions` |
 | **Temporal precision** | ❌ No versioning | ❌ Probabilistic retrieval | ✅ `time_interval` filter in `/query-actions` |
-| **Composable efficiency** | ❌ N/A | ❌ Limited primitives | ✅ Combines `/item-hierarchy` + `/query-actions` |
+| **Composable efficiency** | ❌ N/A | ❌ Limited primitives | ✅ Combines `/items-hierarchy` + `/query-actions` |
 
 ---
 
@@ -378,7 +378,7 @@ Composite Execution:
     └── Synthesis
 ```
 
-This pattern demonstrates how **composable primitives** (`/item-hierarchy` + `/query-actions`) achieve similar efficiency to pre-aggregated endpoints while maintaining flexibility and auditability.
+This pattern demonstrates how **composable primitives** (`/items-hierarchy` + `/query-actions`) achieve similar efficiency to pre-aggregated endpoints while maintaining flexibility and auditability.
 
 ---
 

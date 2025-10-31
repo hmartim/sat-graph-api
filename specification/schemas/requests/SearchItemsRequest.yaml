@@ -2,8 +2,6 @@ type: object
 description: |
   The request body for the searchItems operation.
 
-  **Filter Logic:**
-  - The `item_type_ids` filter is more efficient than using `item_metadata_filter` for type filtering.
 properties:
   item_ids:
     type: array
@@ -21,7 +19,6 @@ properties:
       $ref: '../core/ID.yaml'
     description: >
       Optional. Filter search results to only items of the specified types (references to ItemType entities).
-      More efficient than using `item_metadata_filter` for type filtering.
     example: ["item-type:article", "item-type:paragraph"]
   item_metadata_filter:
     $ref: '../common/ItemMetadataFilterSchema.yaml'

@@ -326,7 +326,7 @@ These enumeration calls can run in **parallel** since there are no dependencies.
 
 ```bash
 # Executed in parallel, one call per anchor item
-curl -X POST "$BASE_URL/item-hierarchy" \
+curl -X POST "$BASE_URL/items-hierarchy" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -364,7 +364,7 @@ curl -X POST "$BASE_URL/item-hierarchy" \
 final_item_ids = set()
 
 for anchor_item in anchor_items:
-    # Enumerate the full subtree rooted at this anchor item via /item-hierarchy
+    # Enumerate the full subtree rooted at this anchor item via /items-hierarchy
     # Returns: ["id1", "id2", "id3", ...]
     descendant_ids = get_item_hierarchy(
         item_ids=[anchor_item.id],
@@ -573,10 +573,10 @@ This pattern demonstrates:
 
 - ✅ **Efficient Anchor Item Discovery:** Uses single `search-items` call with combined filters (`item_type_ids` AND `theme_ids`) to find items that are both constitutional AND thematic, avoiding enumerate-everything-then-filter approach
 
-- ✅ **Lightweight Hierarchy Traversal:** `/item-hierarchy` returns only Item IDs (strings), not full objects, enabling efficient traversal of hierarchies with minimal payload
+- ✅ **Lightweight Hierarchy Traversal:** `/items-hierarchy` returns only Item IDs (strings), not full objects, enabling efficient traversal of hierarchies with minimal payload
 
 - ✅ **Optimal Parallel Architecture:**
-  - Phase 1: Single `search-items` call + N parallel `/item-hierarchy` calls (one per anchor item, returning IDs only)
+  - Phase 1: Single `search-items` call + N parallel `/items-hierarchy` calls (one per anchor item, returning IDs only)
   - Phase 2: **N parallel `/query-actions` calls** (one per anchor item) instead of:
     - M individual `/items/{id}/history` calls (M = 500+), OR
     - 1 massive call with 500+ item_ids in payload
@@ -592,7 +592,7 @@ This pattern demonstrates:
 
 - ✅ **Root-Associated Context:** Maintains root-to-items mapping throughout, enabling logical grouping by constitutional source and easier narrative synthesis
 
-- ✅ **Composable Primitives:** Uses atomic, well-defined operations (`search-themes`, `get_theme_hierarchy`, `/item-hierarchy`, `/query-actions`) that can be independently tested and evolved
+- ✅ **Composable Primitives:** Uses atomic, well-defined operations (`search-themes`, `get_theme_hierarchy`, `/items-hierarchy`, `/query-actions`) that can be independently tested and evolved
 
 - ✅ **Complete Evolutionary Analysis:** All actions affecting constitutional provisions related to Digital Security since 2000 are captured, aggregated, and synthesized into a structured narrative organized by source document
 

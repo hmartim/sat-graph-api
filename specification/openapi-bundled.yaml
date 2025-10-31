@@ -696,9 +696,6 @@ components:
       type: object
       description: |
         The request body for the searchItems operation.
-
-        **Filter Logic:**
-        - The `item_type_ids` filter is more efficient than using `item_metadata_filter` for type filtering.
       properties:
         item_ids:
           type: array
@@ -715,7 +712,7 @@ components:
           items:
             $ref: ../core/ID.yaml
           description: |
-            Optional. Filter search results to only items of the specified types (references to ItemType entities). More efficient than using `item_metadata_filter` for type filtering.
+            Optional. Filter search results to only items of the specified types (references to ItemType entities).
           example:
             - item-type:article
             - item-type:paragraph
@@ -1185,7 +1182,7 @@ components:
               content_after:
                 type: string
                 description: The content from the second version ('version B'). Empty for deletions.
-    DescendantsResponse:
+    HierarchyResponse:
       type: object
       required:
         - root_id
@@ -1193,15 +1190,15 @@ components:
       properties:
         root_id:
           $ref: ../core/ID.yaml
-          description: The ID of the root entity (ItemType or Theme) for which descendants were requested.
+          description: The ID of the root entity (ItemType or Theme) for which hierarchy was requested.
         descendant_ids:
           type: array
           items:
             $ref: ../core/ID.yaml
           description: |-
-            A flat list of all descendant IDs in the taxonomy, including the root_id itself. This list includes all direct children, grandchildren, and deeper descendants.
+            A flat list of all descendant IDs in the hierarchy, including the root_id itself. This list includes all direct children, grandchildren, and deeper descendants.
             The order is not guaranteed to follow any specific traversal pattern (depth-first or breadth-first). Clients should treat this as an unordered set of IDs.
-            **Use Case:** This list is designed to be passed directly to filter parameters in search or retrieval operations (e.g., `searchItems(type_ids=[...])` or `searchItems(theme_ids=[...])`).
+            **Use Case:** This list is designed to be passed directly to filter parameters in search or retrieval operations (e.g., `searchItems(item_type_ids=[...])` or `searchItems(theme_ids=[...])`).
           example:
             - item-type:normative-component
             - item-type:article
@@ -1209,7 +1206,7 @@ components:
             - item-type:clause
             - item-type:item
             - item-type:subitem
-      description: Response containing a flat list of all descendant IDs for a given taxonomy node (ItemType or Theme). Used for hierarchical filtering in search operations.
+      description: Response containing a flat list of all descendant IDs for a given hierarchy node (ItemType or Theme). Used for hierarchical filtering in search operations.
   parameters:
     DatasourcesParameter:
       name: datasources
@@ -2190,7 +2187,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /item-hierarchy:
+  /items-hierarchy:
     post:
       tags:
         - Structural Navigation Actions
@@ -2291,7 +2288,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DescendantsResponse'
+                $ref: '#/components/schemas/HierarchyResponse'
               example:
                 root_id: item-type:normative-component
                 descendant_ids:
@@ -2364,7 +2361,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DescendantsResponse'
+                $ref: '#/components/schemas/HierarchyResponse'
               example:
                 root_id: theme:public-law
                 descendant_ids:

@@ -51,7 +51,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/DescendantsResponse'
+            $ref: '#/components/schemas/HierarchyResponse'
           example:
             root_id: "item-type:normative-component"
             descendant_ids:

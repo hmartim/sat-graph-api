@@ -134,8 +134,8 @@ components:
       $ref: './schemas/responses/ImpactReport.yaml'
     TextDiffReport:
       $ref: './schemas/responses/TextDiffReport.yaml'
-    DescendantsResponse:
-      $ref: './schemas/responses/DescendantsResponse.yaml'
+    HierarchyResponse:
+      $ref: './schemas/responses/HierarchyResponse.yaml'
 
   # ---------------------------------------------------------------------------
   # Reusable Parameters
@@ -289,7 +289,7 @@ paths:
     $ref: './paths/navigation/get-item-context.yaml'
   /items/{itemId}/themes:
     $ref: './paths/navigation/get-themes-for-item.yaml'
-  /item-hierarchy:
+  /items-hierarchy:
     $ref: './paths/navigation/get-item-hierarchy.yaml'
   /item-types/{itemTypeId}/hierarchy:
     $ref: './paths/navigation/get-item-type-hierarchy.yaml'

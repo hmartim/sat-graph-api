@@ -55,7 +55,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/DescendantsResponse'
+            $ref: '#/components/schemas/HierarchyResponse'
           example:
             root_id: "theme:public-law"
             descendant_ids:
