@@ -820,39 +820,6 @@ components:
           description: Optional. Scopes the search to a specific list of granted datasources.
       required:
         - content_query
-    GetItemHierarchyRequest:
-      type: object
-      description: |
-        Specifies the scope and filters for enumerating Item objects.
-
-        Filters are applied after scope resolution (item_ids/theme_ids/depth).
-      properties:
-        item_ids:
-          type: array
-          items:
-            $ref: ../core/ID.yaml
-          description: Optional. A list of 'Item' IDs to define a structural scope. The function will return these items and/or their descendants.
-        theme_ids:
-          type: array
-          items:
-            $ref: ../core/ID.yaml
-          description: Optional. A list of 'Theme' IDs to define a thematic scope. The function will return all member items of these themes.
-        depth:
-          type: integer
-          description: |
-            Controls traversal depth for 'item_ids' scopes. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively. This parameter is ignored for 'theme_ids' scopes.
-          default: -1
-        item_type_ids:
-          type: array
-          items:
-            $ref: ../core/ID.yaml
-          description: |
-            Optional. Filter results to only items of the specified types (references to ItemType entities).
-          example:
-            - item-type:article
-            - item-type:paragraph
-        datasources:
-          $ref: ../common/DatasourcesSchema.yaml
     GetRelationsRequest:
       type: object
       description: Specifies the criteria for querying Relation objects. If 'entity_id' is omitted, the query runs against the entire corpus of relations.
@@ -2187,20 +2154,14 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /items-hierarchy:
-    post:
+  /items/{item_id}/hierarchy:
+    get:
       tags:
         - Structural Navigation Actions
-      summary: Gets Item IDs within a structural or thematic scope (hierarchy traversal).
+      summary: Gets all Item IDs within the hierarchy of a given Item.
       operationId: getItemHierarchy
       description: |
-        Enumerates and returns **Item IDs** for all items within a specified structural or thematic scope. This is an efficient operation optimized for traversing hierarchies and collecting item references without the overhead of returning full Item objects.
-
-        At least one of `item_ids` or `theme_ids` must be provided.
-
-        ### Scope Logic
-        - If both `item_ids` and `theme_ids` are provided, the function returns the **union** of all items found in both scopes (without duplicates).
-        - The `depth` parameter applies exclusively to scopes defined by `item_ids`.
+        Enumerates and returns **Item IDs** for all items within the structural hierarchy of a specified Item. This is an efficient operation optimized for traversing hierarchies and collecting item references without the overhead of returning full Item objects.
 
         ### Use Cases
         This action is ideal for:
@@ -2215,16 +2176,24 @@ paths:
         **Efficiency Note:** Returns only IDs (strings) rather than full Item objects, making it ideal for hierarchical traversal workflows where IDs are subsequently used in batch operations.
       security:
         - ApiKeyAuth: []
-      requestBody:
-        description: The scope definition for the enumeration.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetItemHierarchyRequest'
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: The unique ID of the Item whose descendants should be retrieved.
+          schema:
+            $ref: '#/components/schemas/ID'
+        - name: depth
+          in: query
+          required: false
+          description: |
+            Controls traversal depth. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively.
+          schema:
+            type: integer
+            default: -1
       responses:
         '200':
-          description: A list of Item IDs (strings) within the specified scope, ordered by hierarchical depth and position.
+          description: A list of Item IDs (strings) within the hierarchy, ordered by hierarchical depth and position.
           content:
             application/json:
               schema:
@@ -2237,6 +2206,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /item-types/{itemTypeId}/hierarchy:
     get:
       tags:
@@ -2575,6 +2546,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TextUnit'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /versions/{version_id}/hierarchy:
+    get:
+      tags:
+        - Causal Analysis Actions
+      summary: Gets all Version IDs within the hierarchy of a given Version.
+      operationId: getVersionHierarchy
+      description: |
+        Enumerates and returns all descendant Version IDs within the structural hierarchy of a specified Version. This is useful for understanding the version tree and tracking how versions relate to each other through their parent-child relationships in the temporal graph.
+
+        ### Use Cases
+        This action is ideal for:
+        - Traversing version hierarchies to collect all descendant version IDs
+        - Understanding version lineages and structural relationships
+        - Building version ID lists for batch operations (e.g., `getBatchTexts`, `compareVersions`)
+        - Analyzing how versions of nested items evolve together
+        - Efficient batch processing where only version IDs are needed
+
+        ### Discussion
+        This action's purpose is **structural enumeration and navigation** of the version tree, not version filtering. It provides the agent with a deterministic tool for exploring version relationships, distinct from probabilistic search. A Version can have multiple parent Versions (due to graph optimizations where unchanged versions are reused under multiple parent structures), so the returned set represents all descendants reachable through any parent-child path. For content-based analysis, agents should pass the resulting version IDs to analysis functions like `getBatchTexts` or `compareVersions`, as this is more performant.
+
+        **Efficiency Note:** Returns only Version ID strings rather than full Version objects, making it ideal for hierarchical traversal workflows where IDs are subsequently used in batch operations.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: version_id
+          in: path
+          required: true
+          description: The unique ID of the Version whose descendants should be retrieved.
+          schema:
+            $ref: '#/components/schemas/ID'
+        - name: depth
+          in: query
+          required: false
+          description: |
+            Controls traversal depth. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively.
+          schema:
+            type: integer
+            default: -1
+      responses:
+        '200':
+          description: A list of Version IDs (strings) within the hierarchy, ordered by hierarchical depth and position.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ID'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':

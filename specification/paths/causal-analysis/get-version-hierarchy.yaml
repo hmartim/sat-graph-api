@@ -1,0 +1,57 @@
+get:
+  tags:
+    - "Causal Analysis Actions"
+  summary: "Gets all Version IDs within the hierarchy of a given Version."
+  operationId: "getVersionHierarchy"
+  description: |
+    Enumerates and returns all descendant Version IDs within the structural hierarchy of a specified Version. This is useful for understanding the version tree and tracking how versions relate to each other through their parent-child relationships in the temporal graph.
+
+    ### Use Cases
+    This action is ideal for:
+    - Traversing version hierarchies to collect all descendant version IDs
+    - Understanding version lineages and structural relationships
+    - Building version ID lists for batch operations (e.g., `getBatchTexts`, `compareVersions`)
+    - Analyzing how versions of nested items evolve together
+    - Efficient batch processing where only version IDs are needed
+
+    ### Discussion
+    This action's purpose is **structural enumeration and navigation** of the version tree, not version filtering. It provides the agent with a deterministic tool for exploring version relationships, distinct from probabilistic search. A Version can have multiple parent Versions (due to graph optimizations where unchanged versions are reused under multiple parent structures), so the returned set represents all descendants reachable through any parent-child path. For content-based analysis, agents should pass the resulting version IDs to analysis functions like `getBatchTexts` or `compareVersions`, as this is more performant.
+
+    **Efficiency Note:** Returns only Version ID strings rather than full Version objects, making it ideal for hierarchical traversal workflows where IDs are subsequently used in batch operations.
+
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: version_id
+      in: path
+      required: true
+      description: The unique ID of the Version whose descendants should be retrieved.
+      schema:
+        $ref: '#/components/schemas/ID'
+    - name: depth
+      in: query
+      required: false
+      description: |
+        Controls traversal depth. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively.
+      schema:
+        type: integer
+        default: -1
+
+  responses:
+    '200':
+      description: "A list of Version IDs (strings) within the hierarchy, ordered by hierarchical depth and position."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ID'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'
+    '404':
+      $ref: '#/components/responses/NotFound'

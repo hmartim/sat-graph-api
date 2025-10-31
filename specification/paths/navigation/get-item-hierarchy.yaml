@@ -1,16 +1,10 @@
-post:
+get:
   tags:
     - "Structural Navigation Actions"
-  summary: "Gets Item IDs within a structural or thematic scope (hierarchy traversal)."
+  summary: "Gets all Item IDs within the hierarchy of a given Item."
   operationId: "getItemHierarchy"
   description: |
-    Enumerates and returns **Item IDs** for all items within a specified structural or thematic scope. This is an efficient operation optimized for traversing hierarchies and collecting item references without the overhead of returning full Item objects.
-
-    At least one of `item_ids` or `theme_ids` must be provided.
-
-    ### Scope Logic
-    - If both `item_ids` and `theme_ids` are provided, the function returns the **union** of all items found in both scopes (without duplicates).
-    - The `depth` parameter applies exclusively to scopes defined by `item_ids`.
+    Enumerates and returns **Item IDs** for all items within the structural hierarchy of a specified Item. This is an efficient operation optimized for traversing hierarchies and collecting item references without the overhead of returning full Item objects.
 
     ### Use Cases
     This action is ideal for:
@@ -26,17 +20,25 @@ post:
   security:
     - ApiKeyAuth: []
 
-  requestBody:
-    description: "The scope definition for the enumeration."
-    required: true
-    content:
-      application/json:
-        schema:
-          $ref: '#/components/schemas/GetItemHierarchyRequest'
+  parameters:
+    - name: item_id
+      in: path
+      required: true
+      description: The unique ID of the Item whose descendants should be retrieved.
+      schema:
+        $ref: '#/components/schemas/ID'
+    - name: depth
+      in: query
+      required: false
+      description: |
+        Controls traversal depth. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively.
+      schema:
+        type: integer
+        default: -1
 
   responses:
     '200':
-      description: "A list of Item IDs (strings) within the specified scope, ordered by hierarchical depth and position."
+      description: "A list of Item IDs (strings) within the hierarchy, ordered by hierarchical depth and position."
       content:
         application/json:
           schema:
@@ -49,3 +51,5 @@ post:
       $ref: '#/components/responses/Unauthorized'
     '403':
       $ref: '#/components/responses/Forbidden'
+    '404':
+      $ref: '#/components/responses/NotFound'

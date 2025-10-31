@@ -289,7 +289,7 @@ paths:
     $ref: './paths/navigation/get-item-context.yaml'
   /items/{itemId}/themes:
     $ref: './paths/navigation/get-themes-for-item.yaml'
-  /items-hierarchy:
+  /items/{item_id}/hierarchy:
     $ref: './paths/navigation/get-item-hierarchy.yaml'
   /item-types/{itemTypeId}/hierarchy:
     $ref: './paths/navigation/get-item-type-hierarchy.yaml'
@@ -313,6 +313,8 @@ paths:
     $ref: './paths/causal-analysis/get-valid-version.yaml'
   /versions/{versionId}/text-unit:
     $ref: './paths/causal-analysis/get-version-text-unit.yaml'
+  /versions/{version_id}/hierarchy:
+    $ref: './paths/causal-analysis/get-version-hierarchy.yaml'
   /items/{itemId}/history:
     $ref: './paths/causal-analysis/get-item-history.yaml'
   /versions/{versionId}/causality:
