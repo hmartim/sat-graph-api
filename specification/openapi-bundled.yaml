@@ -1605,7 +1605,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /item-types/{typeId}:
+  /item-types/{itemTypeId}:
     get:
       tags:
         - Deterministic Fetch Actions
@@ -1627,7 +1627,7 @@ paths:
       security:
         - ApiKeyAuth: []
       parameters:
-        - name: typeId
+        - name: itemTypeId
           in: path
           required: true
           description: The unique ID of the ItemType to retrieve.

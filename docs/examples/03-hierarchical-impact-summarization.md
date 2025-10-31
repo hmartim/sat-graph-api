@@ -340,7 +340,6 @@ Synthesis
 |----------|-----------|--------------|------------|
 | **Naive** (N+1 histories) | 1 (enumerate) + N (histories) = **N+1** | Large (full objects) | Client-side aggregation |
 | **Composite** (this pattern) | 1 (hierarchy) + 1 (query-actions) + 2 (batch hydration) = **4** | Minimal IDs → Rich hydration | Server-side query optimization |
-| **Aggregated** (if available) | 1 (summarizeImpact) + 2 (batch) = **3** | Lightweight summaries | Pre-computed aggregation |
 
 For a chapter with 100 articles and 50 actions: **151 calls vs. 4 calls** — a **~38x reduction** with composable primitives.
 

@@ -503,14 +503,16 @@ curl -H "Authorization: $API_KEY" \
 
 ---
 
-## Phase 5: Impact Summary and Causal DAG Synthesis
+## Phase 5: Retrieve Amendment History and Causal DAG Synthesis
 
-**Goal:** Get a high-level summary of all amendments affecting this social right, then synthesize into a DAG.
+**Goal:** Retrieve all amendments affecting this social right using query-actions, then synthesize into a DAG.
 
-### Step 5a: Summarize Impact Over Time
+### Step 5a: Query All Actions Affecting This Item
+
+Use `/query-actions` to get all actions that affected this specific item:
 
 ```bash
-curl -X POST "$BASE_URL/analysis/impact-summary" \
+curl -X POST "$BASE_URL/query-actions" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -525,22 +527,38 @@ curl -X POST "$BASE_URL/analysis/impact-summary" \
 **Response:**
 
 ```json
-{
-  "statistics": {
-    "Amendment": 4,
-    "Creation": 1
+[
+  {
+    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!creation_art6",
+    "type": "Creation",
+    "date": "1988-10-05T00:00:00Z",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt"
   },
-  "actions": [
-    "urn:lex:br:federal:constituicao:1988-10-05;1988!creation_art6",
-    "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6",
-    "urn:lex:br:federal:emenda.constitucional:2010-02-04;59@2010-02-04!art1_cpt_alt2_art6",
-    "urn:lex:br:federal:emenda.constitucional:2019-12-12;65@2019-12-12!art1_cpt_alt3_art6",
-    "urn:lex:br:federal:emenda.constitucional:2022-03-10;108@2022-03-10!art1_cpt_alt4_art6"
-  ],
-  "affected_items": [
-    "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt"
-  ]
-}
+  {
+    "id": "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6",
+    "type": "Amendment",
+    "date": "2000-02-14T00:00:00Z",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
+  },
+  {
+    "id": "urn:lex:br:federal:emenda.constitucional:2010-02-04;59@2010-02-04!art1_cpt_alt2_art6",
+    "type": "Amendment",
+    "date": "2010-02-04T00:00:00Z",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt"
+  },
+  {
+    "id": "urn:lex:br:federal:emenda.constitucional:2019-12-12;65@2019-12-12!art1_cpt_alt3_art6",
+    "type": "Amendment",
+    "date": "2019-12-12T00:00:00Z",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2019-12-12!art6_cpt"
+  },
+  {
+    "id": "urn:lex:br:federal:emenda.constitucional:2022-03-10;108@2022-03-10!art1_cpt_alt4_art6",
+    "type": "Amendment",
+    "date": "2022-03-10T00:00:00Z",
+    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2022-03-10!art6_cpt"
+  }
+]
 ```
 
 ### Step 5b: Fetch Detailed Action Metadata
@@ -807,8 +825,8 @@ Phase 4: Text Reconstruction (Batch):
 ├── batch_get_text_units() [all 5 versions in one request]
 └── compare_versions() [pairwise comparisons of consecutive versions]
 
-Phase 5: Impact Summary (Aggregation):
-├── summarize_impact() [server-side aggregation of all amendments]
+Phase 5: Amendment History (Query):
+├── query_actions() [retrieve all amendments affecting the item]
 └── batch_get_actions() [hydrate metadata for each amendment]
 
 Synthesis:
@@ -838,7 +856,7 @@ This use case demonstrates **critical API capabilities** for cascading impact an
 2. **Complete Temporal Reconstruction** - Retrieve all versions with validity intervals
 3. **Causal Chain Linking** - Actions connect versions to their originating amendments
 4. **Formal Justification Metadata** - Understand _why_ amendments were made
-5. **Impact Aggregation** - `summarizeImpact()` provides server-side efficiency
+5. **Composable Queries** - `query_actions()` provides transparent, auditable amendment retrieval without hidden aggregation
 6. **Deterministic Point-in-Time** - Answer "what was valid on date X?" with certainty
 7. **Scope Evolution** - Track how a single right's legal scope expanded over time
 8. **Cascading Causality** - Show how A ↦ B ↦ C ↦ D changes eventually affect E

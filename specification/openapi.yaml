@@ -253,7 +253,7 @@ paths:
     $ref: './paths/deterministic-fetch/get-relation-by-id.yaml'
   /themes/{themeId}:
     $ref: './paths/deterministic-fetch/get-theme-by-id.yaml'
-  /item-types/{typeId}:
+  /item-types/{itemTypeId}:
     $ref: './paths/deterministic-fetch/get-item-type-by-id.yaml'
   /text-units/{textUnitId}:
     $ref: './paths/deterministic-fetch/get-text-unit-by-id.yaml'

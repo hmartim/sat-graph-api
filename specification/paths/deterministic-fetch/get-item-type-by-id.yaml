@@ -21,7 +21,7 @@ get:
     - ApiKeyAuth: []
 
   parameters:
-    - name: typeId
+    - name: itemTypeId
       in: path
       required: true
       description: "The unique ID of the ItemType to retrieve."
