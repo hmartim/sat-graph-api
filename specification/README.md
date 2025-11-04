@@ -73,12 +73,11 @@ specification/
 │       ├── CausalityTrace.yaml
 │       ├── ImpactReport.yaml
 │       └── TextDiffReport.yaml
-└── paths/                   # Path/endpoint definitions (33 files)
-    ├── discovery/           # Search & entity resolution (5 endpoints)
+└── paths/                   # Path/endpoint definitions (32 files)
+    ├── discovery/           # Search & entity resolution (4 endpoints)
     │   ├── resolve-item-reference.yaml
     │   ├── resolve-theme-reference.yaml
     │   ├── search-items.yaml
-    │   ├── search-themes.yaml
     │   └── search-text-units.yaml
     ├── deterministic-fetch/ # Direct ID-based retrieval (8 endpoints)
     │   ├── get-action-by-id.yaml
@@ -90,10 +89,9 @@ specification/
     │   ├── get-batch-actions.yaml
     │   ├── get-batch-items.yaml
     │   └── get-batch-valid-versions.yaml
-    ├── navigation/          # Structural traversal (4 endpoints)
+    ├── navigation/          # Structural traversal (3 endpoints)
     │   ├── enumerate-items.yaml
     │   ├── get-item-ancestors.yaml
-    │   ├── get-item-context.yaml
     │   └── get-themes-for-item.yaml
     ├── graph-traversal/     # Relationship queries (2 endpoints)
     │   ├── find-related-entities.yaml
@@ -123,7 +121,6 @@ specification/
 Search and resolve entities using semantic, lexical, or structured queries.
 - 📘 `POST /search-items` - Search for items
 - 📘 `POST /search-text-units` - Hybrid search for text fragments (primary RAG entry point)
-- 📘 `POST /search-themes` - Search thematic classifications
 - 📘 `POST /resolve-item-reference` - Resolve natural language references to items
 - 📘 `POST /resolve-theme-reference` - Resolve natural language references to themes
 

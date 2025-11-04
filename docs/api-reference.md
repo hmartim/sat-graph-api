@@ -28,7 +28,6 @@ Probabilistic entry points for finding entities based on natural language or str
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/search-items` | POST | Search for Items using semantic or lexical queries |
-| `/search-themes` | POST | Search for Themes using semantic or lexical queries |
 | `/search-text-units` | POST | Search within textual content across versions |
 | `/resolve-item-reference` | POST | Resolve natural language references to canonical Item IDs |
 | `/resolve-theme-reference` | POST | Resolve natural language references to canonical Theme IDs |
@@ -237,12 +236,11 @@ Retrieves the Version of an Item valid at a specific timestamp.
 
 **Parameters:**
 - `timestamp` (required): UTC date-time for temporal resolution
-- `policy` (optional): TemporalPolicy (defaults to `SnapshotLast`)
 
 **Returns:**
 - `200 OK`: Version object valid at the specified time
 - `404 Not Found`: Item does not exist OR no version valid at the timestamp
-- `400 Bad Request`: Invalid timestamp format or policy value
+- `400 Bad Request`: Invalid timestamp format
 - `403 Forbidden`: API key lacks access to the datasource
 
 **Example Response (200):**
@@ -594,37 +592,6 @@ Actual textual content associated with entities in multiple languages and aspect
 | `UNAUTHORIZED` | 401 | Missing or invalid API key |
 | `FORBIDDEN_DATASOURCE` | 403 | API key lacks access to requested datasource |
 | `RESOURCE_NOT_FOUND` | 404 | Requested resource does not exist |
-
-## Temporal Resolution
-
-### TemporalPolicy Options
-
-The `policy` parameter controls temporal resolution behavior for version queries:
-
-- **SnapshotLast** (default): Finds the last version valid at any point during the day of the timestamp
-- **PointInTime**: Strict temporal resolution - finds version whose validity interval strictly contains the exact timestamp
-
-⏱️ **For detailed explanation and edge cases, see [Temporal Resolution Guide](./TEMPORAL_RESOLUTION.md)**
-
-### Parameter Optionality
-
-**`getValidVersion` endpoint:**
-- `itemId` (path parameter): **Required**
-- `timestamp` (query parameter): **Required**
-- `policy` (query parameter): **Optional** - defaults to `SnapshotLast` if not specified
-
-### Temporal Query Examples
-
-```bash
-# Get version valid at end of day (uses default SnapshotLast policy)
-GET /items/{itemId}/valid-version?timestamp=2020-01-01T00:00:00Z
-
-# Get version valid at exact moment (explicit PointInTime policy)
-GET /items/{itemId}/valid-version?timestamp=2020-01-01T12:30:00Z&policy=PointInTime
-
-# Get version with explicit default policy
-GET /items/{itemId}/valid-version?timestamp=2020-01-01T00:00:00Z&policy=SnapshotLast
-```
 
 ## Batch Operations
 

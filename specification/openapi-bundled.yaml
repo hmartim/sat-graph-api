@@ -102,18 +102,6 @@ components:
           value:
             - '2000-02-14T00:00:00Z'
             - null
-    TemporalPolicy:
-      type: string
-      description: |
-        Specifies the temporal resolution logic for finding a valid version.
-        This is essential for guaranteeing determinism when multiple events occur on the same day.
-
-        - `PointInTime`: (Strict) Finds the version whose validity interval strictly contains the exact timestamp.
-        - `SnapshotLast`: (Common) Finds the last version that was valid at any point during the day of the given timestamp. Treats the query as "what was the state of the law at the end of this day?".
-      enum:
-        - PointInTime
-        - SnapshotLast
-      default: SnapshotLast
     DatasourcesSchema:
       type: array
       description: |
@@ -799,27 +787,6 @@ components:
         datasources:
           $ref: ../common/DatasourcesSchema.yaml
           description: Optional. Scopes the search to a specific list of granted datasources.
-    SearchThemesRequest:
-      type: object
-      description: |
-        The request body for the searchThemes operation.
-
-        This endpoint performs hybrid search to discover Themes based on their descriptions,
-        mapping user descriptions to formal concepts in the knowledge graph.
-      properties:
-        content_query:
-          $ref: ../common/ContentQuery.yaml
-        top_k:
-          type: integer
-          format: int32
-          default: 5
-          minimum: 1
-          description: The maximum number of candidate themes to return.
-        datasources:
-          $ref: ../common/DatasourcesSchema.yaml
-          description: Optional. Scopes the search to a specific list of granted datasources.
-      required:
-        - content_query
     GetItemHierarchyRequest:
       type: object
       description: |
@@ -984,31 +951,31 @@ components:
           example:
             - canonical
             - summary
-    StructuralContext:
+    GetVersionsInIntervalRequest:
       type: object
-      description: Contains the complete, immediate structural context of a single Item.
+      description: Specifies the criteria for retrieving Versions of multiple Items within a time interval.
       required:
-        - target
+        - item_ids
+        - start_time
+        - end_time
       properties:
-        target:
-          $ref: ../entities/Item.yaml
-          description: The full object of the item in question.
-        parent:
-          $ref: ../entities/Item.yaml
-          nullable: true
-          description: The full object of the item's immediate parent.
-        siblings:
+        item_ids:
           type: array
-          nullable: true
-          description: A list of full objects for the item's siblings (other items with the same parent).
+          description: A list of canonical IDs for the Items whose versions are requested.
           items:
-            $ref: ../entities/Item.yaml
-        children:
-          type: array
-          nullable: true
-          description: A list of full objects for the item's immediate children.
-          items:
-            $ref: ../entities/Item.yaml
+            $ref: ../core/ID.yaml
+          minItems: 1
+          uniqueItems: true
+        start_time:
+          type: string
+          format: date-time
+          description: The start of the time interval for the query (UTC date-time).
+          example: '2010-01-01T00:00:00Z'
+        end_time:
+          type: string
+          format: date-time
+          description: The end of the time interval for the query (UTC date-time).
+          example: '2014-12-31T23:59:59Z'
     ResolvedEntityCandidate:
       type: object
       description: Represents a single candidate match for a resolved entity (e.g., an Item or a Theme).
@@ -1337,46 +1304,6 @@ paths:
       responses:
         '200':
           description: Search executed successfully. Returns a ranked list of Items.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SearchedItemResult'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-  /search-themes:
-    post:
-      tags:
-        - Discovery and Search Actions
-      summary: Performs a hybrid search for Themes based on their descriptions.
-      operationId: searchThemes
-      description: |
-        Performs a hybrid search to discover `Theme` nodes based on a descriptive query, combining semantic and lexical search capabilities with advanced filtering.
-
-        This action **searches exclusively on the textual descriptions associated with the themes themselves**, mapping a user's description to the most appropriate formal concept in the knowledge graph.
-
-        ### Search Strategy
-        The unified `content_query` parameter leverages Oracle 23ai's native hybrid search with Reciprocal Rank Fusion (RRF), allowing for:
-        - Broad conceptual matching via semantic search
-        - High-precision keyword filtering via lexical search
-        - Advanced clauses for mandatory terms, boosting, and exclusions
-      security:
-        - ApiKeyAuth: []
-      requestBody:
-        description: The search criteria for discovering themes.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SearchThemesRequest'
-      responses:
-        '200':
-          description: A ranked list of matching Theme candidates was successfully returned.
           content:
             application/json:
               schema:
@@ -2048,41 +1975,6 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /items/{itemId}/context:
-    get:
-      tags:
-        - Structural Navigation Actions
-      summary: Retrieves the immediate structural context of an Item in a single call.
-      operationId: getItemContext
-      description: |
-        Retrieves the complete, immediate structural context of a single `Item` in one efficient call. This includes its parent, siblings, and direct children.
-
-        ### Discussion
-        This is a high-utility, performance-oriented action designed for applications that need to render a contextual view of an item (e.g., a document browser or a table of contents). Replicating this functionality would require multiple, less efficient API calls (`getItemAncestors`, `enumerateItems`). By providing this as a single, atomic operation, the API dramatically simplifies the logic for common UI and agentic navigation tasks.
-      security:
-        - ApiKeyAuth: []
-      parameters:
-        - name: itemId
-          in: path
-          required: true
-          description: The canonical ID of the Item for which to retrieve the context.
-          schema:
-            $ref: '#/components/schemas/ID'
-      responses:
-        '200':
-          description: Successfully retrieved the structural context.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StructuralContext'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
   /items/{itemId}/themes:
     get:
       tags:
@@ -2672,42 +2564,25 @@ paths:
           $ref: ../../openapi.yaml#/components/responses/Forbidden
         '404':
           $ref: ../../openapi.yaml#/components/responses/NotFound
-  /items/{itemId}/versions:
-    get:
+  /versions/batch-in-interval:
+    post:
       tags:
         - Causal Analysis Actions
-      summary: Gets all Versions of an Item that were valid within a time interval.
+      summary: Gets all Versions of multiple Items that were valid within a time interval.
       operationId: getVersionsInInterval
       description: |
-        Retrieves all `Version`s of a given `Item` that were legally valid at any point within a specified time interval. The returned list is ordered chronologically (ascending).
+        Retrieves all `Version`s of given `Item`s that were legally valid at any point within a specified time interval. The returned list is ordered chronologically (ascending). This batch-enabled endpoint allows efficient retrieval of versions across multiple items in a hierarchy.
 
         ### Discussion
-        This function serves as a critical performance optimization for historical analysis. While `getItemHistory` retrieves the causal *events* (`Action`s), this action retrieves the resulting *states* (`Version`s) within a specific temporal window. By providing this as a server-side primitive, the API enables an agent to efficiently answer questions like "show all versions of this article during a specific presidential term."
+        This function serves as a critical performance optimization for historical analysis. While `getItemHistory` retrieves the causal *events* (`Action`s), this action retrieves the resulting *states* (`Version`s) within a specific temporal window. By providing this as a server-side primitive with batch support, the API enables an agent to efficiently answer questions like "show all versions of items in this chapter during a specific presidential term."
       security:
         - ApiKeyAuth: []
-      parameters:
-        - name: itemId
-          in: path
-          required: true
-          description: The canonical ID of the Item of interest.
-          schema:
-            $ref: ../../schemas/core/ID.yaml
-        - name: start_time
-          in: query
-          required: true
-          description: The start of the time interval for the query (UTC date-time).
-          schema:
-            type: string
-            format: date-time
-          example: '2010-01-01T00:00:00Z'
-        - name: end_time
-          in: query
-          required: true
-          description: The end of the time interval for the query (UTC date-time).
-          schema:
-            type: string
-            format: date-time
-          example: '2014-12-31T23:59:59Z'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../../schemas/requests/GetVersionsInIntervalRequest.yaml
       responses:
         '200':
           description: A time-ordered list (ascending) of Version objects whose validity period overlaps with the specified interval. The list may be empty if no versions match.

@@ -63,7 +63,7 @@ Retrieve the unique historical Version object valid at the target date.
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/items/urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt/valid-version?timestamp=2001-05-20T00:00:00Z&policy=PointInTime"
+  "$BASE_URL/items/urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt/valid-version?timestamp=2001-05-20T00:00:00Z"
 ```
 
 **Response:**
@@ -89,8 +89,7 @@ curl -H "Authorization: $API_KEY" \
 ```python
 version = get_valid_version(
     item_id=item_id,
-    timestamp="2001-05-20T00:00:00Z",
-    temporal_policy="PointInTime"
+    timestamp="2001-05-20T00:00:00Z"
 )
 version_id = version.id
 # version_id = "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
@@ -170,12 +169,11 @@ This combination ensures we capture:
 **Step 1.1: Discover the Thematic Node**
 
 ```bash
-curl -X POST "$BASE_URL/search-themes" \
+curl -X POST "$BASE_URL/resolve-theme-reference" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "content_query": "Digital Security",
-    "top_k": 1
+    "reference_text": "Digital Security"
   }'
 ```
 
@@ -184,11 +182,9 @@ curl -X POST "$BASE_URL/search-themes" \
 ```json
 [
   {
-    "item": {
-      "id": "theme_digital_security",
-      "label": "Digital Security and Privacy"
-    },
-    "score": 0.95
+    "id": "theme_digital_security",
+    "label": "Digital Security and Privacy",
+    "confidence": 0.95
   }
 ]
 ```
@@ -196,8 +192,8 @@ curl -X POST "$BASE_URL/search-themes" \
 **Agent Logic:**
 
 ```python
-themes = search_themes(content_query="Digital Security", top_k=1)
-root_theme_id = themes[0].item.id
+themes = resolve_theme_reference(reference_text="Digital Security")
+root_theme_id = themes[0].id
 # root_theme_id = "theme_digital_security"
 ```
 
@@ -585,7 +581,7 @@ This pattern demonstrates:
 
 - ✅ **Root-Associated Context:** Maintains root-to-items mapping throughout, enabling logical grouping by constitutional source and easier narrative synthesis
 
-- ✅ **Composable Primitives:** Uses atomic, well-defined operations (`search-themes`, `get_theme_hierarchy`, `/items/{item_id}/hierarchy`, `/query-actions`) that can be independently tested and evolved
+- ✅ **Composable Primitives:** Uses atomic, well-defined operations (`resolve-theme-reference`, `get_theme_hierarchy`, `/items/{item_id}/hierarchy`, `/query-actions`) that can be independently tested and evolved
 
 - ✅ **Complete Evolutionary Analysis:** All actions affecting constitutional provisions related to Digital Security since 2000 are captured, aggregated, and synthesized into a structured narrative organized by source document
 

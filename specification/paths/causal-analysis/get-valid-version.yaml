@@ -4,10 +4,10 @@ get:
   summary: "Gets the single Version of an Item that was valid at a specific time."
   operationId: "getValidVersion"
   description: |
-    The core temporal resolution function. It finds the single `Version` of a given `Item` that was legally in force at a specific point in time, according to a specified temporal policy.
+    The core temporal resolution function. It finds the single `Version` of a given `Item` that was legally in force at a specific point in time.
 
     ### Discussion
-    The explicit `policy` parameter is essential for guaranteeing determinism. It allows the agent to specify the exact temporal logic required, such as retrieving the last valid version within a day (`SnapshotLast`) or handling boundary conditions in a predictable manner (`PointInTime`).
+    This endpoint retrieves the last version valid at any point during the day of the given timestamp, ensuring deterministic temporal resolution for legal document retrieval.
   security:
     - ApiKeyAuth: []
 
@@ -26,16 +26,6 @@ get:
         type: string
         format: date-time
       example: "1999-06-01T12:00:00Z"
-    - name: policy
-      in: query
-      required: false
-      description: |
-        The temporal resolution policy to apply. If not specified, defaults to `SnapshotLast`.
-
-        - `SnapshotLast` (default): Finds the last version valid at any point during the day of the timestamp
-        - `PointInTime`: Finds the version whose validity interval strictly contains the exact timestamp
-      schema:
-        $ref: '#/components/schemas/TemporalPolicy'
 
   responses:
     '200':

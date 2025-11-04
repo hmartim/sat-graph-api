@@ -1,0 +1,24 @@
+type: object
+description: "Specifies the criteria for retrieving Versions of multiple Items within a time interval."
+required:
+  - item_ids
+  - start_time
+  - end_time
+properties:
+  item_ids:
+    type: array
+    description: "A list of canonical IDs for the Items whose versions are requested."
+    items:
+      $ref: '../core/ID.yaml'
+    minItems: 1
+    uniqueItems: true
+  start_time:
+    type: string
+    format: date-time
+    description: "The start of the time interval for the query (UTC date-time)."
+    example: "2010-01-01T00:00:00Z"
+  end_time:
+    type: string
+    format: date-time
+    description: "The end of the time interval for the query (UTC date-time)."
+    example: "2014-12-31T23:59:59Z"

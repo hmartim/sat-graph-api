@@ -52,8 +52,6 @@ components:
       $ref: './schemas/core/JSON.yaml'
     TimeInterval:
       $ref: './schemas/core/TimeInterval.yaml'
-    TemporalPolicy:
-      $ref: './schemas/core/TemporalPolicy.yaml'
 
     # -------------------------------------------------------------------------
     # Common/Shared Schemas - Used in both requests and responses
@@ -96,8 +94,6 @@ components:
       $ref: './schemas/requests/SearchItemsRequest.yaml'
     SearchTextUnitsRequest:
       $ref: './schemas/requests/SearchTextUnitsRequest.yaml'
-    SearchThemesRequest:
-      $ref: './schemas/requests/SearchThemesRequest.yaml'
     GetItemHierarchyRequest:
       $ref: './schemas/requests/GetItemHierarchyRequest.yaml'
     GetRelationsRequest:
@@ -112,12 +108,12 @@ components:
       $ref: './schemas/requests/GetBatchValidVersionsRequest.yaml'
     GetBatchTextUnitsRequest:
       $ref: './schemas/requests/GetBatchTextUnitsRequest.yaml'
+    GetVersionsInIntervalRequest:
+      $ref: './schemas/requests/GetVersionsInIntervalRequest.yaml'
 
     # -------------------------------------------------------------------------
     # Response Schemas - Output data transfer objects
     # -------------------------------------------------------------------------
-    StructuralContext:
-      $ref: './schemas/responses/StructuralContext.yaml'
     ResolvedEntityCandidate:
       $ref: './schemas/responses/ResolvedEntityCandidate.yaml'
     SearchResultUnit:
@@ -234,8 +230,6 @@ paths:
     $ref: './paths/discovery/resolve-theme-reference.yaml'
   /search-items:
     $ref: './paths/discovery/search-items.yaml'
-  /search-themes:
-    $ref: './paths/discovery/search-themes.yaml'
   /search-text-units:
     $ref: './paths/discovery/search-text-units.yaml'
 
@@ -281,8 +275,6 @@ paths:
   # ---------------------------------------------------------------------------
   /items/{itemId}/ancestors:
     $ref: './paths/navigation/get-item-ancestors.yaml'
-  /items/{itemId}/context:
-    $ref: './paths/navigation/get-item-context.yaml'
   /items/{itemId}/themes:
     $ref: './paths/navigation/get-themes-for-item.yaml'
   /items/{item_id}/hierarchy:
@@ -315,7 +307,7 @@ paths:
     $ref: './paths/causal-analysis/get-item-history.yaml'
   /versions/{versionId}/causality:
     $ref: './paths/causal-analysis/trace-causality.yaml'
-  /items/{itemId}/versions:
+  /versions/batch-in-interval:
     $ref: './paths/causal-analysis/get-versions-in-interval.yaml'
   /versions/compare:
     $ref: './paths/causal-analysis/compare-versions.yaml'
