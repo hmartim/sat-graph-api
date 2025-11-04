@@ -1,4 +1,4 @@
-# Use Case 1: Point-in-Time Comparison and Causal Pinpointing
+# Use Case 4: Point-in-Time Comparison and Causal Pinpointing
 
 > **Based on:** Research Paper Section 5.4.1
 
