@@ -917,9 +917,6 @@ components:
           type: string
           format: date-time
           description: The specific UTC date-time for which to check validity for all items.
-        policy:
-          $ref: ../core/TemporalPolicy.yaml
-          description: The temporal resolution policy to apply uniformly to all items.
     GetBatchTextUnitsRequest:
       type: object
       description: Specifies the criteria for retrieving a batch of TextUnit objects by Version IDs.
@@ -2066,6 +2063,61 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /versions/{version_id}/hierarchy:
+    get:
+      tags:
+        - Causal Analysis Actions
+      summary: Gets all Version IDs within the hierarchy of a given Version.
+      operationId: getVersionHierarchy
+      description: |
+        Enumerates and returns all descendant Version IDs within the structural hierarchy of a specified Version. This is useful for understanding the version tree and tracking how versions relate to each other through their parent-child relationships in the temporal graph.
+
+        ### Use Cases
+        This action is ideal for:
+        - Traversing version hierarchies to collect all descendant version IDs
+        - Understanding version lineages and structural relationships
+        - Building version ID lists for batch operations (e.g., `getBatchTexts`, `compareVersions`)
+        - Analyzing how versions of nested items evolve together
+        - Efficient batch processing where only version IDs are needed
+
+        ### Discussion
+        This action's purpose is **structural enumeration and navigation** of the version tree, not version filtering. It provides the agent with a deterministic tool for exploring version relationships, distinct from probabilistic search. A Version can have multiple parent Versions (due to graph optimizations where unchanged versions are reused under multiple parent structures), so the returned set represents all descendants reachable through any parent-child path. For content-based analysis, agents should pass the resulting version IDs to analysis functions like `getBatchTexts` or `compareVersions`, as this is more performant.
+
+        **Efficiency Note:** Returns only Version ID strings rather than full Version objects, making it ideal for hierarchical traversal workflows where IDs are subsequently used in batch operations.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: version_id
+          in: path
+          required: true
+          description: The unique ID of the Version whose descendants should be retrieved.
+          schema:
+            $ref: '#/components/schemas/ID'
+        - name: depth
+          in: query
+          required: false
+          description: |
+            Controls traversal depth. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively.
+          schema:
+            type: integer
+            default: -1
+      responses:
+        '200':
+          description: A list of Version IDs (strings) within the hierarchy, ordered by hierarchical depth and position.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ID'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /item-types/{itemTypeId}/hierarchy:
     get:
       tags:
@@ -2113,20 +2165,20 @@ paths:
           example: item-type:normative-component
       responses:
         '200':
-          description: Successfully retrieved all descendant ItemType IDs.
+          description: A list of ItemType IDs (strings) within the hierarchy, including the root ItemType itself.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HierarchyResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/ID'
               example:
-                root_id: item-type:normative-component
-                descendant_ids:
-                  - item-type:normative-component
-                  - item-type:article
-                  - item-type:paragraph
-                  - item-type:clause
-                  - item-type:item
-                  - item-type:subitem
+                - item-type:normative-component
+                - item-type:article
+                - item-type:paragraph
+                - item-type:clause
+                - item-type:item
+                - item-type:subitem
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -2186,21 +2238,21 @@ paths:
           example: theme:public-law
       responses:
         '200':
-          description: Successfully retrieved all descendant Theme IDs.
+          description: A list of Theme IDs (strings) within the hierarchy, including the root Theme itself.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HierarchyResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/ID'
               example:
-                root_id: theme:public-law
-                descendant_ids:
-                  - theme:public-law
-                  - theme:constitutional-law
-                  - theme:administrative-law
-                  - theme:social-security
-                  - theme:tax-law
-                  - theme:federal-tax
-                  - theme:state-tax
+                - theme:public-law
+                - theme:constitutional-law
+                - theme:administrative-law
+                - theme:social-security
+                - theme:tax-law
+                - theme:federal-tax
+                - theme:state-tax
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -2319,10 +2371,10 @@ paths:
       summary: Gets the single Version of an Item that was valid at a specific time.
       operationId: getValidVersion
       description: |
-        The core temporal resolution function. It finds the single `Version` of a given `Item` that was legally in force at a specific point in time, according to a specified temporal policy.
+        The core temporal resolution function. It finds the single `Version` of a given `Item` that was legally in force at a specific point in time.
 
         ### Discussion
-        The explicit `policy` parameter is essential for guaranteeing determinism. It allows the agent to specify the exact temporal logic required, such as retrieving the last valid version within a day (`SnapshotLast`) or handling boundary conditions in a predictable manner (`PointInTime`).
+        This endpoint retrieves the last version valid at any point during the day of the given timestamp, ensuring deterministic temporal resolution for legal document retrieval.
       security:
         - ApiKeyAuth: []
       parameters:
@@ -2340,16 +2392,6 @@ paths:
             type: string
             format: date-time
           example: '1999-06-01T12:00:00Z'
-        - name: policy
-          in: query
-          required: false
-          description: |
-            The temporal resolution policy to apply. If not specified, defaults to `SnapshotLast`.
-
-            - `SnapshotLast` (default): Finds the last version valid at any point during the day of the timestamp
-            - `PointInTime`: Finds the version whose validity interval strictly contains the exact timestamp
-          schema:
-            $ref: '#/components/schemas/TemporalPolicy'
       responses:
         '200':
           description: Successfully retrieved the unique Version object valid at the specified time.
@@ -2404,61 +2446,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TextUnit'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-  /versions/{version_id}/hierarchy:
-    get:
-      tags:
-        - Causal Analysis Actions
-      summary: Gets all Version IDs within the hierarchy of a given Version.
-      operationId: getVersionHierarchy
-      description: |
-        Enumerates and returns all descendant Version IDs within the structural hierarchy of a specified Version. This is useful for understanding the version tree and tracking how versions relate to each other through their parent-child relationships in the temporal graph.
-
-        ### Use Cases
-        This action is ideal for:
-        - Traversing version hierarchies to collect all descendant version IDs
-        - Understanding version lineages and structural relationships
-        - Building version ID lists for batch operations (e.g., `getBatchTexts`, `compareVersions`)
-        - Analyzing how versions of nested items evolve together
-        - Efficient batch processing where only version IDs are needed
-
-        ### Discussion
-        This action's purpose is **structural enumeration and navigation** of the version tree, not version filtering. It provides the agent with a deterministic tool for exploring version relationships, distinct from probabilistic search. A Version can have multiple parent Versions (due to graph optimizations where unchanged versions are reused under multiple parent structures), so the returned set represents all descendants reachable through any parent-child path. For content-based analysis, agents should pass the resulting version IDs to analysis functions like `getBatchTexts` or `compareVersions`, as this is more performant.
-
-        **Efficiency Note:** Returns only Version ID strings rather than full Version objects, making it ideal for hierarchical traversal workflows where IDs are subsequently used in batch operations.
-      security:
-        - ApiKeyAuth: []
-      parameters:
-        - name: version_id
-          in: path
-          required: true
-          description: The unique ID of the Version whose descendants should be retrieved.
-          schema:
-            $ref: '#/components/schemas/ID'
-        - name: depth
-          in: query
-          required: false
-          description: |
-            Controls traversal depth. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively.
-          schema:
-            type: integer
-            default: -1
-      responses:
-        '200':
-          description: A list of Version IDs (strings) within the hierarchy, ordered by hierarchical depth and position.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ID'
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':

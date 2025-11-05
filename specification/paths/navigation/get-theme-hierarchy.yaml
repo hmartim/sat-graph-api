@@ -51,21 +51,21 @@ get:
 
   responses:
     '200':
-      description: "Successfully retrieved all descendant Theme IDs."
+      description: "A list of Theme IDs (strings) within the hierarchy, including the root Theme itself."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/HierarchyResponse'
+            type: array
+            items:
+              $ref: '#/components/schemas/ID'
           example:
-            root_id: "theme:public-law"
-            descendant_ids:
-              - "theme:public-law"
-              - "theme:constitutional-law"
-              - "theme:administrative-law"
-              - "theme:social-security"
-              - "theme:tax-law"
-              - "theme:federal-tax"
-              - "theme:state-tax"
+            - "theme:public-law"
+            - "theme:constitutional-law"
+            - "theme:administrative-law"
+            - "theme:social-security"
+            - "theme:tax-law"
+            - "theme:federal-tax"
+            - "theme:state-tax"
     '400':
       $ref: '#/components/responses/BadRequest'
     '401':

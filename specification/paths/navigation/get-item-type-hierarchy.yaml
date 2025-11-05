@@ -47,20 +47,20 @@ get:
 
   responses:
     '200':
-      description: "Successfully retrieved all descendant ItemType IDs."
+      description: "A list of ItemType IDs (strings) within the hierarchy, including the root ItemType itself."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/HierarchyResponse'
+            type: array
+            items:
+              $ref: '#/components/schemas/ID'
           example:
-            root_id: "item-type:normative-component"
-            descendant_ids:
-              - "item-type:normative-component"
-              - "item-type:article"
-              - "item-type:paragraph"
-              - "item-type:clause"
-              - "item-type:item"
-              - "item-type:subitem"
+            - "item-type:normative-component"
+            - "item-type:article"
+            - "item-type:paragraph"
+            - "item-type:clause"
+            - "item-type:item"
+            - "item-type:subitem"
     '400':
       $ref: '#/components/responses/BadRequest'
     '401':
