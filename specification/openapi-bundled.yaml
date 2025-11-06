@@ -1957,13 +1957,14 @@ paths:
             $ref: '#/components/schemas/ID'
       responses:
         '200':
-          description: An ordered list of the ancestor Item objects.
+          description: An ordered list of ancestor Item IDs, from the highest-level ancestor down to the immediate parent.
           content:
             application/json:
               schema:
                 type: array
+                description: An array of Item IDs representing ancestors, ordered from root to immediate parent. Excludes the root Work and the item itself.
                 items:
-                  $ref: '#/components/schemas/Item'
+                  $ref: '#/components/schemas/ID'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -2779,7 +2780,7 @@ paths:
                   - Repeal
         '401':
           $ref: ../../openapi.yaml#/components/responses/Unauthorized
-        '403':
+        '403':1
           $ref: ../../openapi.yaml#/components/responses/Forbidden
   /item-types/roots:
     get:
