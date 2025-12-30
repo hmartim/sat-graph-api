@@ -1,13 +1,11 @@
 get:
   tags:
     - "Deterministic Fetch Actions"
-  summary: "Gets the single Version of an Item that was valid at a specific time."
-  operationId: "getValidVersion"
+  summary: "Gets all Versions of an Item that were valid at a specific time."
+  operationId: "getValidVersions"
   description: |
-    The core temporal resolution function. It finds the single `Version` of a given `Item` that was legally in force at a specific point in time.
+    This function acts as the unified entry point for determining the normative state. 
 
-    ### Discussion
-    This endpoint retrieves the last version valid at any point during the day of the given timestamp, ensuring deterministic temporal resolution for legal document retrieval.
   security:
     - ApiKeyAuth: []
 
@@ -15,7 +13,7 @@ get:
     - name: itemId
       in: path
       required: true
-      description: "The canonical ID of the Item whose valid version is being requested."
+      description: "The canonical ID of the Item whose valid versions are being requested."
       schema:
         $ref: '#/components/schemas/ID'
     - name: timestamp
@@ -29,11 +27,13 @@ get:
 
   responses:
     '200':
-      description: "Successfully retrieved the unique Version object valid at the specified time."
+      description: "Successfully retrieved the Version objects valid at the specified time. Returns an array that may contain one or more versions."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Version'
+            type: array
+            items:
+              $ref: '#/components/schemas/Version'
     '404':
       description: "Not Found - Either the Item with the given ID does not exist, or it existed but had no version that was valid at the specified timestamp."
       content:

@@ -11,4 +11,4 @@ description: >-
   formally structured string, such as a URN or URI, but is not strictly
   limited to those formats. It must be unique within the knowledge graph.
 minLength: 1
-example: "urn:lex:br:federal:constituicao:1988-10-05"
+example: "urn:lex:br:federal:constituicao:1988-10-05;1988!art5"
