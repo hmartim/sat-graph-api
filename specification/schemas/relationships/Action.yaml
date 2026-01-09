@@ -12,14 +12,7 @@
 type: object
 description: >
   Represents a reified event (e.g., an amendment, a revocation). 
-   
-  It is important to clarify the scope of "causality" within this framework. 
-  For exemple, in legislative domain, we address the chain of events that determine 
-  the textual validity of a legal provision at a specific point in time 
-  (causality in the textual-documentary world). This is distinct from the legal-dogmatic 
-  concept of causality, which typically refers to the relationship between a real-world 
-  event (the operative fact) and the legal norm that applies to it.
-  
+     
   It is a first-class entity that models a single, auditable causal link,
   connecting the source of a command to its precise effects on the version
   history of an Item.
@@ -27,8 +20,7 @@ required:
   - id
   - type
   - date
-  - source_version_id
-  - produces_version_id
+  - source_version_ids
 properties:
   id:
     $ref: '../core/ID.yaml'
@@ -39,6 +31,12 @@ properties:
     description: >-
       The type of action. The enumerated values represent a baseline
       set; a concrete implementation may extend this list.
+
+      **Legislative Actions** create or modify statutory text:
+      - `Amendment`: Modifies existing statutory text.
+      - `Revocation`: Removes statutory text from validity.
+      - `Creation`: Enacts new statutory text.
+      - `Repeal`: Formally cancels legislation.
     enum:
       - "Amendment"
       - "Revocation"
@@ -50,12 +48,14 @@ properties:
     format: date-time
     description: "The effective date and time of the action, in UTC."
     example: "2000-02-14T00:00:00Z"
-  source_version_id:
-    $ref: '../core/ID.yaml'
+  source_version_ids:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    minItems: 1
     description: >-
-      The ID of the specific 'Version' of the legal text that **authorizes**
-      or **commands** this single change. This is the source of the causal link.
-    example: "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6_cpt"
+      The IDs of the specific 'Version(s)' of the text that **authorize**
+      or **command** this single change. This is the source of the causal link.
   terminates_version_id:
     $ref: '../core/ID.yaml'
     nullable: true
@@ -65,8 +65,13 @@ properties:
     example: "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt"
   produces_version_id:
     $ref: '../core/ID.yaml'
+    nullable: true
     description: >-
       The ID of the specific 'Version' that is **created** by this action.
+
+      This is null for pure Revocation or Repeal actions that terminate a version
+      without creating a new one (e.g., when a statute is completely repealed
+      without replacement.
     example: "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
   metadata:
     $ref: '../core/JSON.yaml'
@@ -74,7 +79,6 @@ properties:
     description: >-
       A flexible field for any valid JSON data providing more context about the
       action, such as its source of the assertion.
-
 
       **Best Practice:** Use schema.org vocabularies (e.g., schema.org/LegislationObject)
       to enable semantic interoperability. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md)
