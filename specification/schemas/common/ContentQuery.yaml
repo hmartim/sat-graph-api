@@ -6,11 +6,11 @@ description: |
 
   **Search Strategies:**
   - `hybrid`: Combines both semantic and lexical search with database-managed ranking fusion (default)
-  - `semantic_only`: Uses only vector similarity search
-  - `lexical_only`: Uses only full-text keyword search
+  - `semanticOnly`: Uses only vector similarity search
+  - `lexicalOnly`: Uses only full-text keyword search
 
   **Basic Usage:**
-  For simple queries, only specify the query_text for the desired search type. The system will apply sensible defaults for weights and operators.
+  For simple queries, only specify the queryText for the desired search type. The system will apply sensible defaults for weights and operators.
 
   **Advanced Usage:**
   Fine-tune the search with weights, mandatory clauses, boosting terms, and citation-aware scoring to match complex legal domain requirements.
@@ -18,20 +18,20 @@ description: |
 properties:
   strategy:
     type: string
-    enum: [hybrid, semantic_only, lexical_only]
+    enum: [hybrid, semanticOnly, lexicalOnly]
     default: hybrid
     description: |
       The search strategy to employ:
       - `hybrid`: Leverage both semantic and lexical search with RRF (recommended for most use cases)
-      - `semantic_only`: Only perform vector similarity search
-      - `lexical_only`: Only perform keyword/phrase full-text search
+      - `semanticOnly`: Only perform vector similarity search
+      - `lexicalOnly`: Only perform keyword/phrase full-text search
     example: "hybrid"
 
   semantic:
     type: object
     description: "Configuration for semantic (vector embedding) search"
     properties:
-      query_text:
+      queryText:
         type: string
         description: |
           The natural language query string that will be embedded and used for vector similarity search.
@@ -50,7 +50,7 @@ properties:
           Higher values prioritize conceptual similarity over exact keyword matches.
         example: 0.7
 
-      top_k:
+      topK:
         type: integer
         format: int32
         minimum: 1
@@ -59,13 +59,13 @@ properties:
           Useful for tuning performance vs. recall trade-offs in large corpora.
         example: 100
     required:
-      - query_text
+      - queryText
 
   lexical:
     type: object
     description: "Configuration for lexical (full-text keyword) search"
     properties:
-      query_text:
+      queryText:
         type: string
         description: |
           Keywords or phrases for full-text search. Supports exact phrase matching with quotes.
@@ -84,17 +84,7 @@ properties:
           Higher values prioritize exact keyword/phrase matches.
         example: 0.3
 
-      operator:
-        type: string
-        enum: [AND, OR]
-        default: OR
-        description: |
-          Logical operator for combining multiple keywords in the lexical query.
-          - `AND`: All keywords must be present (more restrictive)
-          - `OR`: Any keyword can match (more permissive)
-        example: "OR"
-
-      top_k:
+      topK:
         type: integer
         format: int32
         minimum: 1
@@ -102,7 +92,7 @@ properties:
           Optional. The number of top candidates to retrieve from lexical search before RRF fusion.
         example: 100
     required:
-      - query_text
+      - queryText
 
   clauses:
     type: array
@@ -114,12 +104,12 @@ properties:
       properties:
         type:
           type: string
-          enum: [must_contain, should_contain, must_not_contain]
+          enum: [mustContain, shouldContain, mustNotContain]
           description: |
-            - `must_contain`: Results MUST include this term/phrase (filters out non-matching documents)
-            - `should_contain`: Results containing this term/phrase receive a score boost
-            - `must_not_contain`: Results containing this term/phrase are excluded
-          example: "must_contain"
+            - `mustContain`: Results MUST include this term/phrase (filters out non-matching documents)
+            - `shouldContain`: Results containing this term/phrase receive a score boost
+            - `mustNotContain`: Results containing this term/phrase are excluded
+          example: "mustContain"
 
         text:
           type: string
@@ -132,20 +122,20 @@ properties:
           minimum: 0.0
           default: 1.5
           description: |
-            Score multiplier for `should_contain` clauses. Ignored for other clause types.
+            Score multiplier for `shouldContain` clauses. Ignored for other clause types.
             Values > 1.0 increase relevance; values < 1.0 decrease it.
           example: 2.0
       required:
         - type
         - text
     example:
-      - type: "must_contain"
+      - type: "mustContain"
         text: "Constituição Federal"
-      - type: "should_contain"
+      - type: "shouldContain"
         text: "direitos sociais"
         boost: 1.8
 
-  citation_boost:
+  citationBoost:
     type: object
     description: |
       Optional. Boost results containing legal citations (e.g., "artigo 6º", "Lei 8.742/1993").
@@ -180,11 +170,11 @@ anyOf:
 example:
   strategy: "hybrid"
   semantic:
-    query_text: "políticas de garantia de renda mínima para famílias vulneráveis"
+    queryText: "políticas de garantia de renda mínima para famílias vulneráveis"
     weight: 0.7
   lexical:
-    query_text: "\"artigo 6º\" OR \"renda básica\""
+    queryText: "\"artigo 6º\" OR \"renda básica\""
     weight: 0.3
   clauses:
-    - type: "must_contain"
+    - type: "mustContain"
       text: "Constituição Federal"
