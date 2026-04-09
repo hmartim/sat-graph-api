@@ -32,55 +32,58 @@ Try to retrieve text in user's preferred language.
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/versions/version_id_xyz/text-unit?language=pt-br"
+  "$BASE_URL/versions/version_id_xyz/text-units?language=pt-br"
 ```
 
 **Possible Responses:**
 
-**Success Case:**
+**Success Case** (200 with results):
 
 ```json
-{
-  "id": "text_unit_123",
-  "source_type": "Version",
-  "source_id": "version_id_xyz",
-  "language": "pt-br",
-  "aspect": "canonical",
-  "content": "Texto em português..."
-}
+[
+  {
+    "id": "text_unit_123",
+    "sourceType": "Version",
+    "sourceId": "version_id_xyz",
+    "language": "pt-br",
+    "aspect": "canonical",
+    "content": "Texto em português..."
+  }
+]
 ```
 
-**Failure Case (404):**
+**No Content Case** (200 with empty array — language not available):
 
 ```json
-{
-  "code": "TEXT_NOT_FOUND",
-  "message": "No TextUnit found for version 'version_id_xyz' with language 'pt-br'"
-}
+[]
 ```
+
+**Note:** The endpoint always returns 200. An empty array means no TextUnits exist for the requested language. A 404 is only returned when the `versionId` itself does not exist.
 
 ---
 
 ## Step 2: Fallback to Default Language
 
-If the first call fails, don't give up—retrieve in fallback language.
+If the first call returns an empty array, retrieve in the fallback language.
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/versions/version_id_xyz/text-unit?language=en"
+  "$BASE_URL/versions/version_id_xyz/text-units?language=en"
 ```
 
 **Response:**
 
 ```json
-{
-  "id": "text_unit_456",
-  "source_type": "Version",
-  "source_id": "version_id_xyz",
-  "language": "en",
-  "aspect": "canonical",
-  "content": "Text in English..."
-}
+[
+  {
+    "id": "text_unit_456",
+    "sourceType": "Version",
+    "sourceId": "version_id_xyz",
+    "language": "en",
+    "aspect": "canonical",
+    "content": "Text in English..."
+  }
+]
 ```
 
 ---
@@ -90,26 +93,24 @@ curl -H "Authorization: $API_KEY" \
 **Agent Logic:**
 
 ```python
-def get_text_with_fallback(version_id, preferred_lang="pt-br", fallback_lang="en"):
-    try:
-        # Attempt preferred language
-        text = get_text_for_version(version_id, preferred_lang)
+def get_text_with_fallback(versionId, preferred_lang="pt-br", fallback_lang="en"):
+    text_units = get_version_text_units(versionId, language=preferred_lang)
+    if text_units:
         return {
-            "content": text.content,
+            "content": text_units[0].content,
             "language": preferred_lang,
             "is_fallback": False
         }
-    except NotFoundError:
-        # Graceful fallback
-        text = get_text_for_version(version_id, fallback_lang)
-        return {
-            "content": text.content,
-            "language": fallback_lang,
-            "is_fallback": True,
-            "message": f"The requested text was not available in {preferred_lang}. Displaying the {fallback_lang} version instead."
-        }
+    # Graceful fallback
+    text_units = get_version_text_units(versionId, language=fallback_lang)
+    return {
+        "content": text_units[0].content,
+        "language": fallback_lang,
+        "is_fallback": True,
+        "message": f"The requested text was not available in {preferred_lang}. Displaying the {fallback_lang} version instead."
+    }
 
-result = get_text_with_fallback(version_id="version_id_xyz")
+result = get_text_with_fallback(versionId="version_id_xyz")
 
 if result["is_fallback"]:
     print(f"⚠️ {result['message']}")
@@ -132,9 +133,9 @@ The agent provides a seamless experience that combines robustness with transpare
 
 ```python
 result = {
-    "version_id": "version_id_xyz",
-    "requested_language": "pt-br",
-    "actual_language": "en",
+    "versionId": "version_id_xyz",
+    "requestedLanguage": "pt-br",
+    "actualLanguage": "en",
     "is_fallback": True,
     "message": "The requested text was not available in pt-br. Displaying the en version instead.",
     "content": "Text in English..."
@@ -148,26 +149,24 @@ result = {
 For systems supporting many languages, agents can implement a fallback hierarchy:
 
 ```python
-def get_text_with_fallback_chain(version_id, language_chain=["pt-br", "pt", "en", "es"]):
-    """Try languages in order until one succeeds"""
+def get_text_with_fallback_chain(versionId, language_chain=["pt-br", "pt", "en", "es"]):
+    """Try languages in order until one returns results"""
     for lang in language_chain:
-        try:
-            text = get_text_for_version(version_id, lang)
+        text_units = get_version_text_units(versionId, language=lang)
+        if text_units:
             is_fallback = lang != language_chain[0]
             return {
-                "content": text.content,
+                "content": text_units[0].content,
                 "language": lang,
                 "is_fallback": is_fallback,
                 "preferred_language": language_chain[0],
                 "message": f"Preferred language '{language_chain[0]}' not available, using '{lang}' instead." if is_fallback else None
             }
-        except NotFoundError:
-            continue
 
-    # If all languages fail
+    # If all languages return empty
     raise NoAvailableTextError(f"No text available in any of: {language_chain}")
 
-result = get_text_with_fallback_chain(version_id="version_id_xyz")
+result = get_text_with_fallback_chain(versionId="version_id_xyz")
 ```
 
 ---

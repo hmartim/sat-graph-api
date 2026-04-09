@@ -31,9 +31,9 @@ export BASE_URL="https://api.example.com"
 Ground the query by resolving the textual reference to its canonical identifier.
 
 ```bash
-curl -G "$BASE_URL/resolve-item-reference" \
+curl -G "$BASE_URL/items/by-reference" \
   -H "Authorization: $API_KEY" \
-  --data-urlencode "reference_text=Article 6, caput of the Brazilian Constitution"
+  --data-urlencode "referenceText=Article 6, caput of the Brazilian Constitution"
   # Agent knows that the text of a article is in its caput
 ```
 
@@ -49,9 +49,9 @@ curl -G "$BASE_URL/resolve-item-reference" \
 
 **Agent Logic:**
 ```python
-candidates = resolve_item_reference(reference_text="Article 6, caput of the Brazilian Constitution")
-target_item_id = candidates[0].id  # Agent proceeds with top candidate
-# target_item_id = "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt"
+candidates = resolve_item_reference(referenceText="Article 6, caput of the Brazilian Constitution")
+targetItemId = candidates[0].id  # Agent proceeds with top candidate
+# targetItemId = "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt"
 ```
 
 ---
@@ -71,33 +71,33 @@ curl -H "Authorization: $API_KEY" \
   {
     "id": "action_amendment_2000_...",
     "type": "Amendment",
-    "date": "2000-02-14T00:00:00Z",
-    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt_...",
-    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt",
-    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
+    "eventTime": "2000-02-14T00:00:00Z",
+    "sourceVersionIds": ["urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt_..."],
+    "terminatesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt"],
+    "producesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"]
   },
   {
     "id": "action_amendment_2010_...",
     "type": "Amendment",
-    "date": "2010-02-04T00:00:00Z",
-    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2010-02-04;64@2010-02-04!art1_cpt_alt_...",
-    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
-    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt"
+    "eventTime": "2010-02-04T00:00:00Z",
+    "sourceVersionIds": ["urn:lex:br:federal:emenda.constitucional:2010-02-04;64@2010-02-04!art1_cpt_alt_..."],
+    "terminatesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"],
+    "producesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt"]
   },
   {
     "id": "action_amendment_2015_...",
     "type": "Amendment",
-    "date": "2015-09-15T00:00:00Z",
-    "source_version_id": "urn:lex:br:federal:emenda.constitucional:2015-09-15;90@2015-09-15!art1_cpt_alt_...",
-    "terminates_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
-    "produces_version_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt"
+    "eventTime": "2015-09-15T00:00:00Z",
+    "sourceVersionIds": ["urn:lex:br:federal:emenda.constitucional:2015-09-15;90@2015-09-15!art1_cpt_alt_..."],
+    "terminatesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt"],
+    "producesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt"]
   }
 ]
 ```
 
 **Agent Logic:**
 ```python
-history = get_item_history(item_id=target_item_id)  # Returns list[Action]
+history = get_item_history(itemId=targetItemId)  # Returns list[Action]
 # history contains all legislative events in chronological order
 ```
 
@@ -108,8 +108,8 @@ history = get_item_history(item_id=target_item_id)  # Returns list[Action]
 The agent must find the **first Action** in the history whose resulting text contains the keyword "moradia".
 
 To do this efficiently:
-1. Collect all `produces_version_id`s from the history
-2. Make a single `getBatchTextsUnits` call to retrieve all texts at once
+1. Collect all `producesVersionIds` from the history
+2. Make a single `getBatchTextUnits` call to retrieve all texts at once
 3. Iterate through texts units to identify the pivotal Action
 
 ```bash
@@ -118,7 +118,7 @@ curl -X POST "$BASE_URL/text-units/batch-get" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "version_ids": [
+    "versionIds": [
       "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
       "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
       "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt"
@@ -132,24 +132,24 @@ curl -X POST "$BASE_URL/text-units/batch-get" \
 [
   {
     "id": "text_2000_...",
-    "source_type": "Version",
-    "source_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
+    "sourceType": "Version",
+    "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
     "language": "pt-br",
     "aspect": "canonical",
     "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, o trabalho, a moradia, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
   },
   {
     "id": "text_2010_...",
-    "source_type": "Version",
-    "source_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
+    "sourceType": "Version",
+    "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
     "language": "pt-br",
     "aspect": "canonical",
     "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, a alimentação, o trabalho, a moradia, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
   },
   {
     "id": "text_2015_...",
-    "source_type": "Version",
-    "source_id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt",
+    "sourceType": "Version",
+    "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt",
     "language": "pt-br",
     "aspect": "canonical",
     "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, a alimentação, o trabalho, a moradia, o transporte, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
@@ -160,22 +160,22 @@ curl -X POST "$BASE_URL/text-units/batch-get" \
 **Agent Logic:**
 ```python
 # Collect all version IDs produced by actions
-version_ids = [action.produces_version_id for action in history]
+versionIds = [vid for action in history for vid in action.producesVersionIds]
 
 # Batch retrieve all texts
 texts = get_batch_text_units(
-    version_ids=version_ids,
+    versionIds=versionIds,
     language="pt-br"
 )
 
 # Find the first text containing "moradia"
-pivotal_action = None
+pivotalAction = None
 for i, text in enumerate(texts):
     if "moradia" in text.content.lower():
-        pivotal_action = history[i]
+        pivotalAction = history[i]
         break
 
-# pivotal_action = action_amendment_2000_...
+# pivotalAction = action_amendment_2000_...
 ```
 
 ---
@@ -186,41 +186,32 @@ The pivotal Action object contains direct references to the state it terminated 
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/versions/compare?version_id_a=urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt&version_id_b=urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
+  "$BASE_URL/versions/compare?versionIdA=urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt&versionIdB=urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
 ```
 
 **Response:**
 ```json
 {
-  "version_a": {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt",
-    "validity_interval": ["1988-10-05T00:00:00Z", "2000-02-14T00:00:00Z"]
-  },
-  "version_b": {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
-    "validity_interval": ["2000-02-14T00:00:00Z", "2010-02-04T00:00:00Z"]
-  },
   "changes": [
     {
-      "type": "insertion",
-      "position": 52,
-      "text": "a moradia, ",
-      "context_before": "...o trabalho, ",
-      "context_after": "o lazer..."
+      "type": "addition",
+      "level": "word",
+      "componentId": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt",
+      "contentBefore": "",
+      "contentAfter": "a moradia, "
     }
-  ],
-  "summary": "1 insertion, 0 deletions, 0 modifications"
+  ]
 }
 ```
 
 **Agent Logic:**
 ```python
-version_id_before = pivotal_action.terminates_version_id
-version_id_after = pivotal_action.produces_version_id
+versionIdBefore = pivotalAction.terminatesVersionIds[0]
+versionIdAfter = pivotalAction.producesVersionIds[0]
 
-diff_report = compare_versions(
-    version_id_a=version_id_before,
-    version_id_b=version_id_after
+diffReport = compare_versions(
+    versionIdA=versionIdBefore,
+    versionIdB=versionIdAfter
 )
 ```
 
@@ -231,21 +222,21 @@ diff_report = compare_versions(
 The agent now has **complete, verifiable data** to pass to an LLM for synthesis:
 
 ```python
-synthesis_data = {
-    "pivotal_action": {
-        "date": pivotal_action.date,
-        "source_law": pivotal_action.source_version_id,
-        "type": pivotal_action.type
+synthesisData = {
+    "pivotalAction": {
+        "eventTime": pivotalAction.eventTime,
+        "sourceLaw": pivotalAction.sourceVersionIds[0],
+        "type": pivotalAction.type
     },
-    "version_before": {
-        "id": version_id_before,
-        "validity_period": "1988-10-05 to 2000-02-14"
+    "versionBefore": {
+        "id": versionIdBefore,
+        "validityPeriod": "1988-10-05 to 2000-02-14"
     },
-    "version_after": {
-        "id": version_id_after,
-        "validity_period": "2000-02-14 to 2010-02-04"
+    "versionAfter": {
+        "id": versionIdAfter,
+        "validityPeriod": "2000-02-14 to 2010-02-04"
     },
-    "diff_report": diff_report
+    "diffReport": diffReport
 }
 
 # LLM receives this structured, auditable data
