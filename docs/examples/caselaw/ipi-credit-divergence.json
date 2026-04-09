@@ -1,0 +1,252 @@
+{
+  "metadata": {
+    "caseName": "IPI Tax Credit - Jurisprudential Divergence",
+    "description": "Case C: Simultaneous Divergence (Jurisprudential Split) - Two STF Panels (Turmas) issued conflicting rulings on the constitutionality of IPI tax credits for non-taxed products. No unifying Plenary decision exists.",
+    "jurisdiction": "Brazil - Supreme Federal Court (STF) - First and Second Panels",
+    "demonstration": "Shows how multiple concurrent Interpretive Versions can coexist when different court panels reach conflicting conclusions on the same legal question without Plenary unification"
+  },
+  "items": [
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art153_par3_inc2",
+      "typeId": "constitutional-provision",
+      "label": "Art. 153, §3, II - IPI Non-Cumulativity",
+      "metadata": {
+        "description": "Constitutional provision establishing the non-cumulative principle for IPI (Tax on Industrialized Products)"
+      }
+    },
+    {
+      "id": "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1",
+      "typeId": "judgment",
+      "label": "RE [Hypothetical] - First Panel",
+      "metadata": {
+        "description": "First Panel ruling allowing IPI credit for taxed inputs used in non-taxed final products"
+      }
+    },
+    {
+      "id": "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1!voto-relator",
+      "typeId": "judgment-component",
+      "label": "Vote of Rapporteur - First Panel",
+      "parentId": "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1",
+      "metadata": {
+        "description": "Majority vote in First Panel recognizing right to IPI credit"
+      }
+    },
+    {
+      "id": "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2",
+      "typeId": "judgment",
+      "label": "RE [Hypothetical] - Second Panel",
+      "metadata": {
+        "description": "Second Panel ruling denying IPI credit for non-taxed final products"
+      }
+    },
+    {
+      "id": "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2!voto-relator",
+      "typeId": "judgment-component",
+      "label": "Vote of Rapporteur - Second Panel",
+      "parentId": "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2",
+      "metadata": {
+        "description": "Majority vote in Second Panel denying right to IPI credit"
+      }
+    }
+  ],
+  "versions": [
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art153_par3_inc2",
+      "itemId": "urn:lex:br:federal:constituicao:1988-10-05;1988!art153_par3_inc2",
+      "type": "statutory",
+      "validityInterval": ["1988-10-05T00:00:00Z", null],
+      "metadata": {
+        "versionType": "original"
+      }
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2018-05-15!art153_par3_inc2,re.fictitious-1",
+      "itemId": "urn:lex:br:federal:constituicao:1988-10-05;1988!art153_par3_inc2",
+      "type": "interpretive",
+      "validityInterval": ["2018-05-15T00:00:00Z", null],
+      "producedByActionId": "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1#interpretation-art153",
+      "metadata": {
+        "versionType": "panelInterpretation"
+      }
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2018-08-20!art153_par3_inc2,re.fictitious-2",
+      "itemId": "urn:lex:br:federal:constituicao:1988-10-05;1988!art153_par3_inc2",
+      "type": "interpretive",
+      "validityInterval": ["2018-08-20T00:00:00Z", null],
+      "producedByActionId": "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2#interpretation-art153",
+      "metadata": {
+        "versionType": "panelInterpretation"
+      }
+    },
+    {
+      "id": "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1@2018-05-15!voto-relator",
+      "itemId": "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1!voto-relator",
+      "type": "statutory",
+      "validityInterval": ["2018-05-15T00:00:00Z", null],
+      "metadata": {
+        "versionType": "judgmentComponent"
+      }
+    },
+    {
+      "id": "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2@2018-08-20!voto-relator",
+      "itemId": "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2!voto-relator",
+      "type": "statutory",
+      "validityInterval": ["2018-08-20T00:00:00Z", null],
+      "metadata": {
+        "versionType": "judgmentComponent"
+      }
+    }
+  ],
+  "textUnits": [
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art153_par3_inc2~canonical;pt",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art153_par3_inc2",
+      "language": "pt",
+      "aspect": "canonical",
+      "content": "será não-cumulativo, compensando-se o que for devido em cada operação com o montante cobrado nas anteriores"
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art153_par3_inc2~canonical;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art153_par3_inc2",
+      "language": "en",
+      "aspect": "canonical",
+      "content": "shall be non-cumulative, by offsetting what is due in each transaction against the amount charged in previous ones"
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2018-05-15!art153_par3_inc2,re.fictitious-1~ratio;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2018-05-15!art153_par3_inc2,re.fictitious-1",
+      "language": "en",
+      "aspect": "ratio",
+      "content": "The constitutional principle of non-cumulativity (Art. 153, §3, II) guarantees the taxpayer's right to IPI credit for taxed inputs (raw materials, intermediate products, packaging) used in the industrialization of non-taxed final products. The non-cumulative principle prevents cascading taxation and ensures the taxpayer can offset input credits regardless of the tax status of the output. Denying this credit would violate the constitutional mandate of non-cumulativity."
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2018-05-15!art153_par3_inc2,re.fictitious-1~holding;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2018-05-15!art153_par3_inc2,re.fictitious-1",
+      "language": "en",
+      "aspect": "holding",
+      "content": "IPI credit is allowed for taxed inputs used in non-taxed final products."
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2018-08-20!art153_par3_inc2,re.fictitious-2~ratio;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2018-08-20!art153_par3_inc2,re.fictitious-2",
+      "language": "en",
+      "aspect": "ratio",
+      "content": "The non-cumulative principle of IPI (Art. 153, §3, II) does not guarantee the right to presumed credit when the final product is non-taxed, exempt, or subject to zero rate. The constitutional provision requires an actual tax obligation ('what is due') in the subsequent transaction to enable offsetting. When the output is not taxed, there is no 'amount due' to be offset, thus no constitutional right to credit the input taxes. The principles of non-cumulativity and selectivity do not ensure presumed IPI credit in these circumstances."
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2018-08-20!art153_par3_inc2,re.fictitious-2~holding;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2018-08-20!art153_par3_inc2,re.fictitious-2",
+      "language": "en",
+      "aspect": "holding",
+      "content": "IPI credit is not allowed for taxed inputs when the final product is non-taxed, exempt, or zero-rated."
+    },
+    {
+      "id": "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1@2018-05-15!voto-relator~canonical;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1@2018-05-15!voto-relator",
+      "language": "en",
+      "aspect": "canonical",
+      "content": "[Full text of First Panel rapporteur's vote explaining that denying IPI credit would create cascading taxation effect violating constitutional non-cumulativity principle]"
+    },
+    {
+      "id": "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1@2018-05-15!voto-relator~ratio;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1@2018-05-15!voto-relator",
+      "language": "en",
+      "aspect": "ratio",
+      "content": "The constitutional guarantee of non-cumulativity must be interpreted broadly to prevent tax accumulation. When a manufacturer purchases taxed inputs and uses them to produce non-taxed outputs, denying the input credit would effectively negate the non-cumulative principle, as the tax burden from the input stage would not be offset."
+    },
+    {
+      "id": "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2@2018-08-20!voto-relator~canonical;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2@2018-08-20!voto-relator",
+      "language": "en",
+      "aspect": "canonical",
+      "content": "[Full text of Second Panel rapporteur's vote explaining that non-cumulativity requires an actual downstream tax obligation to enable credit offsetting]"
+    },
+    {
+      "id": "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2@2018-08-20!voto-relator~ratio;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2@2018-08-20!voto-relator",
+      "language": "en",
+      "aspect": "ratio",
+      "content": "The constitutional text states that IPI 'shall be non-cumulative, by offsetting what is due in each transaction against the amount charged in previous ones.' The term 'what is due' necessarily implies a tax obligation in the subsequent transaction. When the output is not taxed, there is nothing 'due' to offset, thus no constitutional foundation for presumed credit."
+    }
+  ],
+  "actions": [
+    {
+      "id": "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1#interpretation-art153",
+      "parentId": null,
+      "type": "Interpretation",
+      "eventTime": "2018-05-15T00:00:00Z",
+      "validityInterval": ["2018-05-15T00:00:00Z", null],
+      "sourceVersionIds": [
+        "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1@2018-05-15!voto-relator"
+      ],
+      "terminatesVersionIds": [],
+      "producesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2018-05-15!art153_par3_inc2,re.fictitious-1"],
+      "metadata": {
+        "court": "Supremo Tribunal Federal",
+        "chamber": "Primeira Turma",
+        "rapporteur": "[Minister Name]",
+        "vote": "Majority",
+        "caseType": "Extraordinary Appeal (RE)",
+        "subject": "IPI tax credit for non-taxed outputs",
+        "label": "First Panel IPI Credit Decision"
+      }
+    },
+    {
+      "id": "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2#interpretation-art153",
+      "parentId": null,
+      "type": "Interpretation",
+      "eventTime": "2018-08-20T00:00:00Z",
+      "validityInterval": ["2018-08-20T00:00:00Z", null],
+      "sourceVersionIds": [
+        "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2@2018-08-20!voto-relator"
+      ],
+      "terminatesVersionIds": [],
+      "producesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2018-08-20!art153_par3_inc2,re.fictitious-2"],
+      "metadata": {
+        "court": "Supremo Tribunal Federal",
+        "chamber": "Segunda Turma",
+        "rapporteur": "[Minister Name]",
+        "vote": "Majority",
+        "caseType": "Extraordinary Appeal (RE)",
+        "subject": "IPI tax credit for non-taxed outputs",
+        "label": "Second Panel IPI Credit Decision"
+      }
+    }
+  ],
+  "sampleQueries": [
+    {
+      "query": "getValidVersions('urn:lex:br:federal:constituicao:1988-10-05;1988!art153_par3_inc2', '2019-01-01')",
+      "expectedResult": [
+        "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art153_par3_inc2",
+        "urn:lex:br:federal:constituicao:1988-10-05;1988@2018-05-15!art153_par3_inc2,re.fictitious-1",
+        "urn:lex:br:federal:constituicao:1988-10-05;1988@2018-08-20!art153_par3_inc2,re.fictitious-2"
+      ],
+      "interpretation": "The query returns |V_valid| = 3. The original Statutory Version (S-TV) remains active (not repealed), but it is overlaid by two conflicting Interpretive Versions (I-TVs) from different panels. This indicates that the text exists, but its application is contested."
+    },
+    {
+      "query": "getItemHistory('urn:lex:br:federal:constituicao:1988-10-05;1988!art153_par3_inc2')",
+      "expectedResult": [
+        "urn:lex:br:stf.1turma:acordao:2018-05-15;re.fictitious-1#interpretation-art153",
+        "urn:lex:br:stf.2turma:acordao:2018-08-20;re.fictitious-2#interpretation-art153"
+      ],
+      "interpretation": "Timeline of actions affecting this Item: Interpretation action by First Panel RE fictitious-1 (2018-05-15) creating interpretive version allowing IPI credit, followed by Interpretation action by Second Panel RE fictitious-2 (2018-08-20) creating conflicting interpretive version denying IPI credit. State: Branching Divergence / No Plenary Resolution. The original statutory version (1988-10-05) was never modified by an action, only overlaid by these two conflicting judicial interpretations."
+    }
+  ],
+  "notes": {
+    "jurisprudentialSplit": "This case demonstrates the model's capacity to represent systemic legal uncertainty. Instead of forcing a naive merge, the graph preserves the Statutory Version alongside both conflicting Interpretive Versions.",
+    "resolutionMechanisms": "Brazilian procedural law provides mechanisms to resolve such divergences (e.g., Plenary unification). Until then, the model accurately represents that the 'valid norm' is currently quantum-like: it depends on which Panel observes (judges) the case.",
+    "practicalImplications": "For compliance analytics, this topology enables agents to: (1) Identify legal uncertainty zones; (2) Assess litigation risk based on chamber composition; (3) Flag cases requiring human legal judgment.",
+    "topologyInsight": "Unlike Case A (sequential overruling) where V1 replaces V0, Case C demonstrates a 'Stacked Topology'. The Statutory Version (V0) serves as the base, while V1 and V2 exist as parallel interpretive overlays. The geographic_scope or court composition metadata provides the disambiguation."
+  }
+}

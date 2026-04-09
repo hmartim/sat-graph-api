@@ -1,0 +1,304 @@
+{
+  "metadata": {
+    "caseName": "ADI 4983 - Vaquejada Constitutional Dialogue",
+    "description": "Case B: Constitutional Dialogue - The STF declared vaquejada unconstitutional (2016), Congress enacted Constitutional Amendment 96 (2017) creating an exception, demonstrating legislative response to judicial interpretation through new constitutional provision",
+    "jurisdiction": "Brazil - Supreme Federal Court (STF) and National Congress",
+    "demonstration": "Shows how the legislature can respond to judicial interpretation by creating a new constitutional provision that establishes an exception, rather than directly overriding the interpretation"
+  },
+  "items": [
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art225_par1_inc7",
+      "typeId": "constitutional-provision",
+      "label": "Art. 225, §1, VII - Protection of fauna",
+      "metadata": {
+        "description": "Constitutional provision prohibiting practices that subject animals to cruelty"
+      }
+    },
+    {
+      "id": "urn:lex:br:ceara:lei:2013-05-25;15299",
+      "typeId": "state-law",
+      "label": "Ceará State Law 15.299/2013",
+      "metadata": {
+        "description": "State law regulating vaquejada as sporting and cultural activity"
+      }
+    },
+    {
+      "id": "urn:lex:br:stf:acordao:2016-10-06;adi.4983",
+      "typeId": "judgment",
+      "label": "ADI 4983",
+      "metadata": {
+        "description": "Supreme Court ruling declaring vaquejada regulation unconstitutional"
+      }
+    },
+    {
+      "id": "urn:lex:br:stf:acordao:2016-10-06;adi.4983!voto-marco-aurelio",
+      "typeId": "judgment-component",
+      "label": "Vote of Rapporteur Minister Marco Aurélio",
+      "parentId": "urn:lex:br:stf:acordao:2016-10-06;adi.4983",
+      "metadata": {
+        "description": "Majority vote finding intrinsic cruelty in vaquejada practice"
+      }
+    },
+    {
+      "id": "urn:lex:br:federal:emenda.constitucional:2017-06-06;96!art1_cpt_alt1_art225_par7",
+      "typeId": "legislative-command",
+      "label": "EC 96/2017 - Art. 1, caput",
+      "metadata": {
+        "description": "Article 1 caput of Constitutional Amendment 96/2017, which adds paragraph 7 to Article 225 of the Federal Constitution",
+        "effect": "Creates Art. 225, §7 - exception for animal sports as cultural manifestations"
+      }
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art225_par7",
+      "typeId": "constitutional-provision",
+      "label": "Art. 225, §7 - Cultural sports exception",
+      "metadata": {
+        "description": "Constitutional provision creating exception for animal sports as cultural manifestations (added by EC 96/2017)"
+      }
+    }
+  ],
+  "versions": [
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art225_par1_inc7",
+      "itemId": "urn:lex:br:federal:constituicao:1988-10-05;1988!art225_par1_inc7",
+      "type": "statutory",
+      "validityInterval": ["1988-10-05T00:00:00Z", null],
+      "metadata": {
+        "versionType": "original"
+      }
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2016-10-06!art225_par1_inc7,adi4983",
+      "itemId": "urn:lex:br:federal:constituicao:1988-10-05;1988!art225_par1_inc7",
+      "type": "interpretive",
+      "validityInterval": ["2016-10-06T00:00:00Z", null],
+      "producedByActionId": "urn:lex:br:stf:acordao:2016-10-06;adi.4983#interpretation-art225",
+      "metadata": {
+        "versionType": "judicialInterpretation"
+      }
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2017-06-06!art225_par7",
+      "itemId": "urn:lex:br:federal:constituicao:1988-10-05;1988!art225_par7",
+      "type": "statutory",
+      "validityInterval": ["2017-06-06T00:00:00Z", null],
+      "producedByActionId": "urn:lex:br:federal:emenda.constitucional:2017-06-06;96#creation-art225-par7",
+      "metadata": {
+        "versionType": "constitutionalCreation"
+      }
+    },
+    {
+      "id": "urn:lex:br:stf:acordao:2016-10-06;adi.4983@2016-10-06!voto-marco-aurelio",
+      "itemId": "urn:lex:br:stf:acordao:2016-10-06;adi.4983!voto-marco-aurelio",
+      "type": "statutory",
+      "validityInterval": ["2016-10-06T00:00:00Z", null],
+      "metadata": {
+        "versionType": "judgmentComponent"
+      }
+    },
+    {
+      "id": "urn:lex:br:federal:emenda.constitucional:2017-06-06;96@2017-06-06!art1_cpt_alt1_art225_par7",
+      "itemId": "urn:lex:br:federal:emenda.constitucional:2017-06-06;96!art1_cpt_alt1_art225_par7",
+      "type": "statutory",
+      "validityInterval": ["2017-06-06T00:00:00Z", null],
+      "metadata": {
+        "versionType": "amendmentProvision",
+        "alterationType": "addition"
+      }
+    }
+  ],
+  "textUnits": [
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art225_par1_inc7~canonical;pt",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art225_par1_inc7",
+      "language": "pt",
+      "aspect": "canonical",
+      "content": "proteger a fauna e a flora, vedadas, na forma da lei, as práticas que coloquem em risco sua função ecológica, provoquem a extinção de espécies ou submetam os animais a crueldade"
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art225_par1_inc7~canonical;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art225_par1_inc7",
+      "language": "en",
+      "aspect": "canonical",
+      "content": "protect fauna and flora, prohibiting, as provided by law, practices that endanger their ecological function, cause species extinction, or subject animals to cruelty"
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2016-10-06!art225_par1_inc7,adi4983~ratio;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2016-10-06!art225_par1_inc7,adi4983",
+      "language": "en",
+      "aspect": "ratio",
+      "content": "Vaquejada practice contains intrinsic cruelty to animals. Technical reports demonstrate harmful consequences: fractures in legs and tails, ruptured ligaments and blood vessels, possible tail detachment, and spinal cord damage to cattle. Horses also suffer injuries. Therefore, vaquejada violates the constitutional prohibition against subjecting animals to cruelty (Art. 225, §1, VII)."
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2016-10-06!art225_par1_inc7,adi4983~holding;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2016-10-06!art225_par1_inc7,adi4983",
+      "language": "en",
+      "aspect": "holding",
+      "content": "State Law 15.299/2013 (Ceará), which regulates vaquejada, is unconstitutional."
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2016-10-06!art225_par1_inc7,adi4983~facts;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2016-10-06!art225_par1_inc7,adi4983",
+      "language": "en",
+      "aspect": "facts",
+      "content": "Technical veterinary reports submitted during trial documented physical injuries to animals during vaquejada competitions, including skeletal fractures, soft tissue damage, and neurological trauma."
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2017-06-06!art225_par7~canonical;pt",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2017-06-06!art225_par7",
+      "language": "pt",
+      "aspect": "canonical",
+      "content": "Para efeitos do disposto na parte final do inciso VII do § 1º deste artigo, não se consideram cruéis as práticas desportivas que utilizem animais, desde que sejam manifestações culturais, conforme o § 1º do art. 215 desta Constituição Federal, registradas como bem de natureza imaterial integrante do patrimônio cultural brasileiro, devendo ser regulamentadas por lei específica que assegure o bem-estar dos animais envolvidos"
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2017-06-06!art225_par7~canonical;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2017-06-06!art225_par7",
+      "language": "en",
+      "aspect": "canonical",
+      "content": "For the purposes of the final part of item VII of paragraph 1 of this article, sports practices that use animals are not considered cruel, provided that they are cultural manifestations, in accordance with paragraph 1 of art. 215 of this Federal Constitution, registered as intangible assets that are part of Brazilian cultural heritage, and must be regulated by specific law that ensures the welfare of the animals involved"
+    },
+    {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988@2017-06-06!art225_par7~summary;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2017-06-06!art225_par7",
+      "language": "en",
+      "aspect": "summary",
+      "content": "Constitutional Amendment 96/2017 added paragraph 7 to Article 225, creating an exception to the prohibition of animal cruelty for sports practices recognized as cultural manifestations, effectively overriding the STF's interpretation in ADI 4983."
+    },
+    {
+      "id": "urn:lex:br:stf:acordao:2016-10-06;adi.4983@2016-10-06!voto-marco-aurelio~canonical;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:stf:acordao:2016-10-06;adi.4983@2016-10-06!voto-marco-aurelio",
+      "language": "en",
+      "aspect": "canonical",
+      "content": "[Full text of Minister Marco Aurélio's vote analyzing technical reports and constitutional environmental protection principles]"
+    },
+    {
+      "id": "urn:lex:br:stf:acordao:2016-10-06;adi.4983@2016-10-06!voto-marco-aurelio~ratio;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:stf:acordao:2016-10-06;adi.4983@2016-10-06!voto-marco-aurelio",
+      "language": "en",
+      "aspect": "ratio",
+      "content": "The practice of vaquejada involves intrinsic cruelty to animals, as demonstrated by technical reports showing fractures, tissue ruptures, and neurological damage. This violates the explicit constitutional prohibition in Article 225, §1, VII, which forbids practices that subject animals to cruelty."
+    },
+    {
+      "id": "urn:lex:br:federal:emenda.constitucional:2017-06-06;96@2017-06-06!art1_cpt_alt1_art225_par7~canonical;pt",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:emenda.constitucional:2017-06-06;96@2017-06-06!art1_cpt_alt1_art225_par7",
+      "language": "pt",
+      "aspect": "canonical",
+      "content": "Fica acrescentado o § 7º ao art. 225 da Constituição Federal..."
+    },
+    {
+      "id": "urn:lex:br:federal:emenda.constitucional:2017-06-06;96@2017-06-06!art1_cpt_alt1_art225_par7~canonical;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:emenda.constitucional:2017-06-06;96@2017-06-06!art1_cpt_alt1_art225_par7",
+      "language": "en",
+      "aspect": "canonical",
+      "content": "Paragraph 7 is added to Article 225 of the Federal Constitution..."
+    },
+    {
+      "id": "urn:lex:br:federal:emenda.constitucional:2017-06-06;96@2017-06-06!art1_cpt_alt1_art225_par7~summary;en",
+      "sourceType": "Version",
+      "sourceId": "urn:lex:br:federal:emenda.constitucional:2017-06-06;96@2017-06-06!art1_cpt_alt1_art225_par7",
+      "language": "en",
+      "aspect": "summary",
+      "content": "Article 1 caput of EC 96/2017 creates a new paragraph 7 in Article 225, establishing an exception to the animal cruelty prohibition for sports recognized as cultural manifestations. This was enacted as a legislative response to the STF's decision in ADI 4983."
+    }
+  ],
+  "actions": [
+    {
+      "id": "urn:lex:br:stf:acordao:2016-10-06;adi.4983#interpretation-art225",
+      "parentId": null,
+      "type": "Interpretation",
+      "eventTime": "2016-10-06T00:00:00Z",
+      "validityInterval": ["2016-10-06T00:00:00Z", null],
+      "sourceVersionIds": [
+        "urn:lex:br:stf:acordao:2016-10-06;adi.4983@2016-10-06!voto-marco-aurelio"
+      ],
+      "terminatesVersionIds": [],
+      "producesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2016-10-06!art225_par1_inc7,adi4983"],
+      "metadata": {
+        "court": "Supremo Tribunal Federal",
+        "chamber": "Plenário",
+        "rapporteur": "Marco Aurélio",
+        "vote": "6-5",
+        "caseNumber": "ADI 4983",
+        "challengedLaw": "Ceará State Law 15.299/2013",
+        "label": "ADI 4983 Adjudication Event"
+      }
+    },
+    {
+      "id": "urn:lex:br:federal:emenda.constitucional:2017-06-06;96#creation-art225-par7",
+      "parentId": null,
+      "type": "Creation",
+      "eventTime": "2017-06-06T00:00:00Z",
+      "validityInterval": ["2017-06-06T00:00:00Z", null],
+      "sourceVersionIds": [
+        "urn:lex:br:federal:emenda.constitucional:2017-06-06;96@2017-06-06!art1_cpt_alt1_art225_par7"
+      ],
+      "terminatesVersionIds": [],
+      "producesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2017-06-06!art225_par7"],
+      "metadata": {
+        "legislature": "National Congress",
+        "amendmentNumber": "96/2017",
+        "amendmentProvision": "Art. 1, caput",
+        "purpose": "Create exception for animal sports as cultural manifestations",
+        "effect": "Adds paragraph 7 to Article 225, creating exception to animal cruelty prohibition",
+        "context": "Backlash amendment in response to ADI 4983 judicial decision",
+        "label": "EC 96/2017 Art. 1 - Creation of Art. 225, §7"
+      }
+    }
+  ],
+  "sampleQueries": [
+    {
+      "query": "getValidVersions('urn:lex:br:federal:constituicao:1988-10-05;1988!art225_par1_inc7', '2017-01-01')",
+      "expectedResult": [
+        "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art225_par1_inc7",
+        "urn:lex:br:federal:constituicao:1988-10-05;1988@2016-10-06!art225_par1_inc7,adi4983"
+      ],
+      "interpretation": "In January 2017, both the original statutory text (S-TV) prohibiting animal cruelty and the judicial interpretation (I-TV) declaring vaquejada unconstitutional coexist. The S-TV applies generally (e.g., to cockfighting, bullfighting), while the I-TV provides binding interpretation for vaquejada."
+    },
+    {
+      "query": "getValidVersions('urn:lex:br:federal:constituicao:1988-10-05;1988!art225_par1_inc7', '2018-01-01')",
+      "expectedResult": [
+        "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art225_par1_inc7",
+        "urn:lex:br:federal:constituicao:1988-10-05;1988@2016-10-06!art225_par1_inc7,adi4983"
+      ],
+      "interpretation": "After EC 96/2017, the prohibition on animal cruelty (inc VII) remains active with its interpretation (vaquejada unconstitutional), while the new par 7 creates an exception for cultural animal sports. Both inc VII and par 7 coexist as separate constitutional provisions."
+    },
+    {
+      "query": "getValidVersions('urn:lex:br:federal:constituicao:1988-10-05;1988!art225_par7', '2018-01-01')",
+      "expectedResult": [
+        "urn:lex:br:federal:constituicao:1988-10-05;1988@2017-06-06!art225_par7"
+      ],
+      "interpretation": "The new paragraph 7, created by EC 96/2017, establishes an exception for animal sports as cultural manifestations."
+    },
+    {
+      "query": "getItemHistory('urn:lex:br:federal:constituicao:1988-10-05;1988!art225_par1_inc7')",
+      "expectedResult": [
+        "urn:lex:br:stf:acordao:2016-10-06;adi.4983#interpretation-art225"
+      ],
+      "interpretation": "Timeline of actions affecting this Item: Interpretation action by ADI 4983 (2016-10-06) creating interpretive version declaring vaquejada unconstitutional. The original statutory version (1988-10-05) prohibiting animal cruelty was never modified by an action, only overlaid by this judicial interpretation."
+    },
+    {
+      "query": "getItemHistory('urn:lex:br:federal:constituicao:1988-10-05;1988!art225_par7')",
+      "expectedResult": [
+        "urn:lex:br:federal:emenda.constitucional:2017-06-06;96#creation-art225-par7"
+      ],
+      "interpretation": "Timeline of actions affecting this Item: Creation action by EC 96/2017 (2017-06-06) establishing the new paragraph 7 as a legislative response to ADI 4983, creating an exception for animal sports as cultural manifestations."
+    }
+  ],
+  "notes": {
+    "constitutionalDialogue": "This case exemplifies the 'backlash effect' where the legislature responds to a judicial constitutional interpretation by creating a new constitutional provision that provides an exception. The Amendment Event (EC 96/2017) creates a new paragraph 7 that coexists with the judicial interpretation of inciso VII, demonstrating legislative power to modify the constitutional framework in response to judicial decisions.",
+    "topologyInsight": "The graph structure shows two independent Items (inciso VII and paragraph 7) with separate version chains. The judicial interpretation of inciso VII (declaring vaquejada unconstitutional) remains valid, while paragraph 7 creates a constitutional exception for cultural animal sports. This models the legal reality: both norms coexist, creating a complex interpretive landscape where practitioners must consider both the prohibition and the exception.",
+    "modelingNote": "Unlike Case A (HC 126.292) where Overruling terminated a previous Interpretive Version, here the legislative response creates a new constitutional provision rather than terminating the judicial interpretation. This demonstrates that constitutional dialogue can occur through creation of new norms that qualify or limit (but don't formally revoke) existing interpretations."
+  }
+}
