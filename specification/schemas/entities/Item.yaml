@@ -17,7 +17,6 @@ description: >
 
   While its primary role is to model the formal structure of a document (as a 'Work' or
   'Work Component'), it is flexible enough to represent other key entities, such as:
-  - **Defined Terms:** A specific term (e.g., 'Complementary Law').
   - **Abstract Concepts:** A legal or procedural concept (e.g., 'Revocation', 'Due Process').
   - **Named Entities:** A real-world entity like an organization or location (e.g., 'National Congress').
 
@@ -26,22 +25,40 @@ description: >
   aspect like 'description', 'summary'.
 required:
   - id
-  - type_id
+  - typeId
   - label
 properties:
   id:
     $ref: '../core/ID.yaml'
-  uri:
+    description: >-
+      The primary, opaque identifier for this Item. The field is a string with no
+      format restriction, allowing each implementation to choose the most appropriate
+      strategy: UUIDs for distributed systems, deterministic hashes, or even the URN
+      itself for simplified implementations. In the examples of this specification,
+      the id field is populated with the URN to facilitate reading and manual tracing
+      of relationships in JSON objects.
+  urn:
     type: string
     nullable: true
     description: >-
-      The canonical URI/URN for this Item. In legal contexts, typically follows
-      the LEX URN standard (e.g., urn:lex:br:federal:constituicao:1988-10-05;art5).
-      This provides stable identification for citations, external references, and
-      cross-system interoperability, persisting even if the surrogate ID changes.
+      The persistent semantic identifier in the URN LEX standard
+      (e.g., urn:lex:br:federal:constituicao:1988-10-05;art5). Represents the
+      ontological identity of the norm, independent of its location or implementation,
+      serving as the key for deduplication and interoperability between systems.
     minLength: 1
-    example: "urn:lex:br:federal:constituicao:1988-10-05;art5"
-  type_id:
+    example: "urn:lex:br:federal:constituicao:1988-10-05;1988!art5"
+  url:
+    type: string
+    format: uri
+    nullable: true
+    description: >-
+      The canonical electronic address (Dereferenceable URI) pointing to the official
+      source of the text (e.g., Portal do Planalto or LexML). This field is used
+      exclusively for human user interface (access provenance), not for logical
+      inferences by the agent.
+    minLength: 1
+    example: "https://normas.leg.br/?urn=urn:lex:br:federal:constituicao:1988-10-05;1988!art5"
+  typeId:
     $ref: '../core/ID.yaml'
     description: >-
       The unique identifier of the ItemType that classifies this item. This references
@@ -50,19 +67,19 @@ properties:
 
       The ItemType taxonomy enables validation, navigation, and rich metadata about
       type relationships and constraints.
-    example: "item-type:123456"
+    example: "article"
   label:
     type: string
     description: "The human-readable label or title for the item."
     minLength: 1
     example: "Brazilian Constitution of 1988"
-  parent_id:
+  parentId:
     $ref: '../core/ID.yaml'
     nullable: true
     description: >-
       The canonical ID of the single structural parent of this item. This field is
-      primarily relevant for 'Work Component' items to define the document hierarchy.
-      For other categories like 'Concept' or 'Term', it may be used to build a taxonomy.
+      primarily relevant for 'Concept Component' items to define the document hierarchy.
+      For other categories like 'Abstract Concept', it may be used to build a taxonomy.
   metadata:
     $ref: '../core/JSON.yaml'
     nullable: true

@@ -17,20 +17,36 @@ required:
 properties:
   id:
     $ref: '../core/ID.yaml'
-  uri:
+    description: >-
+      The primary, opaque identifier for this Theme. The field is a string with no
+      format restriction, allowing each implementation to choose the most appropriate
+      strategy: UUIDs for distributed systems, deterministic hashes, or semantic
+      identifiers. In the examples of this specification, the id field may be populated
+      with a semantic identifier to facilitate reading.
+  urn:
     type: string
     nullable: true
     description: >-
-      The canonical URI/URN for this Theme. This provides a stable, semantic identifier
-      that persists even if the surrogate ID changes. Useful for external references,
-      ontology mapping, cross-system interoperability, and semantic web integration.
+      The persistent semantic identifier in URN format for this Theme. Represents
+      the ontological identity of this thematic classification, serving as the key
+      for interoperability, ontology mapping, and semantic web integration.
     minLength: 1
-    example: "urn:example:theme:social-security"
+    example: "urn:lex:br:federal:tema:previdencia-social"
+  url:
+    type: string
+    format: uri
+    nullable: true
+    description: >-
+      The canonical electronic address (Dereferenceable URI) pointing to the official
+      definition or documentation of this Theme. This field is used for human reference
+      and external system integration.
+    minLength: 1
+    example: "https://normas.leg.br/temas/previdencia-social"
   label:
     type: string
     description: "The human-readable name or label for the theme."
     example: "Social Security"
-  parent_ids:
+  parentIds:
     type: array
     nullable: true
     description: >-
@@ -40,7 +56,7 @@ properties:
       $ref: '../core/ID.yaml'
     example:
       - "urn:lex:br:federal:tema:direito.publico"
-  children_ids:
+  childrenIds:
     type: array
     nullable: true
     description: "An optional list of IDs of more specific themes in the taxonomy."
@@ -49,11 +65,12 @@ properties:
     example:
       - "urn:lex:br:federal:tema:pensoes"
       - "urn:lex:br:federal:tema:saude"
-  member_ids:
+  memberIds:
     type: array
+    nullable: true
     description: >-
-      A list of IDs of the 'Item's that are classified under this theme. The list
-      can be empty if the theme serves only as a structural node in the taxonomy.
+      An optional list of IDs of the 'Item's that are classified under this theme.
+      A theme can have no members if it serves only as a structural node in the taxonomy.
     items:
       $ref: '../core/ID.yaml'
     example:

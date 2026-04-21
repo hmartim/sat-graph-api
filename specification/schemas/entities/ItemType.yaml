@@ -3,20 +3,31 @@
 #
 # This file defines the schema for the 'ItemType' object, which represents a
 # classification type within the SAT-Graph taxonomy. ItemTypes form a poly-hierarchical
-# taxonomy (e.g., "Article" is a child of "Work Component" and can have children
-# like "Paragraph" and "Section") and serve as a formal type system for Items.
+# taxonomy (e.g., "Article" is a child of "Component") and serve as a formal type system for Items.
 #
 type: object
 description: >
   Represents a classification type in the Item taxonomy. ItemTypes form a poly-hierarchical
   structure that defines the formal type system for Items. For example, in the legal domain,
-  "Article" is a type of "Work Component" that can contain "Paragraphs" and "Sections".
+  "Article" is a type of "Component" and can contain "Caput" and "Paragraph".
 
   ItemTypes enable:
   - Validation of Item hierarchies (e.g., an Article can only contain Paragraphs)
   - Rich metadata about types (icons, levels, constraints)
   - Multilingual descriptions via associated TextUnits (using aspects like 'description', 'summary')
   - Discovery and navigation of the type system
+
+  **Usage Across Domains:**
+
+  While originally designed for legislative structure (Articles, Paragraphs, etc.),
+  ItemTypes also support judicial and case law modeling:
+
+  - **Legislative Types**: Constitution, Law, Article, Paragraph, Inciso, Alinea
+  - **Judicial Types**: Judgment, Overruling, Distinguishing, Constitutional Mutation
+  - **Judgment Components**: Voto do Relator, Ementa, Relatório, Dispositivo
+  - **Common Law Types**: Opinion, Majority Opinion, Dissenting Opinion, Concurring Opinion
+
+  This allows a unified taxonomic approach across both statutory text and judicial precedents.
 required:
   - id
   - label
@@ -24,46 +35,69 @@ properties:
   id:
     $ref: '../core/ID.yaml'
     description: >-
-      The unique identifier for this ItemType. May be a surrogate ID (auto-generated)
-      or a semantic identifier.
-    example: "item-type:123456"
-  uri:
+      The primary, opaque identifier for this ItemType. The field is a string with no
+      format restriction, allowing each implementation to choose the most appropriate
+      strategy: UUIDs for distributed systems, deterministic hashes, or semantic
+      identifiers. In the examples of this specification, the id field is populated
+      with a semantic identifier (e.g., "article") to facilitate reading.
+    example: "article"
+  urn:
     type: string
     nullable: true
     description: >-
-      The canonical URI/URN for this ItemType. This provides a stable, semantic identifier
-      that persists even if the surrogate ID changes. Useful for external references,
-      exports, and semantic web integration.
+      The persistent semantic identifier in URN format for this ItemType. Represents
+      the ontological identity of this type classification, serving as the key for
+      interoperability and semantic web integration.
     minLength: 1
-    example: "urn:lex:type:article"
+    example: "urn:lex:br:federal:tipo-dispositivo:artigo"
+  url:
+    type: string
+    format: uri
+    nullable: true
+    description: >-
+      The canonical electronic address (Dereferenceable URI) pointing to the official
+      definition or documentation of this ItemType. This field is used for human
+      reference and external system integration.
+    minLength: 1
+    example: "https://normas.leg.br/?urn=urn:lex:br:federal:tipo-dispositivo:artigo"
   label:
     type: string
     description: "The human-readable name or label for this type."
     minLength: 1
     example: "Article"
-  parent_ids:
+  parentIds:
     type: array
     nullable: true
     description: >-
       An optional list of IDs of broader types in the taxonomy. An ItemType can have
       multiple parents to support poly-hierarchical classification (e.g., "Legal Provision"
-      might be both a "Work Component" and a "Normative Content").
+      might be both a "Work Concept" and a "Normative Content").
     items:
       $ref: '../core/ID.yaml'
     example:
-      - "item-type:work-component"
-  children_ids:
+      - "component"
+  childrenIds:
     type: array
     nullable: true
     description: >-
-      An optional list of IDs of more specific types in the taxonomy. For example,
-      "Article" might have children "Paragraph", "Section", "Sole Paragraph".
+      An optional list of IDs of more specific types in the taxonomy (Is-A hierarchy).
+      Represents specialization relationships.
+    items:
+      $ref: '../core/ID.yaml'
+  allowedPartsIds:
+    type: array
+    nullable: true
+    description: >-
+      An optional list of IDs of ItemTypes that are allowed as structural parts
+      within instances of this ItemType. This defines composition rules (Allowed-Part-Of dimension),
+      separate from taxonomic relationships. For example, "Article" might allow "Caput" and "Paragraph"
+      as parts, but not "Chapter" or "Section".
     items:
       $ref: '../core/ID.yaml'
     example:
-      - "item-type:paragraph"
-      - "item-type:section"
-      - "item-type:sole-paragraph"
+      - "paragraph"
+      - "inciso"
+      - "alinea"
   metadata:
     $ref: '../core/JSON.yaml'
     nullable: true
@@ -80,5 +114,3 @@ properties:
     example:
       level: 2
       icon: "📄"
-      allowed_children: ["paragraph", "section"]
-      numbering_scheme: "sequential"

@@ -16,7 +16,7 @@
 # correct temporal semantics:
 # - A Version can be reused by multiple parent Versions over time (e.g., an
 #   unchanged paragraph may be part of 100+ brazilian federal Constitution amendment versions)
-# - GET /versions/{versionId}/parent?at={timestamp} returns the contextually
+# - GET /versions/{versionId}/parent?at={time} returns the contextually
 #   correct parent for a specific point in time
 # - GET /versions/{versionId}/children returns immediate structural children
 #
@@ -27,30 +27,119 @@ description: >
   but is language-agnostic and contains no direct textual content.
 required:
   - id
-  - item_id
-  - validity_interval
+  - itemId
+  - type
+  - validityInterval
 properties:
   id:
     $ref: '../core/ID.yaml'
-    description: "A unique identifier for this specific version instance."
+    description: >-
+      The primary, opaque identifier for this Version instance. The field is a string
+      with no format restriction, allowing each implementation to choose the most
+      appropriate strategy: UUIDs for distributed systems, deterministic hashes, or
+      even the URN itself for simplified implementations. In the examples of this
+      specification, the id field is populated with the URN to facilitate reading
+      and manual tracing of relationships in JSON objects.
     example: "urn:lex:br:federal:constituicao:1988@1988-10-05"
-  uri:
+  urn:
     type: string
     nullable: true
     description: >-
-      The canonical URI/URN for this Version. Typically extends the Item's URI
-      with temporal information (e.g., @2020-01-15 suffix). This enables precise
-      temporal citations and version tracking across systems, providing stable
-      identification that persists even if the surrogate ID changes.
+      The persistent semantic identifier in the URN LEX standard, typically extending
+      the Item's URN with temporal information (e.g., @2020-01-15 suffix). Represents
+      the ontological identity of this specific version, enabling precise temporal
+      citations and version tracking across systems for interoperability.
     minLength: 1
-    example: "urn:lex:br:federal:constituicao:1988-10-05;art5@2020-01-15"
-  item_id:
+    example: "urn:lex:br:federal:constituicao:1988-10-05;1988@2020-01-15!art5"
+  url:
+    type: string
+    format: uri
+    nullable: true
+    description: >-
+      The canonical electronic address (Dereferenceable URI) pointing to the official
+      source of this specific version's text. This field is used exclusively for
+      human user interface (access provenance), not for logical inferences by the agent.
+    minLength: 1
+    example: "https://normas.leg.br/?urn=urn:lex:br:federal:constituicao:1988-10-05;1988@2020-01-15!art5"
+  itemId:
     $ref: '../core/ID.yaml'
     description: "The ID of the timeless 'Item' this object is a version of."
     example: "urn:lex:br:federal:constituicao:1988"
-  validity_interval:
+  type:
+    type: string
+    description: >-
+      Distinguishes between textual legislative versions (statutory) and non-textual
+      judicial interpretive versions. Statutory Versions (S-TV) result from legislative
+      amendments and contain modified text. Interpretive Versions (I-TV) result from
+      judicial decisions that alter the normative meaning without changing the statutory
+      text—modeling the phenomenon of "interpretive drift" where courts reshape legal
+      norms through binding precedents.
+    enum:
+      - "statutory"
+      - "interpretive"
+    example: "statutory"
+  validityInterval:
     $ref: '../core/TimeInterval.yaml'
     description: "The time interval during which this version was legally valid."
+  applicabilityInterval:
+    $ref: '../core/TimeInterval.yaml'
+    nullable: true
+    description: >-
+      The time interval during which this version can produce legal effects.
+      Distinct from validityInterval, this captures the period when the norm is
+      actually applicable, enabling management of complex scenarios such as
+      temporary suspension of efficacy or tax precedence rules, where the capacity
+      to produce effects may not coincide with the formal lifetime of the rule.
+      Inspired by the ELI ontology's distinction between validity and application.
+  producedByActionId:
+    $ref: '../core/ID.yaml'
+    nullable: true
+    description: >-
+      Reference to the **Action** that created this version (Provenance/Backward Causality).
+      This property materializes the inverse relationship of LRMoo **R16 created**.
+
+
+      Through this property, the agent can discover the origin of a version
+      (e.g., "This text came from the caput of Art. 1 of Constitutional Amendment 20").
+
+
+      This controlled denormalization eliminates the need for full database scans
+      for provenance questions, essential for legal reasoning.
+    example: "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6_cpt"
+  terminatedByActionId:
+    $ref: '../core/ID.yaml'
+    nullable: true
+    description: >-
+      Reference to the **Action** that terminated the validity of this version
+      (Backward Causality). This property materializes the inverse relationship
+      of CIDOC-CRM **P31 has modified**.
+
+
+      This is null for versions that are still active (validityInterval.end is null).
+
+
+      Through this property, the agent can discover what ended a version's validity
+      (e.g., "This version was terminated by Constitutional Amendment 45/2004").
+    example: "urn:lex:br:federal:emenda.constitucional:2004-12-30;45@2004-12-30!art1_cpt_alt1_art5_cpt"
+  usedAsSourceInActionIds:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: >-
+      References to the **Actions** that used this specific version as authorizing
+      source to modify other parts of the graph (Forward Causality).
+      This property materializes the inverse relationship of LRMoo **R15 has used**.
+
+
+      Through this property, the agent can discover the effects of a norm
+      (e.g., "The caput of Art. 1 of this Constitutional Amendment modified
+      the caput of Article 5 of the Federal Constitution of 1988").
+
+
+      This is typically populated for versions of legislative commands (alteration
+      provisions) that serve as the legal basis for modifications.
+    example:
+      - "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6_cpt"
   metadata:
     $ref: '../core/JSON.yaml'
     nullable: true

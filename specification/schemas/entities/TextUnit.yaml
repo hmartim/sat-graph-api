@@ -15,8 +15,8 @@ description: >
   used to hold any aspect of text associated with a primary entity in the graph.
 required:
   - id
-  - source_type
-  - source_id
+  - sourceType
+  - sourceId
   - language
   - aspect
   - content
@@ -25,7 +25,7 @@ properties:
     $ref: '../core/ID.yaml'
     description: "A unique identifier for this specific piece of text."
     example: "urn:lex:br:federal:constituicao:1988@1988-10-05~text;pt!art1_par1"
-  source_type:
+  sourceType:
     type: string
     description: >-
       The type of the source node in the graph to which this text is attached.
@@ -37,7 +37,7 @@ properties:
       - "Action"
       - "Relation"
     example: "Version"
-  source_id:
+  sourceId:
     $ref: '../core/ID.yaml'
     description: "The unique ID of the source node."
     example: "urn:lex:br:federal:constituicao:1988@1988-10-05!art1_par1"
@@ -54,10 +54,10 @@ properties:
       represents a segment of the official text of a document (e.g. legal provision, 
       i.e., the content of a legal norm's component). It is associated with a `Version`.
       Other aspects represent secondary or descriptive texts about a node.
-      `textual_metadata` is a representation in natural language of object's metadata and
+      `textualMetadata` is a representation in natural language of object's metadata and
       allow semantic filters in their contents (structured metadata can also be declared 
       in `Item` and `Version`, to ensure deterministic filters).
-      `textual_relation` is a representation in natural language of object's relation and
+      `textualRelation` is a representation in natural language of object's relation and
       allow semantic filters in their contents--this approach is described in the:
             [SAT Graph RAG paper)](https://arxiv.org/abs/2505.00039).
       `indexical` is a alterative identifier or name (surname) that can be used in semantic
@@ -67,14 +67,22 @@ properties:
       The enumerated values represent a baseline set of common aspects. A concrete
       implementation of the SAT-Graph may extend this list with additional,
       domain-specific aspects.
-    pattern: "^[a-z_]+$"
+
+      **Judicial/Case Law Aspects:**
+      - `ratio`: The ratio decidendi—the core legal reasoning that carries normative force.
+      - `facts`: The narrative of evidentiary facts essential for distinguishing cases.
+      - `holding`: The final dispositive command or decision outcome.
+    pattern: "^[a-zA-Z]+$"
     enum:
       - "canonical"
       - "description"
       - "summary"
-      - "textual_metadata"
-      - "textual_relation"
+      - "textualMetadata"
+      - "textualRelation"
       - "indexical"
+      - "ratio"
+      - "facts"
+      - "holding"
     example: "canonical"
   content:
     type: string
@@ -85,3 +93,17 @@ properties:
       this approach is proposed in:
             [Unlocking Legal Knowledge with Multi-Layered Embedding-Based Retrieval](https://arxiv.org/abs/2411.07739).
     example: "Todo o poder emana do povo, que o exerce por meio de representantes eleitos ou diretamente, nos termos desta Constituição."
+  metadata:
+    $ref: '../core/JSON.yaml'
+    nullable: true
+    description: >-
+      A flexible field for any valid JSON data providing structured or
+      additional metadata about this TextUnit. When a TextUnit represents an
+      aspect of a Theme or Item (e.g., its description or summary), this field
+      can optionally contain its structured representation alongside the natural
+      language textual representation in the `content` property.
+
+
+      **Best Practice:** Use internationally recognized vocabularies such as schema.org
+      to enable semantic interoperability. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md)
+      for guidance on structuring text unit metadata.
