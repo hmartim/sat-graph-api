@@ -2,14 +2,14 @@ type: object
 description: |
   Specifies the scope and filters for enumerating Item objects.
 
-  Filters are applied after scope resolution (item_ids/theme_ids/depth).
+  Filters are applied after scope resolution (itemIds/themeIds/depth).
 properties:
-  item_ids:
+  itemIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: "Optional. A list of 'Item' IDs to define a structural scope. The function will return these items and/or their descendants."
-  theme_ids:
+  themeIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
@@ -17,14 +17,14 @@ properties:
   depth:
     type: integer
     description: >
-      Controls traversal depth for 'item_ids' scopes. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively. This parameter is ignored for 'theme_ids' scopes.
+      Controls traversal depth for 'itemIds' scopes. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively. This parameter is ignored for 'themeIds' scopes.
     default: -1
-  item_type_ids:
+  itemTypeIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: >
       Optional. Filter results to only items of the specified types (references to ItemType entities).
     example: ["item-type:article", "item-type:paragraph"]
-  datasources:
-    $ref: '../common/DatasourcesSchema.yaml'
+  dataSources:
+    $ref: '../common/DataSourcesSchema.yaml'

@@ -1,17 +1,24 @@
 type: object
 description: "Specifies the criteria for retrieving a batch of valid Version objects."
 required:
-  - item_ids
-  - timestamp
+  - itemIds
+  - at
 properties:
-  item_ids:
+  itemIds:
     type: array
     description: "A list of canonical IDs for the Items whose valid versions are requested."
     items:
       $ref: '../core/ID.yaml'
     minItems: 1
     uniqueItems: true
-  timestamp:
+  at:
     type: string
     format: date-time
-    description: "The specific UTC date-time for which to check validity for all items."
+    description: "The specific UTC date-time for which to check validity for all items (Valid Time)."
+  observerTime:
+    type: string
+    format: date-time
+    description: >-
+      Optional. The temporal perspective from which to view the graph (Transaction Time).
+      If omitted, defaults to "now" (current legal truth). If provided, filters out Actions
+      that occurred after this time, enabling historical state reconstruction.

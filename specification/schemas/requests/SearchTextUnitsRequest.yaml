@@ -5,46 +5,75 @@ description: |
   This endpoint performs **semantic and lexical discovery** within a defined scope. For deterministic fetching of TextUnits by specific Version IDs, use `getBatchTextUnits` instead.
 
   **Scoping:**
-  - Use `item_ids` and/or `theme_ids` to define the structural or thematic scope
-  - Use `timestamp` to constrain temporally (defaults to "now" if omitted)
-  - If neither `item_ids` nor `theme_ids` is provided, the search applies globally across all accessible data
+  - Use `itemIds` and/or `themeIds` to define the structural or thematic scope
+  - Use `at` to constrain temporally (if omitted, no temporal filter is applied)
+  - If neither `itemIds`, `itemUrns`, nor `themeIds` is provided, the search applies globally across all accessible data
+
+  **Structural Scoping — `itemIds` vs `itemUrns`:**
+  Both filters perform **hierarchical traversal** — passing a root Item's identifier causes the search to include TextUnits from all descendant Items as well. They differ in mechanism:
+  - `itemIds`: portable, works with any ID scheme; implemented via recursive SQL (e.g., `CONNECT BY` / recursive CTE on the `parent_id` column)
+  - `itemUrns`: optimization for LEX URN implementations; implemented via an index range scan (`LIKE 'urn:lex:...;10406!%'`), avoiding recursive traversal at the cost of portability
+
+  If both are provided, implementations should prefer `itemUrns` for performance when URNs are available.
 
   **Search Query:**
-  - `content_query`: A unified JSON structure for hybrid search combining semantic and lexical queries with advanced filtering
+  - `contentQuery`: A unified JSON structure for hybrid search combining semantic and lexical queries with advanced filtering
   - Required for effective discovery
 
   **Optional Filters:**
-  - `item_type_ids`: Filter results to only TextUnits from Items of specified types
-  - `metadata_filter`: Apply additional metadata-based filtering
+  - `itemTypeIds`: Filter results to only TextUnits from Items of specified types
+  - `metadataFilter`: Apply additional metadata-based filtering
 properties:
-  item_ids:
+  itemIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: |
       Optional. A list of Item IDs to define the structural scope for the search.
-  item_type_ids:
+
+      The traversal is **hierarchical**: each provided ID is treated as a root, and the search includes TextUnits from all its descendant Items as well.
+      Implemented via recursive SQL (e.g., `CONNECT BY PRIOR id = parent_id` in Oracle, or a recursive CTE in ANSI SQL).
+
+      Use this when Item IDs are known and the implementation does not use the LEX URN convention.
+      For LEX URN-based implementations, prefer `itemUrns` for better query performance.
+    example: ["urn:lex:br:federal:lei:2002-01-10;10406", "urn:lex:br:federal:lei:1973-10-10;6015"]
+  itemUrns:
+    type: array
+    items:
+      type: string
+    description: |
+      Optional. A list of Item URNs (LEX URN standard) to define the structural scope for the search.
+
+      The traversal is **hierarchical**: each URN is used as a prefix to match the target Item and all its descendants via an index range scan on the `urn` column (`LIKE 'urn:lex:...;10406!%'`).
+      This avoids recursive SQL traversal and is significantly more efficient for large norm hierarchies.
+
+      **This filter is only effective when the implementation populates the `urn` field on `Item` following the LEX URN convention**, where component URNs are formed by appending `!<component-path>` to the parent norm's URN (e.g., `urn:lex:br:federal:lei:2002-01-10;10406!art186`).
+      If `urn` is null or does not follow this convention, use `itemIds` instead.
+
+      If both `itemIds` and `itemUrns` are provided, implementations should prefer `itemUrns`.
+    example: ["urn:lex:br:federal:lei:2002-01-10;10406", "urn:lex:br:federal:lei:1973-10-10;6015"]
+  itemTypeIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: |
       Optional. Filter search results to only TextUnits from Items of the specified types (references to ItemType entities).
-      More efficient than using `metadata_filter` for type-based filtering.
+      More efficient than using `metadataFilter` for type-based filtering.
     example: ["item-type:article", "item-type:paragraph"]
-  theme_ids:
+  themeIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: |
       Optional. A list of Theme IDs to define the thematic scope for the search.
-  metadata_filter:
+  metadataFilter:
     $ref: '../common/MetadataFilter.yaml'
-  timestamp:
+  at:
     type: string
     format: date-time
     description: |
-      Optional. A UTC date-time to constrain the search temporally. Defaults to 'now' if omitted.
-  content_query:
+      Optional. A UTC date-time to constrain the search to TextUnits valid at that point in time. If omitted, no temporal filter is applied and all versions are returned regardless of validity period.
+  contentQuery:
     $ref: '../common/ContentQuery.yaml'
   language:
     type: string
@@ -56,12 +85,12 @@ properties:
       type: string
     default: ["canonical"]
     description: "A list of textual aspects to search within (e.g., 'canonical', 'summary')."
-  top_k:
+  topK:
     type: integer
     format: int32
     default: 10
     minimum: 1
     description: "The maximum number of results to return."
-  datasources:
-    $ref: '../common/DatasourcesSchema.yaml'
-    description: "Optional. Scopes the search to a specific list of granted datasources."
+  dataSources:
+    $ref: '../common/DataSourcesSchema.yaml'
+    description: "Optional. Scopes the search to a specific list of granted data sources."

@@ -1,19 +1,19 @@
 type: object
 description: "Specifies the criteria for querying Action objects. If all optional filters are omitted, the query runs against the entire corpus of actions."
 properties:
-  item_ids:
+  itemIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: "Optional. A list of Item IDs. Returns actions that affected any of these items."
 
-  produces_version_ids:
+  producesVersionIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: "Optional. A list of Version IDs. Returns actions that produced any of these versions."
 
-  action_types:
+  actionTypes:
     type: array
     items:
       type: string
@@ -24,19 +24,30 @@ properties:
         - Repeal
     description: "Optional. Filters actions to only those of the specified types."
 
-  time_interval:
-    type: object
-    description: "Optional but recommended. Filters actions by their effective date. At least one of 'start_time' or 'end_time' should be provided."
-    properties:
-      start_time:
-        type: string
-        format: date-time
-        description: "Optional. Includes actions with effective_time >= start_time."
-      end_time:
-        type: string
-        format: date-time
-        description: "Optional. Includes actions with effective_time <= end_time."
+  granularity:
+    type: string
+    enum:
+      - macro
+      - micro
+    description: >-
+      Optional. Filters Actions by hierarchical granularity level.
+      - 'macro': Returns only top-level macro-events (parentId = null).
+      - 'micro': Returns only atomic micro-events (parentId != null).
+      - If omitted, returns both macro and micro-events.
 
-  datasources:
-    $ref: '../common/DatasourcesSchema.yaml'
-    description: "Optional. Restricts results to specified datasources."
+  timeInterval:
+    type: object
+    description: "Optional but recommended. Filters actions by their effective date. At least one of 'startTime' or 'endTime' should be provided."
+    properties:
+      startTime:
+        type: string
+        format: date-time
+        description: "Optional. Includes actions with eventTime >= startTime."
+      endTime:
+        type: string
+        format: date-time
+        description: "Optional. Includes actions with eventTime <= endTime."
+
+  dataSources:
+    $ref: '../common/DataSourcesSchema.yaml'
+    description: "Optional. Restricts results to specified data sources."

@@ -1,10 +1,10 @@
 type: object
 description: "Specifies the criteria for retrieving a batch of TextUnit objects by Version IDs."
 required:
-  - version_ids
+  - versionIds
   - language
 properties:
-  version_ids:
+  versionIds:
     type: array
     description: "A list of identifiers for the Versions of interest."
     items:
