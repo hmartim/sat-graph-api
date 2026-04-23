@@ -12,20 +12,48 @@
 type: object
 description: >
   Represents a reified event (e.g., an amendment, a revocation). 
-     
+   
+  It is important to clarify the scope of "causality" within this framework. 
+  For exemple, in legislative domain, we address the chain of events that determine 
+  the textual validity of a legal provision at a specific point in time 
+  (causality in the textual-documentary world). This is distinct from the legal-dogmatic 
+  concept of causality, which typically refers to the relationship between a real-world 
+  event (the operative fact) and the legal norm that applies to it.
+  
   It is a first-class entity that models a single, auditable causal link,
   connecting the source of a command to its precise effects on the version
   history of an Item.
 required:
   - id
   - type
-  - date
-  - source_version_ids
+  - eventTime
+  - sourceVersionIds
 properties:
   id:
     $ref: '../core/ID.yaml'
     description: "A unique identifier for this specific action."
     example: "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6_cpt"
+  parentId:
+    $ref: '../core/ID.yaml'
+    nullable: true
+    description: >-
+      The ID of the parent Action (macro-event) that this Action is part of.
+
+
+      This property models the LRMoo/CIDOC-CRM relationship **P9i forms part of**,
+      enabling the decomposition of macro-events (e.g., "Promulgation of Constitutional
+      Amendment 26/2000") into atomic micro-events (e.g., "The command in Art. 1 of
+      EC 26 that modifies Art. 6 of the Constitution").
+
+
+      **Macro-events** serve as contextual groupers representing the global legislative
+      or judicial act. **Micro-events** are the operational units that effectively
+      transform the graph state through their causal triad (sourceVersionIds,
+      terminatesVersionIds, producesVersionIds).
+
+
+      This field is null for top-level macro-events that have no parent.
+    example: "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14"
   type:
     type: string
     description: >-
@@ -37,48 +65,119 @@ properties:
       - `Revocation`: Removes statutory text from validity.
       - `Creation`: Enacts new statutory text.
       - `Repeal`: Formally cancels legislation.
+
+      **Judicial Actions** create interpretive versions without altering statutory text:
+      - `Interpretation`: A judicial decision that establishes or clarifies the meaning
+        of a statutory provision, creating an Interpretive Version.
+      - `Overruling`: A decision that explicitly reverses a prior judicial interpretation.
+      - `Distinguishing`: A decision that limits the applicability of a prior precedent
+        based on factual or legal differences.
+      - `Constitutional Mutation`: A judicial reinterpretation that fundamentally alters
+        the normative scope of a constitutional provision without textual amendment.
+
+      **Hybrid Actions** bridge legislative and judicial domains:
+      - `Legislative Override`: A legislative act specifically enacted to supersede
+        a judicial interpretation.
     enum:
       - "Amendment"
       - "Revocation"
       - "Creation"
       - "Repeal"
+      - "Interpretation"
+      - "Overruling"
+      - "Distinguishing"
+      - "Constitutional Mutation"
+      - "Legislative Override"
     example: "Amendment"
-  date:
+  eventTime:
     type: string
     format: date-time
-    description: "The effective date and time of the action, in UTC."
+    description: "The date and time of this action, in UTC."
     example: "2000-02-14T00:00:00Z"
-  source_version_ids:
+  validityInterval:
+      $ref: '../core/TimeInterval.yaml'
+      description: "The time interval imposed to the versions created by this action."
+  applicabilityInterval:
+      $ref: '../core/TimeInterval.yaml'
+      nullable: true
+      description: >-
+        The time interval during which the versions created by this action can produce legal effects.
+        Distinct from validityInterval, this captures the period when the norm is
+        actually applicable, enabling management of complex scenarios such as
+        temporary suspension of efficacy or tax precedence rules, where the capacity
+        to produce effects may not coincide with the formal lifetime of the rule.
+        Inspired by the ELI ontology's distinction between validity and application.
+  sourceVersionIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     minItems: 1
     description: >-
-      The IDs of the specific 'Version(s)' of the text that **authorize**
+      The IDs of the specific 'Version(s)' of the legal text that **authorize**
       or **command** this single change. This is the source of the causal link.
-  terminates_version_id:
-    $ref: '../core/ID.yaml'
-    nullable: true
-    description: >-
-      The ID of the specific 'Version' whose validity is **terminated** by this
-      action. This is optional and will be null for original enactments (Creations).
-    example: "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt"
-  produces_version_id:
-    $ref: '../core/ID.yaml'
-    nullable: true
-    description: >-
-      The ID of the specific 'Version' that is **created** by this action.
 
-      This is null for pure Revocation or Repeal actions that terminate a version
+      Multiple sources capture convergent rationale from multiple concurring opinions
+      or related judgment components that jointly establish the binding reasoning
+      (ratio decidendi) for an interpretive action.
+
+      For simple legislative actions (e.g., a single amending law), this array
+      typically contains one element. For judicial actions where the binding
+      interpretation emerges from multiple concurring opinions, this array
+      captures all relevant source components.
+    example:
+      - "urn:lex:br:federal:supremo.tribunal.federal:acordao:2016-02-17;hc126292@2016-02-17!majority_opinion"
+      - "urn:lex:br:federal:supremo.tribunal.federal:acordao:2016-02-17;hc126292@2016-02-17!concurring_opinion_1"
+  terminatesVersionIds:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: >-
+      The IDs of the 'Version(s)' whose validity is **terminated** by this action.
+
+
+      For **micro-events** (atomic modifications), this array typically contains
+      0 or 1 element following the recommended 1:1 cardinality (one terminated
+      version for one created version). This constraint is fundamental for the
+      Autonomous Agent, enabling deterministic diff and lineage tracking functions
+      without alignment ambiguities.
+
+
+      For **macro-events** and future edge cases (e.g., fusions of two provisions
+      into one, or complex revocations affecting multiple versions), this array
+      may contain multiple elements.
+
+
+      This is empty for original enactments (Creations) that produce new versions
+      without terminating any existing ones.
+    example:
+      - "urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt"
+  producesVersionIds:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: >-
+      The IDs of the 'Version(s)' that are **created** by this action.
+
+
+      For **micro-events** (atomic modifications), this array typically contains
+      0 or 1 element. For **macro-events** (e.g., promulgation of a new law),
+      this array may contain multiple elements representing all versions created
+      by the event (e.g., the complete law version plus all original article versions).
+
+
+      This is empty for pure Revocation or Repeal actions that terminate a version
       without creating a new one (e.g., when a statute is completely repealed
-      without replacement.
-    example: "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
+      without replacement, or when a judicial interpretation is overruled without
+      establishing a new binding interpretation).
+    example:
+      - "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
   metadata:
     $ref: '../core/JSON.yaml'
     nullable: true
     description: >-
       A flexible field for any valid JSON data providing more context about the
       action, such as its source of the assertion.
+
 
       **Best Practice:** Use schema.org vocabularies (e.g., schema.org/LegislationObject)
       to enable semantic interoperability. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md)

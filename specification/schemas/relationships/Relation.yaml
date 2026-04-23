@@ -10,25 +10,25 @@ description: >
   entities in the graph (Items or Versions). This polymorphic design allows
   for modeling a rich web of interactions, distinguishing between timeless
   conceptual links and time-bound references embedded in text.
-  The optional 'validity_interval' allows for modeling temporal
+  The optional 'validityInterval' allows for modeling temporal
   relationships that are only true for a specific period.
 required:
   - id
-  - source_type
-  - source_id
+  - sourceType
+  - sourceId
   - predicate
-  - target_type
-  - target_id
+  - targetType
+  - targetId
 properties:
   id:
     $ref: '../core/ID.yaml'
     description: "A unique identifier for this specific relation instance."
-  source_type:
+  sourceType:
     type: string
     description: "The type of the entity at the source of the relation."
     enum: [ "Item", "Version" ]
     example: "Item"
-  source_id:
+  sourceId:
     $ref: '../core/ID.yaml'
     description: "The ID of the source entity."
     example: "urn:lex:br:federal:constituicao:1988-10-05;1988"
@@ -40,21 +40,21 @@ properties:
       extend this list with a more detailed vocabulary or ontology.
     enum:
       - "succeeds"
-      - "related_to"
-      - "applies_to"
+      - "relatedTo"
+      - "appliesTo"
       - "cites"
-      - "defined_in"
+      - "definedIn"
     example: "succeeds"
-  target_type:
+  targetType:
     type: string
     description: "The type of the entity at the target of the relation."
     enum: [ "Item", "Version" ]
     example: "Item"
-  target_id:
+  targetId:
     $ref: '../core/ID.yaml'
     description: "The ID of the target entity."
     example: "urn:lex:br:federal:constituicao:1967-01-24;1967"
-  validity_interval:
+  validityInterval:
       $ref: '../core/TimeInterval.yaml'
       nullable: true
       description: >-

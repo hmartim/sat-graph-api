@@ -65,17 +65,6 @@ properties:
     example:
       - "urn:lex:br:federal:tema:pensoes"
       - "urn:lex:br:federal:tema:saude"
-  memberIds:
-    type: array
-    nullable: true
-    description: >-
-      An optional list of IDs of the 'Item's that are classified under this theme.
-      A theme can have no members if it serves only as a structural node in the taxonomy.
-    items:
-      $ref: '../core/ID.yaml'
-    example:
-      - "urn:lex:br:federal:constituicao:1988-10-05!artX"
-      - "urn:lex:br:federal:lei:2025-05-14;abc"
   metadata:
     $ref: '../core/JSON.yaml'
     nullable: true
