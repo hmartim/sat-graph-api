@@ -1,0 +1,16 @@
+type: object
+description: "Represents a single candidate match when resolving a text reference to an Item, including the full entity and the confidence score."
+required:
+  - item
+  - confidence
+properties:
+  item:
+    $ref: '../entities/Item.yaml'
+    description: "The matched Item entity."
+  confidence:
+    type: number
+    format: float
+    description: "A score from 0.0 to 1.0 indicating the certainty of the match."
+    minimum: 0.0
+    maximum: 1.0
+    example: 0.95

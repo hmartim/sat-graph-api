@@ -1,25 +1,25 @@
 type: object
 required:
-  - root_id
-  - descendant_ids
+  - rootId
+  - descendantIds
 properties:
-  root_id:
+  rootId:
     $ref: '../core/ID.yaml'
     description: >-
       The ID of the root entity (ItemType or Theme) for which hierarchy was requested.
-  descendant_ids:
+  descendantIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: >-
-      A flat list of all descendant IDs in the hierarchy, including the root_id itself.
+      A flat list of all descendant IDs in the hierarchy, including the rootId itself.
       This list includes all direct children, grandchildren, and deeper descendants.
 
       The order is not guaranteed to follow any specific traversal pattern (depth-first or breadth-first).
       Clients should treat this as an unordered set of IDs.
 
       **Use Case:** This list is designed to be passed directly to filter parameters in search
-      or retrieval operations (e.g., `searchItems(item_type_ids=[...])` or `searchItems(theme_ids=[...])`).
+      or retrieval operations (e.g., `searchItems(itemTypeIds=[...])` or `searchItems(themeIds=[...])`).
     example:
       - "item-type:normative-component"
       - "item-type:article"

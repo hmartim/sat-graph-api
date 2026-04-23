@@ -8,4 +8,4 @@ properties:
   message:
     type: string
     description: "A human-readable description of the error."
-    example: "The provided API Key does not have access to the 'datasource_STF' datasource."
+    example: "The provided API Key does not have access to the 'dataSource_STF' data source."

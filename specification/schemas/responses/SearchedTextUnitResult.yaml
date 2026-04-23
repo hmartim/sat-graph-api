@@ -1,10 +1,10 @@
 type: object
 description: "Represents a single search result, containing a TextUnit and its relevance score."
 required:
-  - text_unit
+  - textUnit
   - score
 properties:
-  text_unit:
+  textUnit:
     $ref: '../entities/TextUnit.yaml'
   score:
     type: number

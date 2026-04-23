@@ -17,12 +17,12 @@ properties:
           type: string
           description: "The structural level at which the change was detected."
           enum: [ "component", "sentence", "word" ]
-        component_id:
+        componentId:
           $ref: '../core/ID.yaml'
           description: "The ID of the Item component where the change occurred."
-        content_before:
+        contentBefore:
           type: string
           description: "The content from the first version ('version A'). Empty for additions."
-        content_after:
+        contentAfter:
           type: string
           description: "The content from the second version ('version B'). Empty for deletions."
