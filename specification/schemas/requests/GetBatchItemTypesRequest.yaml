@@ -1,0 +1,12 @@
+type: object
+description: "Specifies the criteria for retrieving a batch of ItemType objects."
+required:
+  - ids
+properties:
+  ids:
+    type: array
+    description: "A list of canonical IDs for the ItemTypes to retrieve."
+    items:
+      $ref: '../core/ID.yaml'
+    minItems: 1
+    uniqueItems: true
