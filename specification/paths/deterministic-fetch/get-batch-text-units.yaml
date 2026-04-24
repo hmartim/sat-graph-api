@@ -3,13 +3,13 @@ post:
   summary: "Gets a batch of TextUnit objects by the IDs of their source Versions."
   operationId: "getBatchTextUnits"
   description: |
-    A batch-optimized version of getTextForVersion. Given a list of Version identifiers,
+    A batch-optimized version of getVersionTextUnits. Given a list of Version identifiers,
     it efficiently retrieves their corresponding textual content.
 
     This action is critical for use cases that require inspecting the content of multiple
     versions, such as finding the exact point of a textual change within a long version history.
     It prevents the severe performance degradation that would result from iterating and calling
-    getTextForVersion individually for each version.
+    getVersionTextUnits individually for each version.
   security:
     - ApiKeyAuth: []
   requestBody:

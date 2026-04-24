@@ -16,7 +16,7 @@ post:
     This endpoint prevents the "N+1 query problem" by allowing bulk retrieval in a single call.
 
     **Note:** This is distinct from `getBatchValidVersions`, which resolves Versions by Item IDs
-    + timestamp. Use `getBatchVersions` when you already have specific Version IDs to hydrate.
+    + time. Use `getBatchVersions` when you already have specific Version IDs to hydrate.
   security:
     - ApiKeyAuth: []
 

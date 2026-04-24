@@ -4,7 +4,7 @@ get:
   summary: "Get a single Action by its unique ID."
   operationId: "getAction"
   description: |
-    Retrieves the full `Action` data object given its unique identifier. This provides direct access to the details of a specific action, including its precise `source_version_id`, and the `Version`s it terminates and produces.
+    Retrieves the full `Action` data object given its unique identifier. This provides direct access to the details of a specific action, including its precise `sourceVersionIds`, and the `Version`s it terminates and produces.
     
     ### Discussion
     This is a core deterministic action used for auditing and causal analysis. It allows an agent to inspect the exact event that caused a change in a legal norm's version history.
