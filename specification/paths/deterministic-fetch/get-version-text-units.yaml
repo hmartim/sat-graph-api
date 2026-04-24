@@ -1,0 +1,53 @@
+get:
+  tags:
+    - "Deterministic Fetch Actions"
+  summary: "Gets all TextUnits for a Version, optionally filtered by language."
+  operationId: "getVersionTextUnits"
+  description: |
+    Deterministically retrieves all `TextUnit` objects associated with a single, known `Version`,
+    optionally filtered by language. Returns all aspects (canonical, summary, description, etc.)
+    available for that Version.
+
+    This is a direct-access, primary-key-based lookup, not a search operation.
+
+    ### Discussion
+    This action is fundamentally different from `searchTextUnits`. While the latter is a
+    probabilistic discovery tool, `getVersionTextUnits` is a deterministic fetch. It serves
+    the critical use case where an agent has already identified a specific `Version`
+    (e.g., via `getValidVersions`) and requires its complete textual content.
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: versionId
+      in: path
+      required: true
+      description: "The unique identifier of the Version whose TextUnits are requested."
+      schema:
+        $ref: '#/components/schemas/ID'
+    - name: language
+      in: query
+      required: false
+      description: |
+        Optional. The IETF BCP 47 language code to filter results.
+        If omitted, TextUnits for all available languages are returned.
+      schema:
+        type: string
+        pattern: "^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$"
+      example: "pt-BR"
+
+  responses:
+    '200':
+      description: "Successfully retrieved the TextUnits for the specified Version."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TextUnit'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'
+    '404':
+      $ref: '#/components/responses/NotFound'
