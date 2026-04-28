@@ -1,0 +1,108 @@
+get:
+  tags:
+    - "Temporal Resolution Actions"
+  summary: "Gets all Versions of an Item that were applicable at a specific time."
+  operationId: "getApplicableVersions"
+  description: |
+    This primitive applies the same deterministic bi-temporal semantics as `getValidVersions`,
+    but queries against `applicabilityInterval` rather than `validityInterval`.
+
+    ### Validity versus Applicability
+
+    The temporal primitives distinguish **formal validity** from **material applicability**:
+    - `getValidVersions` resolves versions by their `validityInterval`.
+    - `getApplicableVersions` resolves versions by their `applicabilityInterval`.
+
+    Returned `Version` objects expose both intervals, allowing the agent to inspect whether
+    a formally valid version was already materially applicable at the queried time.
+
+    This keeps applicability filtering inside the deterministic layer rather than
+    reimplemented in the LLM prompt, preserving **Probability Isolation** across both
+    temporal dimensions.
+
+    ### When validity and applicability diverge
+
+    When a `Version` has no explicit `applicabilityInterval`, this endpoint falls back to
+    `validityInterval` as its applicability interval, applying the same query logic.
+
+    ### Temporal Query Logic
+
+    The primitive implements **bi-temporal semantics**, distinguishing between:
+    - **Valid Time** (`at`): When was the legal fact applicable in the real world?
+    - **Transaction Time** (`observerTime`): When did the system know about this fact?
+
+    **Default Behavior (observerTime = null):**
+    Returns the "Current Legal Truth" about applicability, considering all events known to the
+    system today, including retroactive modifications.
+
+    **Historical Mode (observerTime provided):**
+    Returns the "Historical Truth" — what applicability state was known at a specific point
+    in time. The system filters the graph, ignoring any events that occurred after the
+    observer time.
+
+    The query returns **all** versions of the Item whose applicability interval encompasses
+    the target date (`applicabilityStart <= targetDate < applicabilityEnd`), filtered by the
+    observer's temporal perspective.
+
+    ### Relationship to other endpoints
+    - **`getValidVersions`**: queries by `validityInterval`. Use for "which versions were
+      formally in force at time T?"
+    - **`getApplicableVersions`**: queries by `applicabilityInterval`. Use for "which versions
+      were materially applicable at time T?"
+    - **`getItemVersions`**: returns every version ever created, with optional interval
+      filtering, without point-in-time semantics.
+
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: itemId
+      in: path
+      required: true
+      description: "The canonical ID of the Item whose applicable versions are being requested."
+      schema:
+        $ref: '#/components/schemas/ID'
+    - name: at
+      in: query
+      required: false
+      description: |
+        Optional. The specific UTC date-time for which to check applicability (Valid Time).
+        If omitted, defaults to the current system time ("now").
+      schema:
+        type: string
+        format: date-time
+      example: "1999-06-01T12:00:00Z"
+    - name: observerTime
+      in: query
+      required: false
+      description: >-
+        Optional. The temporal perspective from which to view the graph (Transaction Time).
+        If omitted, defaults to "now" (current legal truth, including retroactive effects).
+        If provided, the system filters out any Actions that occurred after this time,
+        returning the historical state of knowledge.
+      schema:
+        type: string
+        format: date-time
+      example: "2015-06-01T12:00:00Z"
+
+  responses:
+    '200':
+      description: "Successfully retrieved the Version objects applicable at the specified time. Returns an array that may contain one or more versions."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Version'
+    '404':
+      description: "Not Found - Either the Item with the given ID does not exist, or it existed but had no version that was applicable at the specified time."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'

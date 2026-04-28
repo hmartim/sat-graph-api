@@ -1,0 +1,78 @@
+get:
+  tags:
+    - "Temporal Resolution Actions"
+  summary: "Returns all Versions ever produced for a specific Item, with optional time interval filtering."
+  operationId: "getItemVersions"
+  description: |
+    Given an Item ID, this action returns all `Version` objects that have ever been produced for that Item.
+    The returned list is ordered chronologically by `validityStart`, from oldest to most recent.
+
+    This is a **deterministic action**: Given the same input parameters, it always returns the same set of versions.
+
+    ### Interval Filtering
+
+    The optional `startAt` and `endAt` parameters restrict results to versions whose validity period
+    **overlaps** with the specified interval:
+
+    `validityStart < endAt AND (validityEnd > startAt OR validityEnd IS NULL)`
+
+    - If `startAt` is omitted, the interval is open-ended at the start (all versions up to `endAt`).
+    - If `endAt` is omitted, the interval extends indefinitely into the future (all versions from `startAt` onwards).
+    - If both are omitted, all versions ever produced for the item are returned.
+
+    ### Relationship to other endpoints
+    - **`getValidVersions`**: Returns only the version(s) valid at a specific point in time (temporal query). Use this for answering "what is the current state?".
+    - **`getItemVersions`**: Returns every version ever created for the item, with optional interval filtering. Use this for answering "what is the full version history?" or "which versions were valid during a given period?".
+    - **`getItemHistory`**: Returns the `Action` events that produced those versions (causal narrative). Use this for answering "why did each version come to exist?".
+
+    ### Use Cases
+    - Building a version timeline UI showing all historical states of a provision
+    - Feeding all versions into `compareVersions` for longitudinal textual analysis
+    - Auditing the complete lifecycle of an Item without traversing Actions
+    - Efficiently retrieving only the versions valid during a specific period (e.g., a presidential term)
+
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: itemId
+      in: path
+      required: true
+      description: "The unique identifier of the Item whose versions are to be retrieved."
+      schema:
+        $ref: '#/components/schemas/ID'
+    - name: startAt
+      in: query
+      required: false
+      description: |
+        Optional. The start of the time interval (UTC date-time, inclusive).
+        If omitted, the interval is open-ended at the start.
+      schema:
+        type: string
+        format: date-time
+      example: "2010-01-01T00:00:00Z"
+    - name: endAt
+      in: query
+      required: false
+      description: |
+        Optional. The end of the time interval (UTC date-time, inclusive).
+        If omitted, the interval extends indefinitely into the future.
+      schema:
+        type: string
+        format: date-time
+      example: "2014-12-31T23:59:59Z"
+
+  responses:
+    '200':
+      description: "Successfully retrieved versions of the Item. Returns an empty array if no versions match the criteria."
+      content:
+        application/json:
+          schema:
+            type: array
+            description: "An array of Version objects ordered chronologically by validityStart."
+            items:
+              $ref: '#/components/schemas/Version'
+    '400': { $ref: '#/components/responses/BadRequest' }
+    '401': { $ref: '#/components/responses/Unauthorized' }
+    '403': { $ref: '#/components/responses/Forbidden' }
+    '404': { $ref: '#/components/responses/NotFound' }

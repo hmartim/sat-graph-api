@@ -1,0 +1,145 @@
+get:
+  tags:
+    - "Temporal Resolution Actions"
+  summary: "Gets all Versions of an Item that were valid at a specific time."
+  operationId: "getValidVersions"
+  description: |
+    This function acts as the unified entry point for determining the normative state. It executes
+    a strict temporal query without imposing arbitrary hierarchies between statutory and judicial entities.
+
+    ### Temporal Query Logic
+
+    The primitive implements **bi-temporal semantics**, distinguishing between:
+    - **Valid Time** (`time`): When was the legal fact valid in the real world?
+    - **Transaction Time** (`observerTime`): When did the system know about this fact?
+
+    **Default Behavior (observerTime = null):**
+    Returns the "Current Legal Truth" about the past, considering all events known to the system today,
+    including retroactive annulments (ex tunc). This is the typical mode for legal research.
+
+    **Historical Mode (observerTime provided):**
+    Returns the "Historical Truth" - what was known at a specific point in time. The system filters the
+    graph, ignoring any legislative or judicial events that occurred after the observer time. This
+    enables reproducing the exact state of legal knowledge available at a past moment.
+
+    The query returns **all** versions of the Item whose validity interval encompasses the target date
+    (`validityStart <= targetDate < validityEnd`), filtered by the observer's temporal perspective.
+
+    ### Result Scenarios
+
+    1. **Statutory Stability**:
+       - If the statute has not been interpreted by a high court, the list returns the single active
+         **Statutory Version**.
+
+    2. **Interpretive Overlay**:
+       - If a judicial decision has provided a binding interpretation, BOTH versions are returned:
+         - The **Statutory Version** (S-TV) remains active (its `validityInterval` end remains `null`)
+         - The **Interpretive Version** (I-TV) overlays the statutory text
+       - The list returns `[S-TV, I-TV]` (|V_valid| = 2)
+       - The Agent receives both the literal text (for citation/context) and the binding
+         interpretation (for applying the law), while using the *ratio decidendi* from the I-TV.
+       - **Key insight**: Interpretive Actions have `terminatesVersionIds: []`, creating an
+         overlay rather than a replacement.
+
+    3. **Jurisprudential Divergence**:
+       - In split decisions (e.g., conflicting interpretations by different court panels), multiple
+         Interpretive Versions may be active simultaneously.
+       - The list returns `[S-TV, I-TV₁, I-TV₂, ...]` (|V_valid| ≥ 3)
+       - Agents can inspect the `Action` metadata of each version to identify the specific judicial
+         authority responsible (e.g., "1st Panel" vs "2nd Panel").
+
+    ### Discussion
+    This endpoint implements pure temporal logic: it queries versions based solely on validity intervals,
+    without additional filtering rules. Multiple versions can coexist simultaneously (overlaying model):
+    - Statutory Versions remain active as authoritative text for citation and general legal context
+    - Interpretive Versions overlay (not replace) statutory text, providing binding interpretations
+    - The agent (application logic) decides how to apply multiple versions to answer specific questions
+
+    This design ensures the graph remains a neutral, deterministic representation of legal events,
+    with no built-in hierarchical preferences between statutory and judicial norms.
+
+    ### Bi-temporal Query Examples
+
+    **Example 1: Current Legal Truth (default — `at` omitted)**
+    ```
+    GET /items/{itemId}/valid-versions
+    ```
+    Returns versions valid right now, considering ALL known events (including retroactive effects).
+
+    **Example 2: Point-in-Time Legal Truth**
+    ```
+    GET /items/{itemId}/valid-versions?at=2010-01-01
+    ```
+    Returns versions valid on 2010-01-01, considering ALL known events (including a 2018 retroactive
+    annulment). If a law was annulled ex tunc in 2018, it will NOT appear in results.
+
+    **Example 3: Historical Truth**
+    ```
+    GET /items/{itemId}/valid-versions?at=2010-01-01&observerTime=2010-01-01
+    ```
+    Returns versions valid on 2010-01-01, considering ONLY events known by 2010-01-01. If a law was
+    annulled ex tunc in 2018, it WILL appear in results (the annulment was unknown at the time).
+
+    **Example 4: Professional Liability Analysis**
+    ```
+    GET /items/{itemId}/valid-versions?at=2015-06-01&observerTime=2015-06-01
+    ```
+    Reproduces the exact legal knowledge available to a lawyer on 2015-06-01, essential for evaluating
+    whether professional advice was reasonable based on information available at the time.
+
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: itemId
+      in: path
+      required: true
+      description: "The canonical ID of the Item whose valid versions are being requested."
+      schema:
+        $ref: '#/components/schemas/ID'
+    - name: at
+      in: query
+      required: false
+      description: |
+        Optional. The specific UTC date-time for which to check validity (Valid Time).
+        If omitted, defaults to the current system time ("now").
+      schema:
+        type: string
+        format: date-time
+      example: "1999-06-01T12:00:00Z"
+    - name: observerTime
+      in: query
+      required: false
+      description: >-
+        Optional. The temporal perspective from which to view the graph (Transaction Time).
+        If omitted, defaults to "now" (current legal truth, including retroactive effects).
+        If provided, the system filters out any Actions that occurred after this time,
+        returning the historical state of knowledge. Use cases: (1) Legal historical research,
+        (2) Professional liability analysis (what could be known at the time?), (3) Reproducing
+        past legal opinions.
+      schema:
+        type: string
+        format: date-time
+      example: "2015-06-01T12:00:00Z"
+
+  responses:
+    '200':
+      description: "Successfully retrieved the Version objects valid at the specified time. Returns an array that may contain one or more versions."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Version'
+    '404':
+      description: "Not Found - Either the Item with the given ID does not exist, or it existed but had no version that was valid at the specified time."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'
