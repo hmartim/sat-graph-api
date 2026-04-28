@@ -1,0 +1,60 @@
+get:
+  tags:
+    - "Structural Navigation Actions"
+  summary: "Returns all structural parent Versions of a specific Version."
+  operationId: "getVersionParents"
+  description: |
+    Given a Version ID, this action returns all Version objects that structurally contain
+    this Version as a direct component — i.e., all its parent Versions across the entire graph.
+
+    **Temporal Reuse:** Under the SAT-Graph's aggregation model, an unchanged child Version
+    can be reused by multiple parent Versions over time. For example, an unchanged paragraph
+    may be a direct component of 100+ different Constitution amendment versions simultaneously
+    present in the graph.
+
+    **Without `at` (default):** Returns all structural parents across the entire history. This is
+    a fully deterministic operation — given the same `versionId`, it always returns the same set.
+
+    **With `at`:** Filters the result to only the parent Version(s) that were structurally valid
+    at the specified point in time. This is the single-hop equivalent of `getVersionAncestors`,
+    and is useful when only the immediate parent is needed rather than the full ancestor chain.
+
+    **Root Versions:** If the Version has no structural parents (i.e., it is a root Work),
+    an empty array is returned.
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: versionId
+      in: path
+      required: true
+      description: "The unique identifier of the Version whose parents are to be retrieved."
+      schema:
+        $ref: '#/components/schemas/ID'
+    - name: at
+      in: query
+      required: false
+      description: |
+        Optional. A UTC date-time defining the point in time at which to filter the parent Versions.
+
+        If omitted, all structural parents across the entire history are returned.
+        If provided, only the parent Version(s) that were structurally valid at that moment are returned.
+      schema:
+        type: string
+        format: date-time
+      example: "2010-01-01T00:00:00Z"
+
+  responses:
+    '200':
+      description: "Successfully retrieved the list of parent Versions."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Version'
+            description: "All parent Version objects that structurally contain this Version. Empty if this is a root Version."
+    '400': { $ref: '#/components/responses/BadRequest' }
+    '401': { $ref: '#/components/responses/Unauthorized' }
+    '403': { $ref: '#/components/responses/Forbidden' }
+    '404': { $ref: '#/components/responses/NotFound' }

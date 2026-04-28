@@ -1,0 +1,57 @@
+post:
+  tags:
+    - "Deterministic Fetch Actions"
+  summary: "Retrieves all Themes associated with a list of Items."
+  operationId: "getThemesForItems"
+  description: |
+    Retrieves the distinct set of `Theme`s associated with a given list of `Item` IDs.
+    This is the multi-item counterpart to `getThemesForItem`, optimized for cases where an
+    agent needs to determine the thematic context of multiple items in a single operation.
+
+    The response is a **flat, deduplicated list** of unique Themes. If an agent needs
+    to know which themes belong to which specific item, it should call `getThemesForItem`
+    per item instead.
+
+    ### Discussion
+    This action is particularly useful when an agent has already retrieved a set of
+    Items (e.g., via `searchItems` or `getItemAncestors`) and needs to understand their
+    thematic context without issuing one request per item.
+
+  security:
+    - ApiKeyAuth: []
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - itemIds
+          properties:
+            itemIds:
+              type: array
+              items:
+                $ref: '#/components/schemas/ID'
+              minItems: 1
+              uniqueItems: true
+              description: "The list of Item IDs whose associated Themes are requested."
+              example:
+                - "urn:lex:br:federal:constituicao:1988-10-05;1988!art6"
+                - "urn:lex:br:federal:lei:1993-12-08;8742!art1"
+
+  responses:
+    '200':
+      description: "A deduplicated list of Themes associated with the provided Items. May be empty if none of the Items have thematic classifications."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Theme'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'

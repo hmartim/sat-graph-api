@@ -1,0 +1,58 @@
+get:
+  tags:
+    - "Structural Navigation Actions"
+  summary: "Retrieves the hierarchical ancestors of a single Version at a given point in time."
+  operationId: "getVersionAncestors"
+  description: |
+    Navigates the version graph upwards from a specific `Version` to its parent, grandparent, and so on, up to the root Version (the Work snapshot), as they existed at the given point in time (`at`). This is the temporal equivalent of `getItemAncestors`, and is crucial for retrieving the full contextual path ("breadcrumb") of any versioned provision at a specific moment in history.
+
+    The returned list is **ordered** from the root Version (the Work snapshot) down to the immediate parent of the input Version. The Version itself is excluded from the list.
+
+    ### Why `at` is required
+    Unlike Items — which are structural and eternal — Versions exist in a temporal graph where a single Version can have multiple parent Versions across different time windows (due to structural reuse under the SAT-Graph aggregation model). Without a temporal anchor, traversing upward would yield a combinatorial set of all ancestors across all of history, which is semantically ambiguous and potentially enormous.
+
+    The `at` parameter collapses the graph to a single snapshot: only the parent Versions that were structurally valid at that moment are followed, yielding one unambiguous path from root to the Version's immediate parent.
+
+    ### Discussion
+    This action is the primary tool for temporal contextualization. After `searchTextUnits` returns a relevant result, an agent should use `getVersionAncestors` (with the same `at` used in the search) to retrieve the structural path of that Version at that point in time. This allows the generation of richer, context-aware responses such as "Article 186 was located under Title I, Chapter I of the Civil Code (Lei nº 10.406/2002) as of 2010-01-01."
+
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: versionId
+      in: path
+      required: true
+      description: "The unique identifier of the Version whose ancestors are to be retrieved."
+      schema:
+        $ref: '#/components/schemas/ID'
+    - name: at
+      in: query
+      required: false
+      description: |
+        A UTC date-time defining the point in time at which the ancestor path should be resolved. Defaults to 'now' if omitted.
+
+        This parameter determines which parent Versions were structurally active at that moment, ensuring the returned path reflects the hierarchy as it existed at that specific instant.
+      schema:
+        type: string
+        format: date-time
+      example: "2010-01-01T00:00:00Z"
+
+  responses:
+    '200':
+      description: "An ordered list of ancestor Version objects, from the root Version (Work snapshot) down to the immediate parent, as valid at `at`."
+      content:
+        application/json:
+          schema:
+            type: array
+            description: "An array of Version objects representing ancestors, ordered from root Version to immediate parent. Excludes the Version itself."
+            items:
+              $ref: '#/components/schemas/Version'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'
+    '404':
+      $ref: '#/components/responses/NotFound'
