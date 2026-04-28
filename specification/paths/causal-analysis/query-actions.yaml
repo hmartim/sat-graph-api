@@ -2,7 +2,7 @@ post:
   tags:
     - "Causal Analysis Actions"
   summary: "Queries for Action objects based on complex criteria including items, versions, types, and temporal filters."
-  operationId: "getActions"
+  operationId: "queryActions"
   description: |
     A powerful action to query and retrieve complete `Action` objects based on a variety of criteria, including affected items, produced versions, action types, and temporal validity.
 
@@ -10,10 +10,10 @@ post:
 
     ### Filtering Logic
 
-    - **item_ids**: If provided, returns actions that affected any of the specified items
-    - **produces_version_ids**: If provided, returns actions that produced any of the specified versions
-    - **action_types**: If provided, filters to only actions of the specified types
-    - **time_interval**: Filters actions by effective date. If only `start_time` is provided, returns all actions from that date onwards. If only `end_time` is provided, returns all actions up to that date.
+    - **itemIds**: If provided, returns actions that affected any of the specified items
+    - **producesVersionIds**: If provided, returns actions that produced any of the specified versions
+    - **actionTypes**: If provided, filters to only actions of the specified types
+    - **timeInterval**: Filters actions by effective date. If only `startTime` is provided, returns all actions from that date onwards. If only `endTime` is provided, returns all actions up to that date.
 
     When multiple filter types are provided, results are the **union** of all matching actions (OR logic).
 

@@ -20,7 +20,7 @@ get:
       description: "The canonical ID of the source 'Work' (e.g., an amending law)."
       schema:
         $ref: '../../schemas/core/ID.yaml'
-    - name: action_types
+    - name: actionTypes
       in: query
       required: false
       description: "Optional. Filters for specific types of actions."
@@ -30,7 +30,21 @@ get:
           type: string
           # Este enum deve ser mantido em sincronia com Action.yaml
           enum: [ "Amendment", "Revocation", "Creation", "Repeal" ]
-    - $ref: '../../openapi.yaml#/components/parameters/DatasourcesParameter'
+    - name: granularity
+      in: query
+      required: false
+      description: >-
+        Optional. Filters Actions by hierarchical granularity level.
+        - 'macro': Returns only top-level macro-events (parentId = null), representing global
+          legislative acts (e.g., "Promulgation of Constitutional Amendment 26/2000").
+        - 'micro': Returns only atomic micro-events (parentId != null), representing specific
+          transformations (e.g., "Art. 1 of CA 26 modifying Art. 6 of the Constitution").
+        - If omitted, returns both macro and micro-events.
+      schema:
+        type: string
+        enum: [ "macro", "micro" ]
+      example: "micro"
+    - $ref: '../../openapi.yaml#/components/parameters/DataSourcesParameter'
 
   responses:
     '200':

@@ -7,7 +7,7 @@ get:
     Provides a complete, ordered timeline of all `Action`s that have affected a given `Item`. The returned list is ordered chronologically from the oldest to the most recent action.
 
     ### Discussion
-    This action provides a complete, auditable narrative of an item's evolution. An agent can iterate through the returned list of `Action`s to reconstruct every state transition, accessing the "before" state via `terminates_version_id` and the "after" state via `produces_version_id` for each step.
+    This action provides a complete, auditable narrative of an item's evolution. An agent can iterate through the returned list of `Action`s to reconstruct every state transition, accessing the "before" state via `terminatesVersionIds` and the "after" state via `producesVersionIds` for each step.
   security:
     - ApiKeyAuth: []
 
@@ -18,21 +18,21 @@ get:
       description: "The canonical ID of the Item whose history is requested."
       schema:
         $ref: '../../schemas/core/ID.yaml'
-    - name: start_time
+    - name: startTime
       in: query
       required: false
       description: "Optional. Filters actions to those that occurred on or after this UTC date-time."
       schema:
         type: string
         format: date-time
-    - name: end_time
+    - name: endTime
       in: query
       required: false
       description: "Optional. Filters actions to those that occurred on or before this UTC date-time."
       schema:
         type: string
         format: date-time
-    - name: action_types
+    - name: actionTypes
       in: query
       required: false
       description: "Optional. Filters for specific types of actions (e.g., 'Amendment', 'Revocation')."
@@ -41,6 +41,18 @@ get:
         items:
           type: string
           enum: [ "Amendment", "Revocation", "Creation", "Repeal" ]
+    - name: granularity
+      in: query
+      required: false
+      description: >-
+        Optional. Filters Actions by hierarchical granularity level.
+        - 'macro': Returns only top-level macro-events (parentId = null).
+        - 'micro': Returns only atomic micro-events (parentId != null).
+        - If omitted, returns both macro and micro-events.
+      schema:
+        type: string
+        enum: [ "macro", "micro" ]
+      example: "micro"
 
   responses:
     '200':
