@@ -35,6 +35,18 @@ get:
         type: string
         pattern: "^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$"
       example: "pt-BR"
+    - name: aspect
+      in: query
+      required: false
+      description: |
+        Optional. Filters results to TextUnits of a specific semantic role relative to the Version.
+        Common values include `canonical` (the authoritative legal text), `summary` (a condensed
+        description), `indexical` (popular names or aliases), and `textual_metadata` (linearized
+        structured attributes). If omitted, TextUnits of all aspects are returned.
+      schema:
+        type: string
+        enum: [ "canonical", "summary", "indexical", "textual_metadata" ]
+      example: "canonical"
 
   responses:
     '200':

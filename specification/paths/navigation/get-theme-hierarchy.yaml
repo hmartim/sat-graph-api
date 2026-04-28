@@ -18,10 +18,10 @@ get:
     User: "Find all items about Public Law"
 
     Agent:
-    1. Resolve "Public Law" → theme_id: "theme:public-law"
+    1. Resolve "Public Law" → themeId: "theme:public-law"
     2. Call getThemeHierarchy("theme:public-law")
        → ["theme:public-law", "theme:social-security", "theme:tax-law", ...]
-    3. Call searchItems(theme_ids=[...all descendants...])
+    3. Call searchItems(themeIds=[...all descendants...])
     ```
 
     ### Discussion

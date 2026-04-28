@@ -18,10 +18,10 @@ get:
     User: "Find all normative components about social security"
 
     Agent:
-    1. Resolve "normative components" → item_type_id: "normative-component"
+    1. Resolve "normative components" → itemTypeId: "normative-component"
     2. Call getItemTypeHierarchy("normative-component")
        → ["normative-component", "article", "paragraph", "clause", ...]
-    3. Call searchItems(text="social security", type_ids=[...all descendants...])
+    3. Call searchItems(text="social security", itemTypeIds=[...all descendants...])
     ```
 
     ### Discussion

@@ -1,6 +1,6 @@
 get:
   tags:
-    - "Causal Analysis Actions"
+    - "Structural Navigation Actions"
   summary: "Gets all Version IDs within the hierarchy of a given Version."
   operationId: "getVersionHierarchy"
   description: |
@@ -23,7 +23,7 @@ get:
     - ApiKeyAuth: []
 
   parameters:
-    - name: version_id
+    - name: versionId
       in: path
       required: true
       description: The unique ID of the Version whose descendants should be retrieved.

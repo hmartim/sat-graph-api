@@ -21,7 +21,7 @@ get:
     - ApiKeyAuth: []
 
   parameters:
-    - name: item_id
+    - name: itemId
       in: path
       required: true
       description: The unique ID of the Item whose descendants should be retrieved.

@@ -6,7 +6,7 @@ get:
   description: |
     Navigates the hierarchy upwards from a specific structural `Item` to its parent, grandparent, and so on, up to the root `Work`. This is crucial for retrieving the full contextual path ("breadcrumb") of any given provision.
 
-    The returned list is **ordered** from the highest-level ancestor (e.g., a `Title`) down to the immediate parent of the input item. The root `Work` and the item itself are excluded from the list.
+    The returned list is **ordered** from the root `Work` down to the immediate parent of the input item. The item itself is excluded from the list.
 
     ### Discussion
     This action is the fundamental tool for contextualization. After a search identifies a relevant item, an agent should use `getItemAncestors` to retrieve its structural path. This allows the generation of richer, context-aware responses, significantly improving the quality and explainability of the final answer.
@@ -23,14 +23,14 @@ get:
 
   responses:
     '200':
-      description: "An ordered list of ancestor Item IDs, from the highest-level ancestor down to the immediate parent."
+      description: "An ordered list of ancestor Item objects, from the root Work down to the immediate parent."
       content:
         application/json:
           schema:
             type: array
-            description: "An array of Item IDs representing ancestors, ordered from root to immediate parent. Excludes the root Work and the item itself."
+            description: "An array of Item objects representing ancestors, ordered from root Work to immediate parent. Excludes the item itself."
             items:
-              $ref: '#/components/schemas/ID'
+              $ref: '#/components/schemas/Item'
     '400':
       $ref: '#/components/responses/BadRequest'
     '401':
