@@ -7,6 +7,12 @@ post:
     Performs a hybrid search to discover `Item` nodes by combining semantic, lexical, and structured criteria.
     This action is intentionally **time-agnostic**, searching across the entire version history of each item's text to ensure comprehensive discovery of the conceptual locus.
 
+    ### Scoping
+    Define the search scope using:
+    - `itemIds` and/or `itemUrns` to restrict the search to a structural subtree (hierarchical traversal — all descendants of the provided items are included)
+    - `themeIds` for thematic boundaries
+    - Omit all to search globally across accessible data
+
     ### Discussion
     This action's purpose is **structural discovery**, not content retrieval. It is used to find the *item* that, at any point in its history, has dealt with a concept. This is fundamentally different from `searchTextUnits`, which finds the specific *text* that was valid at a specific point in time.
   security:

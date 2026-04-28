@@ -1,0 +1,52 @@
+get:
+  tags:
+    - "Discovery and Search Actions"
+  summary: "Resolve a text reference to a ranked list of ItemType candidates."
+  operationId: "resolveItemTypeReference"
+  description: |
+    Translates a natural-language name or label for an item type into a **ranked list of candidate** `ItemType` objects.
+    This is the primary entry point for grounding a query in a specific structural category.
+
+    ### Discussion
+    This action is the structural counterpart to `resolveThemeReference`. It performs entity linking for item type nodes, allowing an agent to deterministically identify an item type mentioned by name before using it as a filter in other actions like `searchItems`.
+
+  security:
+    - ApiKeyAuth: []
+
+  parameters:
+    - name: referenceText
+      in: query
+      required: true
+      description: >-
+        A string representing the name of an item type, such as "Article",
+        "Section", "Law", or "Constitutional Amendment".
+      schema:
+        type: string
+      example: "Article"
+    - name: topK
+      in: query
+      required: false
+      description: "The maximum number of candidate matches to return."
+      schema:
+        type: integer
+        format: int32
+        default: 3
+        minimum: 1
+
+    - $ref: '#/components/parameters/DataSourcesParameter'
+
+  responses:
+    '200':
+      description: "A ranked list of probable ItemType matches was successfully returned."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ResolvedItemTypeCandidate'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
+    '403':
+      $ref: '#/components/responses/Forbidden'

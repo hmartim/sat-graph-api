@@ -1,22 +1,22 @@
 get:
   tags:
     - "Discovery and Search Actions"
-  summary: "Resolve a text reference to a ranked list of Item IDs."
+  summary: "Resolve a text reference to a ranked list of Item candidates."
   operationId: "resolveItemReference"
   description: |
-    Translates an ambiguous, natural-language reference to an entity into a **ranked list of candidate** `Item` IDs.
+    Translates an ambiguous, natural-language reference to an entity into a **ranked list of candidate** `Item` objects.
     This is the critical first step for any query that names a specific entity (a document component, a concept, a named entity, etc.), acting as the bridge between user language and the graph's formal identifiers.
 
     ### Discussion
     This action is indispensable for grounding agentic workflows. References are often highly ambiguous ("Article 1") or relative ("the following paragraph").
     This function handles this by returning a ranked list of candidates rather than forcing a single, potentially incorrect guess.
-    The optional `context_id` parameter significantly enhances its precision for context-aware interactions.
+    The optional `contextId` parameter significantly enhances its precision for context-aware interactions.
 
   security:
     - ApiKeyAuth: []
 
   parameters:
-    - name: reference_text
+    - name: referenceText
       in: query
       required: true
       description: >-
@@ -25,7 +25,7 @@ get:
       schema:
         type: string
       example: "Article 5 of the Constitution"
-    - name: context_id
+    - name: contextId
       in: query
       required: false
       description: >-
@@ -34,7 +34,18 @@ get:
       schema:
         $ref: '#/components/schemas/ID'
       example: "urn:lex:br:federal:constituicao:1988-10-05;1988"
-    - name: top_k
+    - name: at
+      in: query
+      required: false
+      description: >-
+        Optional. The specific UTC date-time for which to resolve the reference.
+        Defaults to "now" if omitted. When provided, the Item labels and structure are evaluated as they existed at that point in time.
+        Useful for disambiguating references when entities have been renamed or reorganized.
+      schema:
+        type: string
+        format: date-time
+      example: "2016-01-15T10:30:00Z"
+    - name: topK
       in: query
       required: false
       description: "The maximum number of candidate matches to return."
@@ -44,7 +55,7 @@ get:
         default: 3
         minimum: 1
 
-    - $ref: '#/components/parameters/DatasourcesParameter'
+    - $ref: '#/components/parameters/DataSourcesParameter'
 
   responses:
     '200':
@@ -54,7 +65,7 @@ get:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/ResolvedEntityCandidate'
+              $ref: '#/components/schemas/ResolvedItemCandidate'
     '400':
       $ref: '#/components/responses/BadRequest'
     '401':

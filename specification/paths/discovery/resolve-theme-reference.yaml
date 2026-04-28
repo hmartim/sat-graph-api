@@ -1,10 +1,10 @@
 get:
   tags:
     - "Discovery and Search Actions"
-  summary: "Resolve a text reference to a ranked list of Theme IDs."
+  summary: "Resolve a text reference to a ranked list of Theme candidates."
   operationId: "resolveThemeReference"
   description: |
-    Translates a natural-language name or label for a legal theme into a **ranked list of candidate** `Theme` ids.
+    Translates a natural-language name or label for a legal theme into a **ranked list of candidate** `Theme` objects.
     This is the primary entry point for grounding a query in a specific conceptual category.
     
     ### Discussion
@@ -14,7 +14,7 @@ get:
     - ApiKeyAuth: []
 
   parameters:
-    - name: reference_text
+    - name: referenceText
       in: query
       required: true
       description: >-
@@ -23,7 +23,7 @@ get:
       schema:
         type: string
       example: "Environmental Law"
-    - name: top_k
+    - name: topK
       in: query
       required: false
       description: "The maximum number of candidate matches to return."
@@ -33,7 +33,7 @@ get:
         default: 3
         minimum: 1
 
-    - $ref: '#/components/parameters/DatasourcesParameter'
+    - $ref: '#/components/parameters/DataSourcesParameter'
 
   responses:
     '200':
@@ -43,7 +43,7 @@ get:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/ResolvedEntityCandidate'
+              $ref: '#/components/schemas/ResolvedThemeCandidate'
     '400':
       $ref: '#/components/responses/BadRequest'
     '401':
