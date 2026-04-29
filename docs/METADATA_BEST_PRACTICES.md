@@ -48,8 +48,8 @@ Large Language Models (LLMs) are trained on billions of web pages that use schem
 User: "What is the publication date of the Brazilian Constitution?"
 
 Agent reasoning:
-1. Calls resolveItemReference("Brazilian Constitution") → gets item_id
-2. Calls getItem(item_id) → receives Item with metadata
+1. Calls resolveItemReference("Brazilian Constitution") → gets itemId
+2. Calls getItem(itemId) → receives Item with metadata
 3. Recognizes metadata["@type"] = "Legislation"
 4. Extracts metadata["datePublished"] → "1988-10-05"
 5. Responds: "The Brazilian Federal Constitution was published on October 5, 1988."
@@ -312,4 +312,4 @@ Using structured vocabularies in the `metadata` field transforms it from a gener
 
 ---
 
-*This document is part of the SAT-Graph API specification. For questions or contributions, please see the [main repository](https://github.com/anthropics/sat-graph-api).*
+*This document is part of the SAT-Graph API specification. For questions or contributions, please see the [main repository](../README.md).*

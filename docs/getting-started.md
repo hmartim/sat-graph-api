@@ -1,6 +1,6 @@
 # Getting Started with the SAT-Graph API
 
-This guide will help you get up and running with the Canonical Action API for SAT-Graph RAG.
+This guide will help you get up and running with the Canonical Primitive API for SAT-Graph RAG.
 
 ## Overview
 
@@ -27,21 +27,20 @@ The API is served at: `https://api.example.com`
 
 ## Core Concepts
 
-### 1. Action Categories
+### 1. Primitive Categories
 
-The API provides actions organized into seven functional categories. Understanding these categories is essential for building effective retrieval plans:
+The API provides primitives organized into functional categories. Understanding these categories is essential for building effective retrieval plans:
 
 | Category | Purpose | Examples |
 |----------|---------|----------|
 | **Discovery & Search** | Find entities using natural language (probabilistic) | `resolveItemReference`, `searchTextUnits` |
-| **Deterministic Fetch** | Retrieve full objects by ID (deterministic) | `getItem`, `getVersion` |
-| **Structural Navigation** | Traverse hierarchy (deterministic) | `getItemAncestors`, `enumerateItems` |
-| **Temporal Resolution** | Point-in-time queries (deterministic) | `getValidVersion` |
-| **Causal Analysis** | Trace events (deterministic) | `traceCausality`, `compareVersions` |
-| **Aggregate Analysis** | Server-side computation (deterministic) | `summarizeImpact` |
+| **Deterministic Fetch** | Retrieve full objects by ID (deterministic) | `getItem`, `getVersion`, `getValidVersions` |
+| **Structural Navigation** | Traverse hierarchy (deterministic) | `getItemAncestors`, `getItemHierarchy` |
+| **Causal Analysis** | Trace events (deterministic) | `getItemHistory`, `getActionsBySource` |
+| **Analysis** | Comparative and structural analysis (deterministic) | `compareVersions` |
 | **Introspection** | Discover capabilities (deterministic) | `getAvailableLanguages` |
 
-📖 **See [Action Categories Guide](./ACTION_CATEGORIES.md) for detailed taxonomy and workflow patterns.**
+📖 **See [Primitive Categories Guide](./ACTION_CATEGORIES.md) for detailed taxonomy and workflow patterns.**
 
 ### 2. Data Models
 
@@ -54,39 +53,37 @@ The API operates on several key entities:
 - **Theme**: Classification system for discovery
 - **TextUnit**: Actual textual content in multiple languages
 
-### 3. Datasources
+### 3. DataSources
 
-Data comes from multiple providers called "Datasources":
-- `datasource_Senate`: Federal Senate data
-- `datasource_Chamber`: Chamber of Deputies data  
-- `datasource_SupremeCourt`: Supreme Court jurisprudence
+Data comes from multiple providers called "DataSources":
+- `dataSource_Senate`: Federal Senate data
+- `dataSource_Chamber`: Chamber of Deputies data
+- `dataSource_SupremeCourt`: Supreme Court jurisprudence
 
-Your API key grants access to specific datasources, and all queries are automatically scoped to your authorized datasources.
+Your API key grants access to specific data sources, and all queries are automatically scoped to your authorized data sources.
 
 ### 4. Temporal Resolution
 
-The API supports two temporal resolution strategies:
+The API supports bi-temporal semantics:
 
-- **PointInTime**: Finds the exact version valid at a specific timestamp (precise, for compliance/audits)
-- **SnapshotLast**: Finds the last version valid during a given day (intuitive, default)
-
-⏱️ **For detailed explanation and examples, see [Temporal Resolution Guide](./TEMPORAL_RESOLUTION.md)**
+- **Valid Time** (`at`): When was the legal fact valid in the real world?
+- **Transaction Time** (`observerTime`): When did the system know about this fact? (optional, defaults to "now")
 
 ## Your First API Call
 
 Let's start with a simple search to find items:
 
 ```bash
-curl -X POST "https://api.example.com/search-items" \
+curl -X POST "https://api.example.com/items/search" \
      -H "Authorization: YOUR_API_KEY" \
      -H "Content-Type: application/json" \
      -d '{
-       "content_query": {
+       "contentQuery": {
          "semantic": {
-           "query_text": "tax law amendments"
+           "queryText": "tax law amendments"
          }
        },
-       "top_k": 5
+       "topK": 5
      }'
 ```
 
@@ -98,41 +95,42 @@ This will return a list of items related to tax law amendments, each with a rele
 
 ```bash
 # Step 1: Search for items
-curl -X POST "https://api.example.com/search-items" \
+curl -X POST "https://api.example.com/items/search" \
      -H "Authorization: YOUR_API_KEY" \
      -H "Content-Type: application/json" \
      -d '{
-       "content_query": {
+       "contentQuery": {
          "semantic": {
-           "query_text": "constitutional amendments"
+           "queryText": "constitutional amendments"
          }
        },
-       "top_k": 3
+       "topK": 3
      }'
 
 # Step 2: Get full item details using the ID from step 1
 curl -H "Authorization: YOUR_API_KEY" \
-     "https://api.example.com/items/item_id_from_step_1"
+     "https://api.example.com/items/itemId_from_step_1"
 ```
 
 ### 2. Get Document Context
 
 ```bash
-# Get the structural context (parent, siblings, children)
-curl -H "Authorization: YOUR_API_KEY" \
-     "https://api.example.com/items/item_id/context"
-
 # Get hierarchical ancestors
 curl -H "Authorization: YOUR_API_KEY" \
-     "https://api.example.com/items/item_id/ancestors"
+     "https://api.example.com/items/itemId/ancestors"
+
+# Enumerate descendants
+curl -G "https://api.example.com/items/itemId/hierarchy" \
+     -H "Authorization: YOUR_API_KEY" \
+     --data-urlencode "depth=-1"
 ```
 
 ### 3. Point-in-Time Analysis
 
 ```bash
-# Get the version of an item valid at a specific date
+# Get the versions of an item valid at a specific date
 curl -H "Authorization: YOUR_API_KEY" \
-     "https://api.example.com/items/item_id/valid-version?timestamp=2020-01-01T00:00:00Z&temporal_policy=PointInTime"
+     "https://api.example.com/items/itemId/valid-versions?at=2020-01-01T00:00:00Z"
 ```
 
 ## Error Handling
@@ -145,19 +143,12 @@ The API uses standard HTTP status codes:
 - `403`: Forbidden (insufficient permissions)
 - `404`: Not Found (resource doesn't exist)
 
-Error responses include detailed information:
+Error responses include structured information:
 
 ```json
 {
-  "error": {
-    "code": "DATASOURCE_ACCESS_DENIED",
-    "message": "Your API key does not have access to the requested datasource.",
-    "details": {
-      "requested_datasource": "datasource_STF"
-    },
-    "timestamp": "2025-10-06T14:30:00Z",
-    "request_id": "req_001"
-  }
+  "code": "FORBIDDEN_DATASOURCE",
+  "message": "Your API key does not have access to the requested data source."
 }
 ```
 
@@ -168,7 +159,7 @@ Error responses include detailed information:
 1. **Explore Examples**: Start with [Fundamental Patterns](examples/00-fundamental-patterns.md) to understand core concepts
 2. **Study Use Cases**: See complete [Use Cases](examples/) for real-world analysis scenarios
 3. **Generate a Client**: Use the OpenAPI specification to generate a client SDK
-4. **Read the Full Reference**: Consult the [API Reference](api-reference.md) for complete details
+4. **Read the Full Reference**: Consult the [OpenAPI Specification](../specification/openapi.yaml) for complete details
 
 ## Client SDK Generation
 
@@ -181,7 +172,7 @@ openapi-generator-cli generate \
   -g python \
   -o ./generated-client/python
 
-# JavaScript client  
+# JavaScript client
 openapi-generator-cli generate \
   -i specification/openapi.yaml \
   -g javascript \

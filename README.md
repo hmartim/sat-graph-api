@@ -9,7 +9,7 @@ This repository contains the official OpenAPI 3.x specification for the **SAT-Gr
 
 This specification is described in the [research paper](https://arxiv.org/abs/2510.06002):
 
-> "Deterministic Legal Retrieval: An Action API for Querying the SAT-Graph RAG." _arXiv preprint arXiv:2510.06002 (2025).
+> "Deterministic Legal Agents: A Canonical Primitive API for Auditable Reasoning over Temporal Knowledge Graphs" _arXiv preprint arXiv:2510.06002 (2025).
 
 **Status:** This is a **formal specification**, not a reference implementation. The implementation is ongoing as part of the SAT-Graph ecosystem.
 
@@ -35,9 +35,9 @@ Standard Retrieval-Augmented Generation (RAG) systems, while powerful, treat com
 The SAT-Graph RAG framework addresses these challenges with a two-layer architecture:
 
 1. **[The SAT-Graph (The Knowledge Substrate)](https://arxiv.org/abs/2505.00039):** A verifiable knowledge graph that explicitly models the hierarchy, diachronic evolution, and causal events of documents (like legal norms)--based on this [LRMoo Ontology](https://arxiv.org/abs/2506.07853).
-2. **The Canonical Action API (The Interaction Protocol):** This API. It serves as the single, secure, and auditable bridge between a reasoning agent (like an LLM) and the SAT-Graph.
+2. **The Canonical Primitive API (The Interaction Protocol):** This API. It serves as the single, secure, and auditable bridge between a reasoning agent (like an LLM) and the SAT-Graph.
 
-This repository specifies this critical second layer. Instead of a monolithic query engine, this API provides a library of **atomic, composable, and auditable actions** that serve as the fundamental building blocks for constructing reliable retrieval plans, as showed in the figure below.
+This repository specifies this critical second layer. Instead of a monolithic query engine, this API provides a library of **atomic, composable, and auditable primitives** that serve as the fundamental building blocks for constructing reliable retrieval plans, as showed in the figure below.
 
 ### Active Retrieval: A Paradigm Shift
 
@@ -46,20 +46,20 @@ In traditional RAG systems (baseline), the generative AI receives context extrac
 In contrast, the SAT-Graph API enables **active retrieval** through an agentic workflow:
 
 1. A **reasoning agent** (an LLM with planning capabilities) analyzes the user's query and decomposes it into a strategic retrieval plan.
-2. The agent **actively orchestrates** context gathering by making deliberate calls to the API's actions, navigating the graph's structure, temporal dimensions, and causal relationships.
+2. The agent **actively orchestrates** context gathering by making deliberate calls to the API's primitives, navigating the graph's structure, temporal dimensions, and causal relationships.
 3. The retrieved context—now enriched with structural, temporal, and causal information—is then passed to the **generative AI** for response synthesis.
 
 This active strategy transforms retrieval from a passive matching process into an intelligent exploration guided by reasoning, enabling the system to answer questions that require multi-step logical inference across complex graph structures.
 
-<img src="imgs/SATGraphAPI.png" width="600" height="300" alt="Diagram illustrating a reasoning agent decomposing a user prompt into tasks that are executed through actions provided by the SAT-Graph API.">
+<img src="imgs/SATGraphAPI.png" width="600" height="300" alt="Diagram illustrating a reasoning agent decomposing a user prompt into tasks that are executed through primitives provided by the SAT-Graph API.">
 
 ## Core Design Principles
 
 The API design is guided by three principles to ensure trustworthiness:
 
-- **1. Maximal Determinism:** We isolate probabilistic natural language interpretation at the entry points (e.g., `resolveItemReference`). Once a formal identifier (URI/URN) is obtained, all subsequent actions that operate on it are **guaranteed to be deterministic**.
-- **2. Composability:** Actions are atomic "building blocks." A higher-level agent can chain them together to construct complex, flexible query workflows.
-- **3. Verifiability through Auditability:** Every action returns a structured output, including confidence scores where applicable. The sequence of calls and responses forms a complete, human-readable audit trail, making the agent's entire reasoning process transparent and verifiable.
+- **1. Maximal Determinism:** We isolate probabilistic natural language interpretation at the entry points (e.g., `resolveItemReference`). Once a formal identifier (URI/URN) is obtained, all subsequent primitives that operate on it are **guaranteed to be deterministic**.
+- **2. Composability:** primitives are atomic "building blocks." A higher-level agent can chain them together to construct complex, flexible query workflows.
+- **3. Verifiability through Auditability:** Every primitive call returns a structured output, including confidence scores where applicable. The sequence of calls and responses forms a complete, human-readable audit trail, making the agent's entire reasoning process transparent and verifiable.
 
 #### Core Data Models
 
@@ -91,11 +91,11 @@ This API is designed to serve data from multiple, distinct providers in a unifie
 
 ###### What is a Datasource?
 
-A Datasource represents the system or institution where an entity (`Item`, `Theme`, etc.) originates. For example, in a legal context, datasources could include:
+A Datasource represents the system or institution where an entity (`Item`, `Theme`, etc.) originates. For example, in a legal context, dataSources could include:
 
-* `datasource_Senate`: Data curated and provided by the Federal Senate.
-* `datasource_Chamber`: Data from the Chamber of Deputies.
-* `datasource_SupremeCourt`: Jurisprudence data from the Supreme Federal Court.
+* `dataSource_Senate`: Data curated and provided by the Federal Senate.
+* `dataSource_Chamber`: Data from the Chamber of Deputies.
+* `dataSource_SupremeCourt`: Jurisprudence data from the Supreme Federal Court.
 
 Or it can be an internal system of each institution.
 
@@ -104,9 +104,9 @@ Or it can be an internal system of each institution.
 Access to the API is governed by these Datasources. Each consumer's API Key is granted access to a specific set of one or more Datasources. This has two major implications for how you use the API:
 
 1. **Implicit Filtering (Security):** Every request you make is automatically and securely filtered to only include results from the Datasources your API Key has been granted. It is impossible to access data from a Datasource you are not authorized for.
-2. **Explicit Filtering (Flexibility):** For consumers with access to multiple Datasources, most endpoints include an optional `datasources` parameter. You can use this to narrow your query to a specific subset of your granted Datasources, providing more targeted results. This includes:
-   - Search and discovery actions (e.g., `searchItems`, `resolveItemReference`)
-   - Introspection endpoints (e.g., `getRootThemes`, `getRootItemTypes`) - useful in federated scenarios where each datasource maintains its own taxonomies
+2. **Explicit Filtering (Flexibility):** For consumers with access to multiple Datasources, most endpoints include an optional `dataSources` parameter. You can use this to narrow your query to a specific subset of your granted Datasources, providing more targeted results. This includes:
+   - Search and discovery primitives (e.g., `searchItems`, `resolveItemReference`)
+   - Introspection endpoints (e.g., `getRootThemes`, `getRootItemTypes`) - useful in federated scenarios where each dataSource maintains its own taxonomies
    - Batch operations (e.g., `getBatchTextUnits`)
 
 #### Authentication
@@ -125,8 +125,8 @@ Authorization: YOUR_API_KEY
 - **📖 [Technical Specification Documentation](./specification/README.md)** - Detailed API architecture, endpoint categories, and technical guides
 - **🎯 [Scope and Boundaries](./docs/SCOPE.md)** - What SAT-Graph does and does not provide (parsing, implementation, etc.)
 - **🚀 [Getting Started Guide](./docs/getting-started.md)** - Step-by-step guide for first-time users
-- **🗂️ [Action Categories](./docs/ACTION_CATEGORIES.md)** - Complete taxonomy of all API actions with workflow patterns
-- **📋 [API Reference](./docs/api-reference.md)** - Complete endpoint reference documentation
+- **🗂️ [Primitive Categories](./docs/ACTION_CATEGORIES.md)** - Complete taxonomy of all API primitives with workflow patterns
+- **📋 [OpenAPI Specification](./specification/openapi.yaml)** - Complete endpoint reference (authoritative source)
 - **⚠️ [Error Handling Guide](./docs/ERROR_HANDLING.md)** - HTTP status codes, error formats, and handling patterns
 - **⏱️ [Temporal Resolution Guide](./docs/TEMPORAL_RESOLUTION.md)** - Understanding PointInTime vs SnapshotLast policies
 - **📊 [Metadata Best Practices](./docs/METADATA_BEST_PRACTICES.md)** - Using schema.org vocabularies for semantic interoperability
@@ -183,13 +183,13 @@ This command will create a fully-typed Python package that you can use to intera
 
 ## API Capabilities at a Glance
 
-The API actions are organized into logical groups to support complex agentic workflows:
+The API primitives are organized into logical groups to support complex agentic workflows:
 
-- **Discovery and Search:** Probabilistic entry points for finding entities based on natural language text, semantic content, or structured filters (e.g., `resolveItemReference`, `searchTextUnits`).
-- **Deterministic Fetch:** Guaranteed retrieval of full data objects using their canonical IDs (e.g., `getItem`, `getValidVersion`).
-- **Structural Navigation:** Actions for traversing the atemporal document hierarchy (e.g., `getItemAncestors`, `getItemsInScope`).
-- **Causal & Lineage Analysis:** Powerful actions for traversing the temporal and causal dimensions of the graph (e.g., `getItemHistory`, `traceCausality`, `summarizeImpact`).
-- **Introspection:** Actions that allow an agent to discover the graph's capabilities and boundaries at runtime (e.g., `getTemporalCoverage`).
+- **Discovery and Search:** Probabilistic entry points for finding entities based on natural language text, semantic content, or structured filters (e.g., `resolveItemReference`, `searchTextUnits`, `searchItems`).
+- **Temporal Resolution:** Deterministic point-in-time version retrieval after canonical anchoring (e.g., `getValidVersions`, `getApplicableVersions`, `getItemVersions`).
+- **Structural Navigation:** Primitives for traversing the document hierarchy and taxonomic structures (e.g., `getItemAncestors`, `getItemHierarchy`, `getThemeHierarchy`).
+- **Causal & Lineage Analysis:** Primitives for traversing the temporal and causal dimensions of the graph (e.g., `getItemHistory`, `getActionsBySource`, `queryActions`).
+- **Introspection:** Primitives that allow an agent to discover valid schema vocabularies before formulating a plan (e.g., `getRootItemTypes`, `getRootThemes`, `getSupportedActionTypes`).
 
 ## Use Cases
 
@@ -206,7 +206,7 @@ If you use this specification or the concepts from our framework in your researc
 ```bibtex
 @article{demartim2025satgraphapi,
   author       = {Hudson de Martim},
-  title        = {Deterministic Legal Retrieval: An Action API for Querying the SAT-Graph RAG},
+  title        = {Deterministic Legal Agents: A Canonical Primitive API for Auditable Reasoning over Temporal Knowledge Graphs},
   year         = {2025},
   eprint       = {2510.06002},
   archivePrefix= {arXiv},

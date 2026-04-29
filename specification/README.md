@@ -4,17 +4,19 @@ This directory contains the complete OpenAPI 3.0.3 specification for the **SAT-G
 
 ## 📚 Overview
 
-The API provides atomic and composable actions for constructing reliable retrieval plans with full temporal awareness and structural navigation capabilities.
+The API provides atomic and composable primitives for constructing reliable retrieval plans with full temporal awareness and structural navigation capabilities.
 
-**Related Paper:** [An Ontology-Driven Graph RAG for Legal Norms: A Structural, Temporal, and Deterministic Approach](https://arxiv.org/abs/2508.00827)
+**Related Papers:**
+- [Deterministic Legal Agents: A Canonical Primitive API for Auditable Reasoning over Temporal Knowledge Graphs](https://arxiv.org/abs/2510.06002) — this specification
+- [An Ontology-Driven Graph RAG for Legal Norms: A Structural, Temporal, and Deterministic Approach](https://arxiv.org/abs/2505.00039) — SAT-Graph knowledge substrate
 
 ## 🎯 API Architecture: Canonical Core + Extensions
 
 This specification is organized into two complementary layers:
 
 ### **1. Canonical Core API** (Based on the Research Paper)
-The foundational set of actions formally specified in the research paper, focusing on:
-- **SAT-Graph Ontology**: Item (Work/Component), Version, Action, Theme, TextUnit
+The foundational set of primitives formally specified in the research paper, focusing on:
+- **SAT-Graph Ontology**: Item (Work/Component), Version, Action, Theme, ItemType, TextUnit, Relation
 - **Temporal Reasoning**: Point-in-time queries, version resolution, causal tracing
 - **Deterministic Retrieval**: Verifiable, auditable query execution
 - **Structural Navigation**: Hierarchical traversal and thematic classification
@@ -23,10 +25,6 @@ This core represents the **minimal set of primitives** required for trustworthy 
 
 ### **2. Extended API** (Production Enhancements)
 Additional capabilities designed for production use cases, including:
-- **Relation System**: Generic directed relations (e.g., citations, references, dependencies)
-  - Enables semantic overlay graph for cross-document analysis
-  - Supports predicates: "cites", "succeeds", "related_to", "applies_to", "defined_in"
-  - Aligns with "Future Directions" outlined in the research paper
 - **Convenience Operations**: Optimized endpoints for common UI/UX patterns
 - **Additional Metadata**: Extended introspection and configuration queries
 
@@ -36,81 +34,99 @@ Additional capabilities designed for production use cases, including:
 
 ```
 specification/
-├── openapi.yaml              # Main OpenAPI specification file (entry point)
-├── schemas/                  # All schema definitions
-│   ├── common/              # Shared schemas used in both requests & responses
-│   │   ├── DatasourcesSchema.yaml
+├── openapi.yaml                    # Main OpenAPI specification file (entry point)
+├── schemas/
+│   ├── common/                     # Shared schemas used in both requests & responses
+│   │   ├── ContentQuery.yaml       # Unified semantic + lexical query structure
+│   │   ├── DataSourcesSchema.yaml
 │   │   ├── ItemMetadataFilterSchema.yaml
 │   │   └── MetadataFilter.yaml
-│   ├── core/                # Primitive/foundational types
+│   ├── core/                       # Primitive/foundational types
 │   │   ├── ID.yaml
 │   │   ├── JSON.yaml
-│   │   ├── TemporalPolicy.yaml
 │   │   └── TimeInterval.yaml
-│   ├── entities/            # Domain entity models
-│   │   ├── Item.yaml        # Works/documents and Work/Document components
-│   │   ├── Version.yaml     # Temporal versions of items
-│   │   ├── Theme.yaml       # Thematic classifications
-│   │   └── TextUnit.yaml    # Searchable text fragments
-│   ├── relationships/       # Graph relationship models
-│   │   ├── Action.yaml      # Causal actions (amendments, revocations)
-│   │   └── Relation.yaml    # Generic directed relations
-│   ├── requests/            # Request body schemas (8 files)
-│   │   ├── SearchItemsRequest.yaml
-│   │   ├── SearchTextUnitsRequest.yaml
-│   │   ├── GetItemHierarchyRequest.yaml
-│   │   ├── GetRelationsRequest.yaml
+│   ├── entities/                   # Domain entity models (graph nodes)
+│   │   ├── Item.yaml               # Works/documents and Work Components
+│   │   ├── ItemType.yaml           # Structural type taxonomy
+│   │   ├── Theme.yaml              # Thematic classifications
+│   │   ├── TextUnit.yaml           # Searchable text fragments
+│   │   └── Version.yaml            # Temporal snapshots of items
+│   ├── relationships/              # Graph edge models
+│   │   ├── Action.yaml             # Causal state-transition events
+│   │   └── Relation.yaml           # Typed semantic cross-references
+│   ├── requests/                   # Request body schemas (12 files)
+│   │   ├── GetActionsRequest.yaml
 │   │   ├── GetBatchActionsRequest.yaml
 │   │   ├── GetBatchItemsRequest.yaml
+│   │   ├── GetBatchItemTypesRequest.yaml
+│   │   ├── GetBatchTextUnitsRequest.yaml
 │   │   ├── GetBatchValidVersionsRequest.yaml
-│   │   └── SummarizeImpactRequest.yaml
-│   └── responses/           # Response body schemas (8 files)
-│       ├── StructuralContext.yaml
-│       ├── ResolvedEntityCandidate.yaml
-│       ├── SearchResultUnit.yaml
-│       ├── SearchedItemResult.yaml
-│       ├── ErrorResponse.yaml
+│   │   ├── GetBatchVersionsRequest.yaml
+│   │   ├── GetItemHierarchyRequest.yaml
+│   │   ├── GetRelationsRequest.yaml
+│   │   ├── GetVersionsInIntervalRequest.yaml
+│   │   ├── SearchItemsRequest.yaml
+│   │   └── SearchTextUnitsRequest.yaml
+│   └── responses/                  # Response body schemas (9 files)
 │       ├── CausalityTrace.yaml
-│       ├── ImpactReport.yaml
+│       ├── ErrorResponse.yaml
+│       ├── HierarchyResponse.yaml
+│       ├── ResolvedItemCandidate.yaml
+│       ├── ResolvedItemTypeCandidate.yaml
+│       ├── ResolvedThemeCandidate.yaml
+│       ├── SearchedItemResult.yaml
+│       ├── SearchedTextUnitResult.yaml
 │       └── TextDiffReport.yaml
-└── paths/                   # Path/endpoint definitions (32 files)
-    ├── discovery/           # Search & entity resolution (4 endpoints)
+└── paths/                          # Path/endpoint definitions
+    ├── analysis/                   # Comparative analysis (1 endpoint)
+    │   └── compare-versions.yaml
+    ├── causal-analysis/            # Event tracing and legislative lineage (3 endpoints)
+    │   ├── get-actions-by-source.yaml
+    │   ├── get-item-history.yaml
+    │   └── query-actions.yaml
+    ├── deterministic-fetch/        # Direct ID-based retrieval (13 endpoints)
+    │   ├── get-action-by-id.yaml
+    │   ├── get-batch-actions.yaml
+    │   ├── get-batch-item-types.yaml
+    │   ├── get-batch-items.yaml
+    │   ├── get-batch-text-units.yaml
+    │   ├── get-batch-versions.yaml
+    │   ├── get-item-by-id.yaml
+    │   ├── get-item-type-by-id.yaml
+    │   ├── get-relation-by-id.yaml
+    │   ├── get-text-unit-by-id.yaml
+    │   ├── get-theme-by-id.yaml
+    │   ├── get-version-by-id.yaml
+    │   └── get-version-text-units.yaml
+    ├── discovery/                  # Search & entity resolution (5 endpoints)
     │   ├── resolve-item-reference.yaml
+    │   ├── resolve-item-type-reference.yaml
     │   ├── resolve-theme-reference.yaml
     │   ├── search-items.yaml
     │   └── search-text-units.yaml
-    ├── deterministic-fetch/ # Direct ID-based retrieval (8 endpoints)
-    │   ├── get-action-by-id.yaml
-    │   ├── get-item-by-id.yaml
-    │   ├── get-relation-by-id.yaml
-    │   ├── get-theme-by-id.yaml
-    │   ├── get-text-unit-by-id.yaml
-    │   ├── get-version-by-id.yaml
-    │   ├── get-batch-actions.yaml
-    │   ├── get-batch-items.yaml
-    │   └── get-batch-valid-versions.yaml
-    ├── navigation/          # Structural traversal (3 endpoints)
-    │   ├── enumerate-items.yaml
-    │   ├── get-item-ancestors.yaml
-    │   └── get-themes-for-item.yaml
-    ├── graph-traversal/     # Relationship queries (2 endpoints)
-    │   ├── find-related-entities.yaml
+    ├── graph-traversal/            # Relationship queries (1 endpoint)
     │   └── get-relations.yaml
-    ├── causal-analysis/     # Temporal & version analysis (7 endpoints)
-    │   ├── get-valid-version.yaml
-    │   ├── get-version-text-unit.yaml
-    │   ├── get-item-history.yaml
-    │   ├── trace-causality.yaml
-    │   ├── get-versions-in-interval.yaml
-    │   ├── compare-versions.yaml
-    │   └── get-actions-by-source.yaml
-    ├── aggregate-analysis/  # Summary operations (1 endpoint)
-    │   └── summarize-impact.yaml
-    └── introspection/       # Metadata & system info (4 endpoints)
-        ├── get-temporal-coverage.yaml
-        ├── get-available-languages.yaml
-        ├── get-supported-action-types.yaml
-        └── get-root-themes.yaml
+    ├── introspection/              # System metadata and schema queries (4 endpoints)
+    │   ├── get-available-languages.yaml
+    │   ├── get-root-item-types.yaml
+    │   ├── get-root-themes.yaml
+    │   └── get-supported-action-types.yaml
+    ├── navigation/                 # Structural hierarchy traversal (10 endpoints)
+    │   ├── get-item-ancestors.yaml
+    │   ├── get-item-children.yaml
+    │   ├── get-item-hierarchy.yaml
+    │   ├── get-item-type-hierarchy.yaml
+    │   ├── get-theme-hierarchy.yaml
+    │   ├── get-themes-for-items.yaml
+    │   ├── get-version-ancestors.yaml
+    │   ├── get-version-children.yaml
+    │   ├── get-version-hierarchy.yaml
+    │   └── get-version-parents.yaml
+    └── temporal-resolution/        # Point-in-time version resolution (4 endpoints)
+        ├── get-applicable-versions.yaml
+        ├── get-batch-valid-versions.yaml
+        ├── get-item-versions.yaml
+        └── get-valid-versions.yaml
 ```
 
 ## 🎯 API Endpoint Categories
@@ -118,63 +134,73 @@ specification/
 **Legend:** 📘 = Canonical Core | 🔷 = Extended API
 
 ### 1. **Discovery & Search** 📘 (`/paths/discovery/`)
-Search and resolve entities using semantic, lexical, or structured queries.
-- 📘 `POST /search-items` - Search for items
-- 📘 `POST /search-text-units` - Hybrid search for text fragments (primary RAG entry point)
-- 📘 `POST /resolve-item-reference` - Resolve natural language references to items
-- 📘 `POST /resolve-theme-reference` - Resolve natural language references to themes
+Probabilistic entry points for translating natural language into canonical graph anchors.
+- 📘 `GET /items/by-reference` — `resolveItemReference`: Resolve a natural-language or URN reference to a ranked list of Item candidates
+- 📘 `GET /themes/by-reference` — `resolveThemeReference`: Resolve a subject description to ranked Theme candidates
+- 📘 `GET /item-types/by-reference` — `resolveItemTypeReference`: Resolve a structural type reference to ranked ItemType candidates
+- 📘 `POST /items/search` — `searchItems`: Hybrid search for stable Items by concept, expression, or metadata
+- 📘 `POST /text-units/search` — `searchTextUnits`: Hybrid semantic + lexical search for TextUnits (primary RAG entry point)
 
-### 2. **Deterministic Fetch** 📘 + 🔷 (`/paths/deterministic-fetch/`)
-Direct retrieval of entities by their unique identifiers.
+### 2. **Temporal Resolution** 📘 (`/paths/temporal-resolution/`)
+Deterministic point-in-time version resolution after canonical anchoring.
+- 📘 `GET /items/{itemId}/valid-versions` — `getValidVersions`: Versions of an Item valid at a given time (bi-temporal)
+- 📘 `GET /items/{itemId}/applicable-versions` — `getApplicableVersions`: Versions materially applicable at a given time
+- 📘 `GET /items/{itemId}/versions` — `getItemVersions`: Full chronological version history of an Item
+- 📘 `POST /versions/batch-valid-at` — `getBatchValidVersions`: Batch point-in-time resolution for multiple Items
 
-**Core Entities:**
-- 📘 `GET /items/{itemId}` - Get item by ID
-- 📘 `GET /versions/{versionId}` - Get version by ID
-- 📘 `GET /actions/{actionId}` - Get action by ID
-- 📘 `GET /themes/{themeId}` - Get theme by ID
-
-**Extended Entities:**
-- 🔷 `GET /relations/{relationId}` - Get relation by ID
-- 🔷 `GET /text-units/{textUnitId}` - Get text unit by ID (convenience)
-
-**Batch Operations:**
-- 📘 `POST /items/batch-get` - Batch retrieve items
-- 📘 `POST /versions/batch-valid-at` - Batch retrieve valid versions at a timestamp
-- 📘 `POST /actions/batch-get` - Batch retrieve actions
-- 📘 `POST /text-units/batch-get` - Batch retrieve text units
-
-### 3. **Navigation** 📘 + 🔷 (`/paths/navigation/`)
-Traverse the structural hierarchy of documents.
-- 📘 `GET /items/{itemId}/ancestors` - Get hierarchical ancestors
-- 📘 `GET /items/{itemId}/themes` - Get associated themes
-- 📘 `POST /enumerate-items` - Enumerate items within a scope
-- 🔷 `GET /items/{itemId}/context` - Get structural context (convenience)
+### 3. **Structural Navigation** 📘 (`/paths/navigation/`)
+Traversal of the structural hierarchy and taxonomic structures.
+- 📘 `GET /items/{itemId}/children` — `getItemChildren`: Immediate structural children of an Item
+- 📘 `GET /items/{itemId}/ancestors` — `getItemAncestors`: Ordered ancestor chain of an Item up to the root
+- 📘 `GET /items/{itemId}/hierarchy` — `getItemHierarchy`: All descendant Item IDs (depth-bounded)
+- 📘 `GET /versions/{versionId}/children` — `getVersionChildren`: Child Versions at a point in time
+- 📘 `GET /versions/{versionId}/parents` — `getVersionParents`: Parent Versions at a point in time
+- 📘 `GET /versions/{versionId}/ancestors` — `getVersionAncestors`: Ancestor Version chain at a point in time
+- 📘 `GET /versions/{versionId}/hierarchy` — `getVersionHierarchy`: Full Version subtree at a point in time
+- 📘 `GET /item-types/{itemTypeId}/hierarchy` — `getItemTypeHierarchy`: Expand a structural type taxonomy subtree
+- 📘 `GET /themes/{themeId}/hierarchy` — `getThemeHierarchy`: Expand a conceptual taxonomy subtree
+- 📘 `POST /themes/by-items` — `getThemesForItems`: Map Items to their associated Themes
 
 ### 4. **Graph Traversal** 🔷 (`/paths/graph-traversal/`)
-Query and navigate entity relationships (**Extended API** - semantic overlay).
-- 🔷 `GET /entities/{entityId}/related` - Find related entities
-- 🔷 `POST /query-relations` - Query relations by criteria
+Typed traversal of semantic cross-references between entities.
+- 🔷 `POST /query-relations` — `getRelations`: Query Relation objects by anchor, predicate, direction, and temporal validity
 
 ### 5. **Causal Analysis** 📘 (`/paths/causal-analysis/`)
-Temporal reasoning and version tracking.
-- 📘 `GET /items/{itemId}/valid-version` - Get temporally valid version
-- 📘 `GET /versions/{versionId}/text-unit` - Get text content of a version
-- 📘 `GET /items/{itemId}/history` - Get complete version history
-- 📘 `GET /versions/{versionId}/causality` - Trace causal chain
-- 📘 `GET /items/{itemId}/versions` - Get versions in time interval
-- 📘 `POST /versions/compare` - Compare two versions (diff)
-- 📘 `GET /items/{sourceWorkId}/actions-caused` - Get actions caused by a source
+Event tracing, legislative lineage, and forward impact analysis.
+- 📘 `GET /items/{itemId}/history` — `getItemHistory`: Chronological timeline of Actions that affected an Item
+- 📘 `GET /items/{sourceWorkId}/actions-caused` — `getActionsBySource`: Actions authorized by a source Work (forward causality)
+- 📘 `POST /query-actions` — `queryActions`: Batch query of Actions by items, versions, types, and time window
 
-### 6. **Aggregate Analysis** 📘 (`/paths/aggregate-analysis/`)
-Summary and impact analysis operations.
-- 📘 `POST /analysis/impact-summary` - Summarize impact
+### 6. **Analysis** 📘 (`/paths/analysis/`)
+Comparative analysis operations.
+- 📘 `POST /versions/compare` — `compareVersions`: Compute a textual diff between two Versions
 
-### 7. **Introspection & Metadata** 📘 (`/paths/introspection/`)
-System metadata and available options.
-- 📘 `GET /items/{itemId}/temporal-coverage` - Get temporal coverage
-- 📘 `GET /meta/languages` - List available languages
-- 📘 `GET /meta/action-types` - List supported action types
-- 📘 `GET /themes/roots` - Get root theme nodes
+### 7. **Deterministic Fetch** 📘 + 🔷 (`/paths/deterministic-fetch/`)
+Direct retrieval of full entity objects by their canonical identifiers.
+
+**Single-entity fetch:**
+- 📘 `GET /items/{itemId}` — `getItemById`
+- 📘 `GET /versions/{versionId}` — `getVersionById`
+- 📘 `GET /actions/{actionId}` — `getActionById`
+- 📘 `GET /themes/{themeId}` — `getThemeById`
+- 📘 `GET /item-types/{itemTypeId}` — `getItemTypeById`
+- 📘 `GET /versions/{versionId}/text-units` — `getVersionTextUnits`: TextUnits of a Version, filtered by language and aspect
+- 🔷 `GET /relations/{relationId}` — `getRelationById`
+- 🔷 `GET /text-units/{textUnitId}` — `getTextUnitById`
+
+**Batch fetch:**
+- 📘 `POST /items/batch-get` — `getBatchItems`
+- 📘 `POST /versions/batch-get` — `getBatchVersions`
+- 📘 `POST /actions/batch-get` — `getBatchActions`
+- 📘 `POST /text-units/batch-get` — `getBatchTextUnits`
+- 📘 `POST /item-types/batch-get` — `getBatchItemTypes`
+
+### 8. **Introspection & Metadata** 📘 (`/paths/introspection/`)
+Schema discovery primitives that allow an agent to query available vocabularies before formulating a plan.
+- 📘 `GET /item-types/roots` — `getRootItemTypes`: Root nodes of the structural type taxonomy
+- 📘 `GET /themes/roots` — `getRootThemes`: Root nodes of the conceptual taxonomy
+- 📘 `GET /meta/action-types` — `getSupportedActionTypes`: Canonical Action type vocabulary
+- 📘 `GET /meta/languages` — `getAvailableLanguages`: BCP 47 language codes available in the text index
 
 ## 🔧 Working with the Specification
 
@@ -182,7 +208,6 @@ System metadata and available options.
 
 **Option 1: Swagger UI**
 ```bash
-# Install Swagger UI or use online editor
 # Upload openapi-bundled.yaml to https://editor.swagger.io/
 ```
 
@@ -234,12 +259,12 @@ The specification follows consistent naming conventions:
 
 | Element | Convention | Example |
 |---------|-----------|---------|
-| **Schema names** | PascalCase | `SearchItemsRequest`, `ResolvedEntityCandidate` |
+| **Schema names** | PascalCase | `SearchTextUnitsRequest`, `ResolvedItemCandidate` |
 | **File names** | kebab-case | `get-item-by-id.yaml`, `search-items.yaml` |
-| **Operation IDs** | camelCase | `searchItems`, `getValidVersion` |
+| **Operation IDs** | camelCase | `searchItems`, `getValidVersions` |
 | **Path parameters** | camelCase | `itemId`, `versionId`, `sourceWorkId` |
-| **Query parameters** | snake_case / camelCase | `top_k`, `datasources` |
-| **Property names** | snake_case | `item_ids`, `theme_ids`, `temporal_policy` |
+| **Query parameters** | camelCase | `topK`, `dataSources` |
+| **Property names** | camelCase | `itemIds`, `themeIds`, `topK` |
 
 ## 🔐 Authentication
 
@@ -249,18 +274,18 @@ All endpoints require API Key authentication via the `Authorization` header:
 Authorization: YOUR_API_KEY
 ```
 
-API Keys are scoped to specific **Datasources** (data providers). Requests are automatically filtered to only return data from authorized datasources.
+API Keys are scoped to specific **DataSources** (data providers). Requests are automatically filtered to only return data from authorized data sources.
 
-## 🌐 Data Scoping with Datasources
+## 🌐 Data Scoping with DataSources
 
-The API serves data from multiple providers called **Datasources**. All requests are automatically scoped to the datasources granted to your API key.
+The API serves data from multiple providers called **DataSources**. All requests are automatically scoped to the data sources granted to your API key.
 
-Many endpoints accept an optional `datasources` parameter to further narrow the scope:
+Many endpoints accept an optional `dataSources` parameter to further narrow the scope:
 
 ```json
 {
   "query": "constitutional rights",
-  "datasources": ["datasource_Senate", "datasource_STF"]
+  "dataSources": ["dataSource_Senate", "dataSource_STF"]
 }
 ```
 
@@ -268,28 +293,29 @@ Many endpoints accept an optional `datasources` parameter to further narrow the 
 
 ### `schemas/common/`
 Shared schemas used as parameters in **both** requests and responses:
-- `DatasourcesSchema` - List of datasource identifiers
-- `MetadataFilter` - Metadata filtering structure
-- `ItemMetadataFilterSchema` - Item-specific metadata filters
+- `ContentQuery` — Unified hybrid search structure (semantic + lexical + clauses)
+- `DataSourcesSchema` — List of data source identifiers
+- `MetadataFilter` — Metadata filtering structure
+- `ItemMetadataFilterSchema` — Item-specific metadata filters
 
 ### `schemas/core/`
 Primitive, foundational types used throughout the API:
-- `ID` - URN-based unique identifiers
-- `JSON` - Generic JSON objects
-- `TimeInterval` - ISO 8601 time ranges
-- `TemporalPolicy` - Temporal resolution strategies
+- `ID` — URN-based unique identifiers
+- `JSON` — Generic JSON objects
+- `TimeInterval` — ISO 8601 time ranges
 
 ### `schemas/entities/`
 Core domain models representing graph nodes:
-- `Item` - Works (laws, regulations, etc.) and Work Components (Title, Article etc.)
-- `Version` - Temporal snapshots of items
-- `Theme` - Hierarchical topic classifications
-- `TextUnit` - Searchable text fragments (and metadata, descriptions, alternative identifiers and names etc.) with embeddings
+- `Item` — Works (laws, regulations) and Work Components (Title, Article, Paragraph, etc.)
+- `ItemType` — Structural type taxonomy nodes (e.g., "Constitution", "Article")
+- `Theme` — Hierarchical topic classifications (poly-hierarchical DAG)
+- `Version` — Temporal snapshots of Items with validity and applicability intervals
+- `TextUnit` — Searchable text fragments linked to graph entities; supports multi-aspect retrieval (canonical text, summaries, indexical names, textual metadata)
 
 ### `schemas/relationships/`
 Graph edge models representing connections:
-- `Action` 📘 - Causal modifications (amendments, revocations) - **Canonical Core**
-- `Relation` 🔷 - Generic typed relations between entities - **Extended API**
+- `Action` 📘 — Reified state-transition events (amendments, revocations, promulgations) — **Canonical Core**
+- `Relation` 🔷 — Typed semantic cross-references between entities (citations, dependencies, implementations) — **Extended API**
 
 ### `schemas/requests/` & `schemas/responses/`
 Input/output data transfer objects specific to endpoints.
@@ -298,68 +324,57 @@ Input/output data transfer objects specific to endpoints.
 
 ## 🔷 Extended API: Relations System
 
-The **Relation** entity and associated Graph Traversal endpoints represent a planned extension beyond the canonical SAT-Graph model described in the research paper.
+The **Relation** entity and associated Graph Traversal endpoint represent a production extension to the canonical SAT-Graph model.
 
 ### Purpose
 Enables a **semantic overlay graph** for capturing cross-document relationships that are not strictly structural or causal, such as:
 - Citations between documents
 - Succession relationships (one law replacing another)
 - Applicability scopes (one norm applying to another)
-- Conceptual relationships (definitions, references)
+- Conceptual relationships (definitions, cross-references)
 
 ### Relation Schema
 ```yaml
 Relation:
   id: ID
-  source_type: "Item" | "Version"
-  source_id: ID
-  predicate: "cites" | "succeeds" | "related_to" | "applies_to" | "defined_in"
-  target_type: "Item" | "Version"
-  target_id: ID
-  validity_interval?: TimeInterval
+  sourceType: "Item" | "Version"
+  sourceId: ID
+  predicate: string          # e.g., "eli:cites", "succeeds", "applies_to"
+  targetType: "Item" | "Version"
+  targetId: ID
+  validityInterval?: TimeInterval
   metadata?: JSON
 ```
 
-### Design Rationale
-The research paper (Article.tex) deliberately focuses on the **verifiable core**: structural hierarchy, temporal versions, and causal actions. It mentions in "Future Directions" (Section 6.2) the need for:
-> *"a parallel 'semantic overlay' graph that captures relationships like citations... introduce a corresponding new set of API actions, such as findReferencingItems(item_id)"*
-
-This specification **implements that future vision** as a production-ready extension while maintaining clear separation from the canonical core.
-
-### Guarantees
-- Relations are **first-class entities** with unique IDs
-- Queries remain **auditable** with explicit predicates
-- Optional `validity_interval` enables **temporal reasoning** over relations
-- System maintains **composability** - relation queries can be chained with core operations
-
 ### When to Use
 - **Use Relations for:** Cross-document citations, semantic references, discovered connections
-- **Use Actions for:** Temporal causality, events, version transitions
-- **Use Item hierarchy for:** Structural containment (articles in chapters, etc.)
+- **Use Actions for:** Temporal causality, legislative events, version transitions
+- **Use Item/Version hierarchy for:** Structural containment (articles in chapters, etc.)
 
 ## 📊 Key Design Principles
 
-1. **Temporal Awareness**: All entities support time-based queries
-2. **Deterministic Retrieval**: IDs enable exact, reproducible fetches
-3. **Composable Actions**: Atomic operations combine into complex workflows
-4. **Hybrid Search**: Semantic + lexical + structural queries
-5. **Graph Navigation**: Rich relationship traversal capabilities
-6. **Auditability**: Causal traces and version history tracking
+1. **Temporal Awareness**: All entities support time-based queries with bi-temporal semantics (valid time + transaction time)
+2. **Deterministic Retrieval**: Canonical IDs enable exact, reproducible fetches after anchoring
+3. **Composable Primitives**: Atomic operations combine into complex agentic workflows
+4. **Hybrid Search**: Semantic + lexical + structural queries through `ContentQuery`
+5. **Graph Navigation**: Rich relationship traversal across structural, taxonomic, and semantic dimensions
+6. **Auditability**: Every primitive call returns structured, logged output; causal traces and version history are first-class
 
 ## 🤝 Contributing
 
 When modifying the specification:
 
-1. **Maintain consistency** - Follow existing naming conventions
-2. **Update both files** - Edit both `openapi.yaml` references and individual schema/path files
-3. **Validate** - Run `npx @redocly/cli lint openapi.yaml` before committing
-4. **Document changes** - Update this README if adding new categories or schemas
-5. **Test references** - Ensure all `$ref` paths resolve correctly
+1. **Maintain consistency** — Follow existing naming conventions
+2. **Update both files** — Edit both `openapi.yaml` references and individual schema/path files
+3. **Validate** — Run `npx @redocly/cli lint openapi.yaml` before committing
+4. **Document changes** — Update this README if adding new categories or schemas
+5. **Test references** — Ensure all `$ref` paths resolve correctly
 
 ## 📖 Further Reading
 
 - [OpenAPI 3.0.3 Specification](https://spec.openapis.org/oas/v3.0.3)
-- [SAT-Graph Paper on arXiv](ttps://arxiv.org/abs/2508.00827)
+- [SAT-Graph API Paper on arXiv](https://arxiv.org/abs/2510.06002)
+- [SAT-Graph RAG Paper on arXiv](https://arxiv.org/abs/2505.00039)
 - [Redocly CLI Documentation](https://redocly.com/docs/cli/)
 - [OpenAPI Generator](https://openapi-generator.tech/)
 
@@ -369,6 +384,6 @@ When modifying the specification:
 
 ---
 
-**Last Updated**: 2025-10-05
+**Last Updated**: 2026-04-28
 **OpenAPI Version**: 3.0.3
 **API Version**: 1.0.0

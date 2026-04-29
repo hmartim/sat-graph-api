@@ -37,9 +37,9 @@ info:
     must be sent in the `Authorization` header on every request. Please refer to the
     'securitySchemes' section below for details.
 
-    **Data Scoping Note:** The API serves data from multiple providers, called **Datasources**.
-    All requests are automatically scoped to the Datasources granted to your API key.
-    Many search functions also provide an optional `datasources` parameter for more granular filtering.
+    **Data Scoping Note:** The API serves data from multiple providers, called **DataSources**.
+    All requests are automatically scoped to the DataSources granted to your API key.
+    Many search functions also provide an optional `dataSources` parameter for more granular filtering.
 
 components:
   schemas:
@@ -56,8 +56,8 @@ components:
     # -------------------------------------------------------------------------
     # Common/Shared Schemas - Used in both requests and responses
     # -------------------------------------------------------------------------
-    DatasourcesSchema:
-      $ref: './schemas/common/DatasourcesSchema.yaml'
+    DataSourcesSchema:
+      $ref: './schemas/common/DataSourcesSchema.yaml'
     MetadataFilter:
       $ref: './schemas/common/MetadataFilter.yaml'
     ItemMetadataFilterSchema:
@@ -108,16 +108,20 @@ components:
       $ref: './schemas/requests/GetBatchValidVersionsRequest.yaml'
     GetBatchTextUnitsRequest:
       $ref: './schemas/requests/GetBatchTextUnitsRequest.yaml'
-    GetVersionsInIntervalRequest:
-      $ref: './schemas/requests/GetVersionsInIntervalRequest.yaml'
+    GetBatchItemTypesRequest:
+      $ref: './schemas/requests/GetBatchItemTypesRequest.yaml'
 
     # -------------------------------------------------------------------------
     # Response Schemas - Output data transfer objects
     # -------------------------------------------------------------------------
-    ResolvedEntityCandidate:
-      $ref: './schemas/responses/ResolvedEntityCandidate.yaml'
-    SearchResultUnit:
-      $ref: './schemas/responses/SearchResultUnit.yaml'
+    ResolvedItemCandidate:
+      $ref: './schemas/responses/ResolvedItemCandidate.yaml'
+    ResolvedThemeCandidate:
+      $ref: './schemas/responses/ResolvedThemeCandidate.yaml'
+    ResolvedItemTypeCandidate:
+      $ref: './schemas/responses/ResolvedItemTypeCandidate.yaml'
+    SearchedTextUnitResult:
+      $ref: './schemas/responses/SearchedTextUnitResult.yaml'
     SearchedItemResult:
       $ref: './schemas/responses/SearchedItemResult.yaml'
     ErrorResponse:
@@ -133,22 +137,22 @@ components:
   # Reusable Parameters
   # ---------------------------------------------------------------------------
   parameters:
-    DatasourcesParameter:
-      name: datasources
+    DataSourcesParameter:
+      name: dataSources
       in: query
       required: false
       description: |
-        **Optional.** A list of identifiers for the Datasources to scope the search.
+        **Optional.** A list of identifiers for the DataSources to scope the search.
 
-        A Datasource is the system or provider where an entity originates (e.g., 'datasource_Senate'). This parameter allows you to narrow a search to a specific subset of the Datasources you have access to.
+        A DataSource is the system or provider where an entity originates (e.g., 'dataSource_Senate'). This parameter allows you to narrow a search to a specific subset of the DataSources you have access to.
 
-        The API will only return results from Datasources that are both *requested* in this parameter and *granted* to your API key. If this parameter is omitted, the search will run against all Datasources your key is granted to.
+        The API will only return results from DataSources that are both *requested* in this parameter and *granted* to your API key. If this parameter is omitted, the search will run against all DataSources your key is granted to.
       schema:
         type: array
         items:
           type: string
         uniqueItems: true
-      example: ["datasource_A"]
+      example: ["dataSource_A"]
 
   # ---------------------------------------------------------------------------
   # Security Schemes
@@ -178,7 +182,7 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             code: "INVALID_PARAMETER"
-            message: "The 'top_k' parameter must be a positive integer."
+            message: "The 'topK' parameter must be a positive integer."
 
     Unauthorized:
       description: "Unauthorized - The request lacks valid authentication credentials. The API Key is missing or invalid."
@@ -191,14 +195,14 @@ components:
             message: "Authentication credentials were not provided or are invalid."
 
     Forbidden:
-      description: "Forbidden - The server understood the request, but is refusing to fulfill it. The API Key is valid but lacks permission for the requested resource or datasource."
+      description: "Forbidden - The server understood the request, but is refusing to fulfill it. The API Key is valid but lacks permission for the requested resource or data source."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             code: "FORBIDDEN_DATASOURCE"
-            message: "The provided API Key does not have access to the 'datasource_STF' datasource."
+            message: "The provided API Key does not have access to the 'dataSource_STF' data source."
 
     NotFound:
       description: "Not Found - The requested resource could not be found."
@@ -224,13 +228,15 @@ paths:
   # Discovery & Search Actions
   # Entity resolution and hybrid search operations
   # ---------------------------------------------------------------------------
-  /resolve-item-reference:
+  /items/by-reference:
     $ref: './paths/discovery/resolve-item-reference.yaml'
-  /resolve-theme-reference:
+  /themes/by-reference:
     $ref: './paths/discovery/resolve-theme-reference.yaml'
-  /search-items:
+  /item-types/by-reference:
+    $ref: './paths/discovery/resolve-item-type-reference.yaml'
+  /items/search:
     $ref: './paths/discovery/search-items.yaml'
-  /search-text-units:
+  /text-units/search:
     $ref: './paths/discovery/search-text-units.yaml'
 
   # ---------------------------------------------------------------------------
@@ -241,8 +247,6 @@ paths:
     $ref: './paths/deterministic-fetch/get-action-by-id.yaml'
   /items/{itemId}:
     $ref: './paths/deterministic-fetch/get-item-by-id.yaml'
-  /items/{itemId}/children:
-    $ref: './paths/deterministic-fetch/get-item-children.yaml'
   /relations/{relationId}:
     $ref: './paths/deterministic-fetch/get-relation-by-id.yaml'
   /themes/{themeId}:
@@ -253,33 +257,51 @@ paths:
     $ref: './paths/deterministic-fetch/get-text-unit-by-id.yaml'
   /versions/{versionId}:
     $ref: './paths/deterministic-fetch/get-version-by-id.yaml'
-  /versions/{versionId}/children:
-    $ref: './paths/deterministic-fetch/get-version-children.yaml'
-  /versions/{versionId}/parent:
-    $ref: './paths/deterministic-fetch/get-version-parent.yaml'
-
   /items/batch-get:
     $ref: './paths/deterministic-fetch/get-batch-items.yaml'
   /versions/batch-get:
     $ref: './paths/deterministic-fetch/get-batch-versions.yaml'
-  /versions/batch-valid-at:
-    $ref: './paths/deterministic-fetch/get-batch-valid-versions.yaml'
   /actions/batch-get:
     $ref: './paths/deterministic-fetch/get-batch-actions.yaml'
   /text-units/batch-get:
     $ref: './paths/deterministic-fetch/get-batch-text-units.yaml'
+  /item-types/batch-get:
+    $ref: './paths/deterministic-fetch/get-batch-item-types.yaml'
+  /versions/{versionId}/text-units:
+    $ref: './paths/deterministic-fetch/get-version-text-units.yaml'
+  /themes/by-items:
+    $ref: './paths/navigation/get-themes-for-items.yaml'
 
   # ---------------------------------------------------------------------------
-  # Navigation Actions
-  # Structural hierarchy traversal operations
+  # Temporal Resolution Actions
+  # Point-in-time version resolution and temporal enumeration
   # ---------------------------------------------------------------------------
+  /items/{itemId}/valid-versions:
+    $ref: './paths/temporal-resolution/get-valid-versions.yaml'
+  /items/{itemId}/applicable-versions:
+    $ref: './paths/temporal-resolution/get-applicable-versions.yaml'
+  /items/{itemId}/versions:
+    $ref: './paths/temporal-resolution/get-item-versions.yaml'
+  /versions/batch-valid-at:
+    $ref: './paths/temporal-resolution/get-batch-valid-versions.yaml'
+
+  # ---------------------------------------------------------------------------
+  # Structural Navigation Actions
+  # Hierarchy traversal and contextual path retrieval
+  # ---------------------------------------------------------------------------
+  /items/{itemId}/children:
+    $ref: './paths/navigation/get-item-children.yaml'
   /items/{itemId}/ancestors:
     $ref: './paths/navigation/get-item-ancestors.yaml'
-  /items/{itemId}/themes:
-    $ref: './paths/navigation/get-themes-for-item.yaml'
-  /items/{item_id}/hierarchy:
+  /items/{itemId}/hierarchy:
     $ref: './paths/navigation/get-item-hierarchy.yaml'
-  /versions/{version_id}/hierarchy:
+  /versions/{versionId}/children:
+    $ref: './paths/navigation/get-version-children.yaml'
+  /versions/{versionId}/parents:
+    $ref: './paths/navigation/get-version-parents.yaml'
+  /versions/{versionId}/ancestors:
+    $ref: './paths/navigation/get-version-ancestors.yaml'
+  /versions/{versionId}/hierarchy:
     $ref: './paths/navigation/get-version-hierarchy.yaml'
   /item-types/{itemTypeId}/hierarchy:
     $ref: './paths/navigation/get-item-type-hierarchy.yaml'
@@ -290,36 +312,31 @@ paths:
   # Graph Traversal Actions
   # Relationship queries and entity connections
   # ---------------------------------------------------------------------------
-  /entities/{entityId}/related:
-    $ref: './paths/graph-traversal/find-related-entities.yaml'
   /query-relations:
     $ref: './paths/graph-traversal/get-relations.yaml'
 
   # ---------------------------------------------------------------------------
   # Causal Analysis Actions
-  # Temporal reasoning, version tracking, and causality tracing
+  # Event tracing and legislative lineage
   # ---------------------------------------------------------------------------
-  /items/{itemId}/valid-version:
-    $ref: './paths/causal-analysis/get-valid-version.yaml'
-  /versions/{versionId}/text-unit:
-    $ref: './paths/causal-analysis/get-version-text-unit.yaml'
   /items/{itemId}/history:
     $ref: './paths/causal-analysis/get-item-history.yaml'
-  /versions/{versionId}/causality:
-    $ref: './paths/causal-analysis/trace-causality.yaml'
-  /versions/batch-in-interval:
-    $ref: './paths/causal-analysis/get-versions-in-interval.yaml'
-  /versions/compare:
-    $ref: './paths/causal-analysis/compare-versions.yaml'
   /items/{sourceWorkId}/actions-caused:
     $ref: './paths/causal-analysis/get-actions-by-source.yaml'
+  /query-actions:
+    $ref: './paths/causal-analysis/query-actions.yaml'
+
+  # ---------------------------------------------------------------------------
+  # Analysis Actions
+  # Comparative and structural analysis operations
+  # ---------------------------------------------------------------------------
+  /versions/compare:
+    $ref: './paths/analysis/compare-versions.yaml'
 
   # ---------------------------------------------------------------------------
   # Introspection & Metadata Actions
   # System metadata and configuration queries
   # ---------------------------------------------------------------------------
-  /items/{itemId}/temporal-coverage:
-    $ref: './paths/introspection/get-temporal-coverage.yaml'
   /meta/languages:
     $ref: './paths/introspection/get-available-languages.yaml'
   /meta/action-types:
