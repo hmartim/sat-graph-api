@@ -47,7 +47,7 @@ function resolveRefs(obj, basePath, visited = new Set()) {
   const result = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    if (key === '$ref' && typeof value === 'string' && value.startsWith('./')) {
+    if (key === '$ref' && typeof value === 'string' && (value.startsWith('./') || value.startsWith('../'))) {
       // External file reference
       const refPath = path.resolve(basePath, value.split('#')[0]);
       const fragment = value.includes('#') ? value.split('#')[1] : null;

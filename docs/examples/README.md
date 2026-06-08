@@ -43,7 +43,6 @@ All examples demonstrate:
 ## Additional Resources
 
 - [Getting Started Guide](../getting-started.md)
-- [API Reference](../api-reference.md)
 - [OpenAPI Specification](../../specification/openapi.yaml)
 
 ---

@@ -16,7 +16,7 @@ SAT-Graph is a **specification** (not an implementation) for:
 2. **Deterministic Retrieval API**
    - Point-in-time queries (`at` parameter) for temporal consistency
    - Batch operations to prevent N+1 query problems
-   - Filtering by datasources for federated/multi-tenant scenarios
+   - Filtering by data sources for federated/multi-tenant scenarios
 
 3. **Semantic Interoperability Guidelines**
    - Best practices for using schema.org vocabularies in metadata
@@ -108,7 +108,7 @@ These are application-layer concerns that should be built **on top of** SAT-Grap
 
 ### 4. Authorization and Authentication
 
-While SAT-Graph supports **datasource-based filtering** (useful for multi-tenancy and access control), it does NOT specify:
+While SAT-Graph supports **data source-based filtering** (useful for multi-tenancy and access control), it does NOT specify:
 
 - Authentication mechanisms (OAuth, JWT, etc.)
 - Authorization policies (RBAC, ABAC, etc.)
@@ -147,7 +147,7 @@ Understanding where SAT-Graph fits in the complete workflow:
 │ 3. STRUCTURED DATA                                          │
 │    - Items, Versions, Relations, Actions                    │
 │    - Hierarchical structure (parent/children)               │
-│    - Temporal intervals (validity_interval)                 │
+│    - Temporal intervals (validityInterval)                 │
 │    - Metadata (schema.org vocabularies)                     │
 └──────────────────────┬──────────────────────────────────────┘
                        │
@@ -210,7 +210,7 @@ If you're building a **complete legal document management system**, you'll need:
    - Database layer
    - API endpoints
    - Temporal query logic
-   - Datasource filtering
+   - DataSource filtering
 
 3. **Application Layer** (your responsibility)
    - User interfaces
