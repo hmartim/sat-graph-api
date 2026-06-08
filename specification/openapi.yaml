@@ -98,6 +98,8 @@ components:
       $ref: './schemas/requests/GetItemHierarchyRequest.yaml'
     GetRelationsRequest:
       $ref: './schemas/requests/GetRelationsRequest.yaml'
+    GetActionsRequest:
+      $ref: './schemas/requests/GetActionsRequest.yaml'
     GetBatchActionsRequest:
       $ref: './schemas/requests/GetBatchActionsRequest.yaml'
     GetBatchItemsRequest:
