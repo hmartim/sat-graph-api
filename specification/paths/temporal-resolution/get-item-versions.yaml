@@ -27,7 +27,6 @@ get:
 
     ### Use Cases
     - Building a version timeline UI showing all historical states of a provision
-    - Feeding all versions into `compareVersions` for longitudinal textual analysis
     - Auditing the complete lifecycle of an Item without traversing Actions
     - Efficiently retrieving only the versions valid during a specific period (e.g., a presidential term)
 

@@ -10,12 +10,12 @@ get:
     This action is ideal for:
     - Traversing version hierarchies to collect all descendant version IDs
     - Understanding version lineages and structural relationships
-    - Building version ID lists for batch operations (e.g., `getBatchTexts`, `compareVersions`)
+    - Building version ID lists for batch operations (e.g., `getBatchTexts`)
     - Analyzing how versions of nested items evolve together
     - Efficient batch processing where only version IDs are needed
 
     ### Discussion
-    This action's purpose is **structural enumeration and navigation** of the version tree, not version filtering. It provides the agent with a deterministic tool for exploring version relationships, distinct from probabilistic search. A Version can have multiple parent Versions (due to graph optimizations where unchanged versions are reused under multiple parent structures), so the returned set represents all descendants reachable through any parent-child path. For content-based analysis, agents should pass the resulting version IDs to analysis functions like `getBatchTexts` or `compareVersions`, as this is more performant.
+    This action's purpose is **structural enumeration and navigation** of the version tree, not version filtering. It provides the agent with a deterministic tool for exploring version relationships, distinct from probabilistic search. A Version can have multiple parent Versions (due to graph optimizations where unchanged versions are reused under multiple parent structures), so the returned set represents all descendants reachable through any parent-child path. For content-based analysis, agents should pass the resulting version IDs to batch operations like `getBatchTexts`, as this is more performant.
 
     **Efficiency Note:** Returns only Version ID strings rather than full Version objects, making it ideal for hierarchical traversal workflows where IDs are subsequently used in batch operations.
 

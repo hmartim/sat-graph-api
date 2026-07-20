@@ -130,8 +130,6 @@ components:
       $ref: './schemas/responses/ErrorResponse.yaml'
     CausalityTrace:
       $ref: './schemas/responses/CausalityTrace.yaml'
-    TextDiffReport:
-      $ref: './schemas/responses/TextDiffReport.yaml'
     HierarchyResponse:
       $ref: './schemas/responses/HierarchyResponse.yaml'
 
