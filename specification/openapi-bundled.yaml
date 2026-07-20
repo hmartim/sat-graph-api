@@ -1058,6 +1058,51 @@ components:
           description: Optional. Key-value pairs to filter against the 'metadata' of the Relation.
         dataSources:
           $ref: ../common/DataSourcesSchema.yaml
+    GetActionsRequest:
+      type: object
+      description: Specifies the criteria for querying Action objects. If all optional filters are omitted, the query runs against the entire corpus of actions.
+      properties:
+        itemIds:
+          type: array
+          items:
+            $ref: ../core/ID.yaml
+          description: Optional. A list of Item IDs. Returns actions that affected any of these items.
+        producesVersionIds:
+          type: array
+          items:
+            $ref: ../core/ID.yaml
+          description: Optional. A list of Version IDs. Returns actions that produced any of these versions.
+        actionTypes:
+          type: array
+          items:
+            type: string
+            enum:
+              - Amendment
+              - Revocation
+              - Creation
+              - Repeal
+          description: Optional. Filters actions to only those of the specified types.
+        granularity:
+          type: string
+          enum:
+            - macro
+            - micro
+          description: 'Optional. Filters Actions by hierarchical granularity level. - ''macro'': Returns only top-level macro-events (parentId = null). - ''micro'': Returns only atomic micro-events (parentId != null). - If omitted, returns both macro and micro-events.'
+        timeInterval:
+          type: object
+          description: Optional but recommended. Filters actions by their effective date. At least one of 'startTime' or 'endTime' should be provided.
+          properties:
+            startTime:
+              type: string
+              format: date-time
+              description: Optional. Includes actions with eventTime >= startTime.
+            endTime:
+              type: string
+              format: date-time
+              description: Optional. Includes actions with eventTime <= endTime.
+        dataSources:
+          $ref: ../common/DataSourcesSchema.yaml
+          description: Optional. Restricts results to specified data sources.
     GetBatchActionsRequest:
       type: object
       description: Specifies the criteria for retrieving a batch of Action objects.
@@ -1989,6 +2034,8 @@ paths:
                 $ref: ./schemas/requests/GetItemHierarchyRequest.yaml
               GetRelationsRequest:
                 $ref: ./schemas/requests/GetRelationsRequest.yaml
+              GetActionsRequest:
+                $ref: ./schemas/requests/GetActionsRequest.yaml
               GetBatchActionsRequest:
                 $ref: ./schemas/requests/GetBatchActionsRequest.yaml
               GetBatchItemsRequest:
@@ -2307,6 +2354,22 @@ paths:
                       type: string
                       pattern: ^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$
                     example: pt-BR
+                  - name: aspect
+                    in: query
+                    required: false
+                    description: |
+                      Optional. Filters results to TextUnits of a specific semantic role relative to the Version.
+                      Common values include `canonical` (the authoritative legal text), `summary` (a condensed
+                      description), `indexical` (popular names or aliases), and `textual_metadata` (linearized
+                      structured attributes). If omitted, TextUnits of all aspects are returned.
+                    schema:
+                      type: string
+                      enum:
+                        - canonical
+                        - summary
+                        - indexical
+                        - textual_metadata
+                    example: canonical
                 responses:
                   '200':
                     description: Successfully retrieved the TextUnits for the specified Version.
@@ -3462,51 +3525,6 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                   '403':
                     $ref: '#/components/responses/Forbidden'
-            /versions/compare:
-              get:
-                tags:
-                  - Analysis Actions
-                summary: Performs a structure-aware comparison between two Versions.
-                operationId: compareVersions
-                description: |
-                  Performs a granular, structure-aware comparison between the textual content of two different `Version`s. It highlights additions, deletions, and modifications.
-
-                  ### Discussion
-                  This action provides a powerful, server-side analysis that goes beyond a simple textual `diff`. Because the server has access to the full graph structure, it can perform a **structural comparison**, identifying not just changed words but also added or removed components. This transforms the comparison into a true structural impact analysis, fundamental for legal practitioners.
-                security:
-                  - ApiKeyAuth: []
-                parameters:
-                  - name: versionIdA
-                    in: query
-                    required: true
-                    description: Identifier of the first Version (the 'before' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                  - name: versionIdB
-                    in: query
-                    required: true
-                    description: Identifier of the second Version (the 'after' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                responses:
-                  '200':
-                    description: Successfully generated and returned the text diff report.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../schemas/responses/TextDiffReport.yaml
-                  '400':
-                    $ref: ../../openapi.yaml#/components/responses/BadRequest
-                  '401':
-                    $ref: ../../openapi.yaml#/components/responses/Unauthorized
-                  '403':
-                    $ref: ../../openapi.yaml#/components/responses/Forbidden
-                  '404':
-                    description: Not Found - One or both of the specified Version IDs could not be found.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../openapi.yaml#/components/schemas/ErrorResponse
             /meta/languages:
               get:
                 tags:
@@ -3767,6 +3785,8 @@ paths:
                 $ref: ./schemas/requests/GetItemHierarchyRequest.yaml
               GetRelationsRequest:
                 $ref: ./schemas/requests/GetRelationsRequest.yaml
+              GetActionsRequest:
+                $ref: ./schemas/requests/GetActionsRequest.yaml
               GetBatchActionsRequest:
                 $ref: ./schemas/requests/GetBatchActionsRequest.yaml
               GetBatchItemsRequest:
@@ -4042,6 +4062,22 @@ paths:
                       type: string
                       pattern: ^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$
                     example: pt-BR
+                  - name: aspect
+                    in: query
+                    required: false
+                    description: |
+                      Optional. Filters results to TextUnits of a specific semantic role relative to the Version.
+                      Common values include `canonical` (the authoritative legal text), `summary` (a condensed
+                      description), `indexical` (popular names or aliases), and `textual_metadata` (linearized
+                      structured attributes). If omitted, TextUnits of all aspects are returned.
+                    schema:
+                      type: string
+                      enum:
+                        - canonical
+                        - summary
+                        - indexical
+                        - textual_metadata
+                    example: canonical
                 responses:
                   '200':
                     description: Successfully retrieved the TextUnits for the specified Version.
@@ -5197,51 +5233,6 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                   '403':
                     $ref: '#/components/responses/Forbidden'
-            /versions/compare:
-              get:
-                tags:
-                  - Analysis Actions
-                summary: Performs a structure-aware comparison between two Versions.
-                operationId: compareVersions
-                description: |
-                  Performs a granular, structure-aware comparison between the textual content of two different `Version`s. It highlights additions, deletions, and modifications.
-
-                  ### Discussion
-                  This action provides a powerful, server-side analysis that goes beyond a simple textual `diff`. Because the server has access to the full graph structure, it can perform a **structural comparison**, identifying not just changed words but also added or removed components. This transforms the comparison into a true structural impact analysis, fundamental for legal practitioners.
-                security:
-                  - ApiKeyAuth: []
-                parameters:
-                  - name: versionIdA
-                    in: query
-                    required: true
-                    description: Identifier of the first Version (the 'before' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                  - name: versionIdB
-                    in: query
-                    required: true
-                    description: Identifier of the second Version (the 'after' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                responses:
-                  '200':
-                    description: Successfully generated and returned the text diff report.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../schemas/responses/TextDiffReport.yaml
-                  '400':
-                    $ref: ../../openapi.yaml#/components/responses/BadRequest
-                  '401':
-                    $ref: ../../openapi.yaml#/components/responses/Unauthorized
-                  '403':
-                    $ref: ../../openapi.yaml#/components/responses/Forbidden
-                  '404':
-                    description: Not Found - One or both of the specified Version IDs could not be found.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../openapi.yaml#/components/schemas/ErrorResponse
             /meta/languages:
               get:
                 tags:
@@ -5493,6 +5484,8 @@ paths:
                 $ref: ./schemas/requests/GetItemHierarchyRequest.yaml
               GetRelationsRequest:
                 $ref: ./schemas/requests/GetRelationsRequest.yaml
+              GetActionsRequest:
+                $ref: ./schemas/requests/GetActionsRequest.yaml
               GetBatchActionsRequest:
                 $ref: ./schemas/requests/GetBatchActionsRequest.yaml
               GetBatchItemsRequest:
@@ -5734,6 +5727,22 @@ paths:
                       type: string
                       pattern: ^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$
                     example: pt-BR
+                  - name: aspect
+                    in: query
+                    required: false
+                    description: |
+                      Optional. Filters results to TextUnits of a specific semantic role relative to the Version.
+                      Common values include `canonical` (the authoritative legal text), `summary` (a condensed
+                      description), `indexical` (popular names or aliases), and `textual_metadata` (linearized
+                      structured attributes). If omitted, TextUnits of all aspects are returned.
+                    schema:
+                      type: string
+                      enum:
+                        - canonical
+                        - summary
+                        - indexical
+                        - textual_metadata
+                    example: canonical
                 responses:
                   '200':
                     description: Successfully retrieved the TextUnits for the specified Version.
@@ -6889,51 +6898,6 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                   '403':
                     $ref: '#/components/responses/Forbidden'
-            /versions/compare:
-              get:
-                tags:
-                  - Analysis Actions
-                summary: Performs a structure-aware comparison between two Versions.
-                operationId: compareVersions
-                description: |
-                  Performs a granular, structure-aware comparison between the textual content of two different `Version`s. It highlights additions, deletions, and modifications.
-
-                  ### Discussion
-                  This action provides a powerful, server-side analysis that goes beyond a simple textual `diff`. Because the server has access to the full graph structure, it can perform a **structural comparison**, identifying not just changed words but also added or removed components. This transforms the comparison into a true structural impact analysis, fundamental for legal practitioners.
-                security:
-                  - ApiKeyAuth: []
-                parameters:
-                  - name: versionIdA
-                    in: query
-                    required: true
-                    description: Identifier of the first Version (the 'before' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                  - name: versionIdB
-                    in: query
-                    required: true
-                    description: Identifier of the second Version (the 'after' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                responses:
-                  '200':
-                    description: Successfully generated and returned the text diff report.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../schemas/responses/TextDiffReport.yaml
-                  '400':
-                    $ref: ../../openapi.yaml#/components/responses/BadRequest
-                  '401':
-                    $ref: ../../openapi.yaml#/components/responses/Unauthorized
-                  '403':
-                    $ref: ../../openapi.yaml#/components/responses/Forbidden
-                  '404':
-                    description: Not Found - One or both of the specified Version IDs could not be found.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../openapi.yaml#/components/schemas/ErrorResponse
             /meta/languages:
               get:
                 tags:
@@ -7187,6 +7151,8 @@ paths:
                 $ref: ./schemas/requests/GetItemHierarchyRequest.yaml
               GetRelationsRequest:
                 $ref: ./schemas/requests/GetRelationsRequest.yaml
+              GetActionsRequest:
+                $ref: ./schemas/requests/GetActionsRequest.yaml
               GetBatchActionsRequest:
                 $ref: ./schemas/requests/GetBatchActionsRequest.yaml
               GetBatchItemsRequest:
@@ -7392,6 +7358,22 @@ paths:
                       type: string
                       pattern: ^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$
                     example: pt-BR
+                  - name: aspect
+                    in: query
+                    required: false
+                    description: |
+                      Optional. Filters results to TextUnits of a specific semantic role relative to the Version.
+                      Common values include `canonical` (the authoritative legal text), `summary` (a condensed
+                      description), `indexical` (popular names or aliases), and `textual_metadata` (linearized
+                      structured attributes). If omitted, TextUnits of all aspects are returned.
+                    schema:
+                      type: string
+                      enum:
+                        - canonical
+                        - summary
+                        - indexical
+                        - textual_metadata
+                    example: canonical
                 responses:
                   '200':
                     description: Successfully retrieved the TextUnits for the specified Version.
@@ -8547,51 +8529,6 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                   '403':
                     $ref: '#/components/responses/Forbidden'
-            /versions/compare:
-              get:
-                tags:
-                  - Analysis Actions
-                summary: Performs a structure-aware comparison between two Versions.
-                operationId: compareVersions
-                description: |
-                  Performs a granular, structure-aware comparison between the textual content of two different `Version`s. It highlights additions, deletions, and modifications.
-
-                  ### Discussion
-                  This action provides a powerful, server-side analysis that goes beyond a simple textual `diff`. Because the server has access to the full graph structure, it can perform a **structural comparison**, identifying not just changed words but also added or removed components. This transforms the comparison into a true structural impact analysis, fundamental for legal practitioners.
-                security:
-                  - ApiKeyAuth: []
-                parameters:
-                  - name: versionIdA
-                    in: query
-                    required: true
-                    description: Identifier of the first Version (the 'before' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                  - name: versionIdB
-                    in: query
-                    required: true
-                    description: Identifier of the second Version (the 'after' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                responses:
-                  '200':
-                    description: Successfully generated and returned the text diff report.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../schemas/responses/TextDiffReport.yaml
-                  '400':
-                    $ref: ../../openapi.yaml#/components/responses/BadRequest
-                  '401':
-                    $ref: ../../openapi.yaml#/components/responses/Unauthorized
-                  '403':
-                    $ref: ../../openapi.yaml#/components/responses/Forbidden
-                  '404':
-                    description: Not Found - One or both of the specified Version IDs could not be found.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../openapi.yaml#/components/schemas/ErrorResponse
             /meta/languages:
               get:
                 tags:
@@ -8843,6 +8780,8 @@ paths:
                 $ref: ./schemas/requests/GetItemHierarchyRequest.yaml
               GetRelationsRequest:
                 $ref: ./schemas/requests/GetRelationsRequest.yaml
+              GetActionsRequest:
+                $ref: ./schemas/requests/GetActionsRequest.yaml
               GetBatchActionsRequest:
                 $ref: ./schemas/requests/GetBatchActionsRequest.yaml
               GetBatchItemsRequest:
@@ -9014,6 +8953,22 @@ paths:
                       type: string
                       pattern: ^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$
                     example: pt-BR
+                  - name: aspect
+                    in: query
+                    required: false
+                    description: |
+                      Optional. Filters results to TextUnits of a specific semantic role relative to the Version.
+                      Common values include `canonical` (the authoritative legal text), `summary` (a condensed
+                      description), `indexical` (popular names or aliases), and `textual_metadata` (linearized
+                      structured attributes). If omitted, TextUnits of all aspects are returned.
+                    schema:
+                      type: string
+                      enum:
+                        - canonical
+                        - summary
+                        - indexical
+                        - textual_metadata
+                    example: canonical
                 responses:
                   '200':
                     description: Successfully retrieved the TextUnits for the specified Version.
@@ -10169,51 +10124,6 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                   '403':
                     $ref: '#/components/responses/Forbidden'
-            /versions/compare:
-              get:
-                tags:
-                  - Analysis Actions
-                summary: Performs a structure-aware comparison between two Versions.
-                operationId: compareVersions
-                description: |
-                  Performs a granular, structure-aware comparison between the textual content of two different `Version`s. It highlights additions, deletions, and modifications.
-
-                  ### Discussion
-                  This action provides a powerful, server-side analysis that goes beyond a simple textual `diff`. Because the server has access to the full graph structure, it can perform a **structural comparison**, identifying not just changed words but also added or removed components. This transforms the comparison into a true structural impact analysis, fundamental for legal practitioners.
-                security:
-                  - ApiKeyAuth: []
-                parameters:
-                  - name: versionIdA
-                    in: query
-                    required: true
-                    description: Identifier of the first Version (the 'before' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                  - name: versionIdB
-                    in: query
-                    required: true
-                    description: Identifier of the second Version (the 'after' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                responses:
-                  '200':
-                    description: Successfully generated and returned the text diff report.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../schemas/responses/TextDiffReport.yaml
-                  '400':
-                    $ref: ../../openapi.yaml#/components/responses/BadRequest
-                  '401':
-                    $ref: ../../openapi.yaml#/components/responses/Unauthorized
-                  '403':
-                    $ref: ../../openapi.yaml#/components/responses/Forbidden
-                  '404':
-                    description: Not Found - One or both of the specified Version IDs could not be found.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../openapi.yaml#/components/schemas/ErrorResponse
             /meta/languages:
               get:
                 tags:
@@ -10392,6 +10302,22 @@ paths:
             type: string
             pattern: ^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$
           example: pt-BR
+        - name: aspect
+          in: query
+          required: false
+          description: |
+            Optional. Filters results to TextUnits of a specific semantic role relative to the Version.
+            Common values include `canonical` (the authoritative legal text), `summary` (a condensed
+            description), `indexical` (popular names or aliases), and `textual_metadata` (linearized
+            structured attributes). If omitted, TextUnits of all aspects are returned.
+          schema:
+            type: string
+            enum:
+              - canonical
+              - summary
+              - indexical
+              - textual_metadata
+          example: canonical
       responses:
         '200':
           description: Successfully retrieved the TextUnits for the specified Version.
@@ -10897,6 +10823,8 @@ paths:
                 $ref: ./schemas/requests/GetItemHierarchyRequest.yaml
               GetRelationsRequest:
                 $ref: ./schemas/requests/GetRelationsRequest.yaml
+              GetActionsRequest:
+                $ref: ./schemas/requests/GetActionsRequest.yaml
               GetBatchActionsRequest:
                 $ref: ./schemas/requests/GetBatchActionsRequest.yaml
               GetBatchItemsRequest:
@@ -11767,51 +11695,6 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                   '403':
                     $ref: '#/components/responses/Forbidden'
-            /versions/compare:
-              get:
-                tags:
-                  - Analysis Actions
-                summary: Performs a structure-aware comparison between two Versions.
-                operationId: compareVersions
-                description: |
-                  Performs a granular, structure-aware comparison between the textual content of two different `Version`s. It highlights additions, deletions, and modifications.
-
-                  ### Discussion
-                  This action provides a powerful, server-side analysis that goes beyond a simple textual `diff`. Because the server has access to the full graph structure, it can perform a **structural comparison**, identifying not just changed words but also added or removed components. This transforms the comparison into a true structural impact analysis, fundamental for legal practitioners.
-                security:
-                  - ApiKeyAuth: []
-                parameters:
-                  - name: versionIdA
-                    in: query
-                    required: true
-                    description: Identifier of the first Version (the 'before' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                  - name: versionIdB
-                    in: query
-                    required: true
-                    description: Identifier of the second Version (the 'after' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                responses:
-                  '200':
-                    description: Successfully generated and returned the text diff report.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../schemas/responses/TextDiffReport.yaml
-                  '400':
-                    $ref: ../../openapi.yaml#/components/responses/BadRequest
-                  '401':
-                    $ref: ../../openapi.yaml#/components/responses/Unauthorized
-                  '403':
-                    $ref: ../../openapi.yaml#/components/responses/Forbidden
-                  '404':
-                    description: Not Found - One or both of the specified Version IDs could not be found.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../openapi.yaml#/components/schemas/ErrorResponse
             /meta/languages:
               get:
                 tags:
@@ -12634,6 +12517,8 @@ paths:
                 $ref: ./schemas/requests/GetItemHierarchyRequest.yaml
               GetRelationsRequest:
                 $ref: ./schemas/requests/GetRelationsRequest.yaml
+              GetActionsRequest:
+                $ref: ./schemas/requests/GetActionsRequest.yaml
               GetBatchActionsRequest:
                 $ref: ./schemas/requests/GetBatchActionsRequest.yaml
               GetBatchItemsRequest:
@@ -12917,51 +12802,6 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                   '403':
                     $ref: '#/components/responses/Forbidden'
-            /versions/compare:
-              get:
-                tags:
-                  - Analysis Actions
-                summary: Performs a structure-aware comparison between two Versions.
-                operationId: compareVersions
-                description: |
-                  Performs a granular, structure-aware comparison between the textual content of two different `Version`s. It highlights additions, deletions, and modifications.
-
-                  ### Discussion
-                  This action provides a powerful, server-side analysis that goes beyond a simple textual `diff`. Because the server has access to the full graph structure, it can perform a **structural comparison**, identifying not just changed words but also added or removed components. This transforms the comparison into a true structural impact analysis, fundamental for legal practitioners.
-                security:
-                  - ApiKeyAuth: []
-                parameters:
-                  - name: versionIdA
-                    in: query
-                    required: true
-                    description: Identifier of the first Version (the 'before' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                  - name: versionIdB
-                    in: query
-                    required: true
-                    description: Identifier of the second Version (the 'after' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                responses:
-                  '200':
-                    description: Successfully generated and returned the text diff report.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../schemas/responses/TextDiffReport.yaml
-                  '400':
-                    $ref: ../../openapi.yaml#/components/responses/BadRequest
-                  '401':
-                    $ref: ../../openapi.yaml#/components/responses/Unauthorized
-                  '403':
-                    $ref: ../../openapi.yaml#/components/responses/Forbidden
-                  '404':
-                    description: Not Found - One or both of the specified Version IDs could not be found.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../openapi.yaml#/components/schemas/ErrorResponse
             /meta/languages:
               get:
                 tags:
@@ -13234,6 +13074,8 @@ paths:
                 $ref: ./schemas/requests/GetItemHierarchyRequest.yaml
               GetRelationsRequest:
                 $ref: ./schemas/requests/GetRelationsRequest.yaml
+              GetActionsRequest:
+                $ref: ./schemas/requests/GetActionsRequest.yaml
               GetBatchActionsRequest:
                 $ref: ./schemas/requests/GetBatchActionsRequest.yaml
               GetBatchItemsRequest:
@@ -13451,51 +13293,6 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                   '403':
                     $ref: '#/components/responses/Forbidden'
-            /versions/compare:
-              get:
-                tags:
-                  - Analysis Actions
-                summary: Performs a structure-aware comparison between two Versions.
-                operationId: compareVersions
-                description: |
-                  Performs a granular, structure-aware comparison between the textual content of two different `Version`s. It highlights additions, deletions, and modifications.
-
-                  ### Discussion
-                  This action provides a powerful, server-side analysis that goes beyond a simple textual `diff`. Because the server has access to the full graph structure, it can perform a **structural comparison**, identifying not just changed words but also added or removed components. This transforms the comparison into a true structural impact analysis, fundamental for legal practitioners.
-                security:
-                  - ApiKeyAuth: []
-                parameters:
-                  - name: versionIdA
-                    in: query
-                    required: true
-                    description: Identifier of the first Version (the 'before' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                  - name: versionIdB
-                    in: query
-                    required: true
-                    description: Identifier of the second Version (the 'after' state).
-                    schema:
-                      $ref: ../../schemas/core/ID.yaml
-                responses:
-                  '200':
-                    description: Successfully generated and returned the text diff report.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../schemas/responses/TextDiffReport.yaml
-                  '400':
-                    $ref: ../../openapi.yaml#/components/responses/BadRequest
-                  '401':
-                    $ref: ../../openapi.yaml#/components/responses/Unauthorized
-                  '403':
-                    $ref: ../../openapi.yaml#/components/responses/Forbidden
-                  '404':
-                    description: Not Found - One or both of the specified Version IDs could not be found.
-                    content:
-                      application/json:
-                        schema:
-                          $ref: ../../openapi.yaml#/components/schemas/ErrorResponse
             /meta/languages:
               get:
                 tags:
@@ -13697,440 +13494,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-  /versions/compare:
-    get:
-      tags:
-        - Analysis Actions
-      summary: Performs a structure-aware comparison between two Versions.
-      operationId: compareVersions
-      description: |
-        Performs a granular, structure-aware comparison between the textual content of two different `Version`s. It highlights additions, deletions, and modifications.
-
-        ### Discussion
-        This action provides a powerful, server-side analysis that goes beyond a simple textual `diff`. Because the server has access to the full graph structure, it can perform a **structural comparison**, identifying not just changed words but also added or removed components. This transforms the comparison into a true structural impact analysis, fundamental for legal practitioners.
-      security:
-        - ApiKeyAuth: []
-      parameters:
-        - name: versionIdA
-          in: query
-          required: true
-          description: Identifier of the first Version (the 'before' state).
-          schema:
-            $ref: ../../schemas/core/ID.yaml
-        - name: versionIdB
-          in: query
-          required: true
-          description: Identifier of the second Version (the 'after' state).
-          schema:
-            $ref: ../../schemas/core/ID.yaml
-      responses:
-        '200':
-          description: Successfully generated and returned the text diff report.
-          content:
-            application/json:
-              schema:
-                $ref: ../../schemas/responses/TextDiffReport.yaml
-        '400':
-          openapi: 3.0.3
-          info:
-            title: SAT-Graph API
-            version: 1.0.0
-            description: |
-              This is the official OpenAPI 3.x specification for the **SAT-Graph API**,
-              a formal, auditable interface for querying the Structure-Aware Temporal Graph (SAT-Graph).
-
-              The complete architectural framework is proposed in the paper:
-              - **[An Ontology-Driven Graph RAG for Legal Norms: A Structural, Temporal, and Deterministic Approach](https://arxiv.org/abs/2508.00827)**
-
-              ## API Architecture
-
-              This specification implements a **two-layer architecture**:
-
-              ### 1. Canonical Core API (Research Paper)
-              The foundational set of actions formally specified in the research paper:
-              - SAT-Graph ontology: Item, Version, Action, Theme, TextUnit
-              - Temporal reasoning and deterministic retrieval
-              - Structural navigation and causal tracing
-              - Minimal set of composable primitives
-
-              ### 2. Extended API (Production Enhancements)
-              Additional capabilities for production use cases:
-              - **Relation System**: Semantic overlay graph for cross-document relationships
-                (citations, references, dependencies)
-              - **Convenience Operations**: Optimized endpoints for common patterns
-              - Implements "Future Directions" outlined in the research paper
-
-              **Design Principle:** Extensions maintain the same guarantees of composability,
-              auditability, and verifiability as the canonical core.
-
-              ---
-
-              **Authentication Note:** All endpoints in this API are protected. A valid API Key
-              must be sent in the `Authorization` header on every request. Please refer to the
-              'securitySchemes' section below for details.
-
-              **Data Scoping Note:** The API serves data from multiple providers, called **DataSources**.
-              All requests are automatically scoped to the DataSources granted to your API key.
-              Many search functions also provide an optional `dataSources` parameter for more granular filtering.
-          components:
-            schemas:
-              ID:
-                $ref: ./schemas/core/ID.yaml
-              JSON:
-                $ref: ./schemas/core/JSON.yaml
-              TimeInterval:
-                $ref: ./schemas/core/TimeInterval.yaml
-              DataSourcesSchema:
-                $ref: ./schemas/common/DataSourcesSchema.yaml
-              MetadataFilter:
-                $ref: ./schemas/common/MetadataFilter.yaml
-              ItemMetadataFilterSchema:
-                $ref: ./schemas/common/ItemMetadataFilterSchema.yaml
-              ContentQuery:
-                $ref: ./schemas/common/ContentQuery.yaml
-              Item:
-                $ref: ./schemas/entities/Item.yaml
-              Version:
-                $ref: ./schemas/entities/Version.yaml
-              Theme:
-                $ref: ./schemas/entities/Theme.yaml
-              ItemType:
-                $ref: ./schemas/entities/ItemType.yaml
-              TextUnit:
-                $ref: ./schemas/entities/TextUnit.yaml
-              Action:
-                $ref: ./schemas/relationships/Action.yaml
-              Relation:
-                $ref: ./schemas/relationships/Relation.yaml
-              SearchItemsRequest:
-                $ref: ./schemas/requests/SearchItemsRequest.yaml
-              SearchTextUnitsRequest:
-                $ref: ./schemas/requests/SearchTextUnitsRequest.yaml
-              GetItemHierarchyRequest:
-                $ref: ./schemas/requests/GetItemHierarchyRequest.yaml
-              GetRelationsRequest:
-                $ref: ./schemas/requests/GetRelationsRequest.yaml
-              GetBatchActionsRequest:
-                $ref: ./schemas/requests/GetBatchActionsRequest.yaml
-              GetBatchItemsRequest:
-                $ref: ./schemas/requests/GetBatchItemsRequest.yaml
-              GetBatchVersionsRequest:
-                $ref: ./schemas/requests/GetBatchVersionsRequest.yaml
-              GetBatchValidVersionsRequest:
-                $ref: ./schemas/requests/GetBatchValidVersionsRequest.yaml
-              GetBatchTextUnitsRequest:
-                $ref: ./schemas/requests/GetBatchTextUnitsRequest.yaml
-              GetBatchItemTypesRequest:
-                $ref: ./schemas/requests/GetBatchItemTypesRequest.yaml
-              ResolvedItemCandidate:
-                $ref: ./schemas/responses/ResolvedItemCandidate.yaml
-              ResolvedThemeCandidate:
-                $ref: ./schemas/responses/ResolvedThemeCandidate.yaml
-              ResolvedItemTypeCandidate:
-                $ref: ./schemas/responses/ResolvedItemTypeCandidate.yaml
-              SearchedTextUnitResult:
-                $ref: ./schemas/responses/SearchedTextUnitResult.yaml
-              SearchedItemResult:
-                $ref: ./schemas/responses/SearchedItemResult.yaml
-              ErrorResponse:
-                $ref: ./schemas/responses/ErrorResponse.yaml
-              CausalityTrace:
-                $ref: ./schemas/responses/CausalityTrace.yaml
-              TextDiffReport:
-                $ref: ./schemas/responses/TextDiffReport.yaml
-              HierarchyResponse:
-                $ref: ./schemas/responses/HierarchyResponse.yaml
-            parameters:
-              DataSourcesParameter:
-                name: dataSources
-                in: query
-                required: false
-                description: |
-                  **Optional.** A list of identifiers for the DataSources to scope the search.
-
-                  A DataSource is the system or provider where an entity originates (e.g., 'dataSource_Senate'). This parameter allows you to narrow a search to a specific subset of the DataSources you have access to.
-
-                  The API will only return results from DataSources that are both *requested* in this parameter and *granted* to your API key. If this parameter is omitted, the search will run against all DataSources your key is granted to.
-                schema:
-                  type: array
-                  items:
-                    type: string
-                  uniqueItems: true
-                example:
-                  - dataSource_A
-            securitySchemes:
-              ApiKeyAuth:
-                type: apiKey
-                in: header
-                name: Authorization
-                description: |
-                  API Key-based authentication. Each consumer must provide their unique API Key
-                  directly in the `Authorization` header for every request.
-
-                  **Example:** `Authorization: YOUR_API_KEY`
-
-                  API Keys can be obtained by contacting the system administrator.
-            responses:
-              BadRequest:
-                description: Bad Request - The request is missing a required parameter, includes an invalid parameter value, or is otherwise malformed.
-                content:
-                  application/json:
-                    schema:
-                      $ref: '#/components/schemas/ErrorResponse'
-                    example:
-                      code: INVALID_PARAMETER
-                      message: The 'topK' parameter must be a positive integer.
-              Unauthorized:
-                description: Unauthorized - The request lacks valid authentication credentials. The API Key is missing or invalid.
-                content:
-                  application/json:
-                    schema:
-                      $ref: '#/components/schemas/ErrorResponse'
-                    example:
-                      code: UNAUTHORIZED
-                      message: Authentication credentials were not provided or are invalid.
-              Forbidden:
-                description: Forbidden - The server understood the request, but is refusing to fulfill it. The API Key is valid but lacks permission for the requested resource or data source.
-                content:
-                  application/json:
-                    schema:
-                      $ref: '#/components/schemas/ErrorResponse'
-                    example:
-                      code: FORBIDDEN_DATASOURCE
-                      message: The provided API Key does not have access to the 'dataSource_STF' data source.
-              NotFound:
-                description: Not Found - The requested resource could not be found.
-                content:
-                  application/json:
-                    schema:
-                      $ref: '#/components/schemas/ErrorResponse'
-                    example:
-                      code: RESOURCE_NOT_FOUND
-                      message: No Item found with the specified ID.
-          security:
-            - ApiKeyAuth: []
-          paths:
-            /items/by-reference:
-              $ref: ./paths/discovery/resolve-item-reference.yaml
-            /themes/by-reference:
-              $ref: ./paths/discovery/resolve-theme-reference.yaml
-            /item-types/by-reference:
-              $ref: ./paths/discovery/resolve-item-type-reference.yaml
-            /items/search:
-              $ref: ./paths/discovery/search-items.yaml
-            /text-units/search:
-              $ref: ./paths/discovery/search-text-units.yaml
-            /actions/{actionId}:
-              $ref: ./paths/deterministic-fetch/get-action-by-id.yaml
-            /items/{itemId}:
-              $ref: ./paths/deterministic-fetch/get-item-by-id.yaml
-            /relations/{relationId}:
-              $ref: ./paths/deterministic-fetch/get-relation-by-id.yaml
-            /themes/{themeId}:
-              $ref: ./paths/deterministic-fetch/get-theme-by-id.yaml
-            /item-types/{itemTypeId}:
-              $ref: ./paths/deterministic-fetch/get-item-type-by-id.yaml
-            /text-units/{textUnitId}:
-              $ref: ./paths/deterministic-fetch/get-text-unit-by-id.yaml
-            /versions/{versionId}:
-              $ref: ./paths/deterministic-fetch/get-version-by-id.yaml
-            /items/batch-get:
-              $ref: ./paths/deterministic-fetch/get-batch-items.yaml
-            /versions/batch-get:
-              $ref: ./paths/deterministic-fetch/get-batch-versions.yaml
-            /actions/batch-get:
-              $ref: ./paths/deterministic-fetch/get-batch-actions.yaml
-            /text-units/batch-get:
-              $ref: ./paths/deterministic-fetch/get-batch-text-units.yaml
-            /item-types/batch-get:
-              $ref: ./paths/deterministic-fetch/get-batch-item-types.yaml
-            /versions/{versionId}/text-units:
-              $ref: ./paths/deterministic-fetch/get-version-text-units.yaml
-            /themes/by-items:
-              $ref: ./paths/navigation/get-themes-for-items.yaml
-            /items/{itemId}/valid-versions:
-              $ref: ./paths/temporal-resolution/get-valid-versions.yaml
-            /items/{itemId}/applicable-versions:
-              $ref: ./paths/temporal-resolution/get-applicable-versions.yaml
-            /items/{itemId}/versions:
-              $ref: ./paths/temporal-resolution/get-item-versions.yaml
-            /versions/batch-valid-at:
-              $ref: ./paths/temporal-resolution/get-batch-valid-versions.yaml
-            /items/{itemId}/children:
-              $ref: ./paths/navigation/get-item-children.yaml
-            /items/{itemId}/ancestors:
-              $ref: ./paths/navigation/get-item-ancestors.yaml
-            /items/{itemId}/hierarchy:
-              $ref: ./paths/navigation/get-item-hierarchy.yaml
-            /versions/{versionId}/children:
-              $ref: ./paths/navigation/get-version-children.yaml
-            /versions/{versionId}/parents:
-              $ref: ./paths/navigation/get-version-parents.yaml
-            /versions/{versionId}/ancestors:
-              $ref: ./paths/navigation/get-version-ancestors.yaml
-            /versions/{versionId}/hierarchy:
-              $ref: ./paths/navigation/get-version-hierarchy.yaml
-            /item-types/{itemTypeId}/hierarchy:
-              $ref: ./paths/navigation/get-item-type-hierarchy.yaml
-            /themes/{themeId}/hierarchy:
-              $ref: ./paths/navigation/get-theme-hierarchy.yaml
-            /query-relations:
-              $ref: ./paths/graph-traversal/get-relations.yaml
-            /items/{itemId}/history:
-              $ref: ./paths/causal-analysis/get-item-history.yaml
-            /items/{sourceWorkId}/actions-caused:
-              $ref: ./paths/causal-analysis/get-actions-by-source.yaml
-            /query-actions:
-              $ref: ./paths/causal-analysis/query-actions.yaml
-            /versions/compare:
-              $ref: ./paths/analysis/compare-versions.yaml
-            /meta/languages:
-              get:
-                tags:
-                  - Introspection & Metadata Actions
-                summary: Gets a list of all available language codes in the graph.
-                operationId: getAvailableLanguages
-                description: |
-                  Returns a list of all language codes (IETF BCP 47 format) for which textual content is available in the knowledge graph.
-
-                  ### Discussion
-                  This action enables an agent or user interface to dynamically present language options to the user, ensuring that requests are only made for languages that the system actually supports.
-                security:
-                  - ApiKeyAuth: []
-                responses:
-                  '200':
-                    description: A list of available language codes (BCP 47).
-                    content:
-                      application/json:
-                        schema:
-                          type: array
-                          items:
-                            type: string
-                            pattern: ^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$
-                            example: pt-BR
-                  '401':
-                    $ref: ../../openapi.yaml#/components/responses/Unauthorized
-                  '403':
-                    $ref: ../../openapi.yaml#/components/responses/Forbidden
-            /meta/action-types:
-              get:
-                tags:
-                  - Introspection & Metadata Actions
-                summary: Gets the list of all supported action types.
-                operationId: getSupportedActionTypes
-                description: |
-                  Returns a list of all legislative action types (e.g., `Amendment`, `Revocation`) recognized by the graph's ontology.
-
-                  ### Discussion
-                  This action provides the canonical list of values that can be used in the `actionTypes` filter of other functions like `getItemHistory`. It allows a client application to dynamically build filtering interfaces without hardcoding ontology-specific values.
-                security:
-                  - ApiKeyAuth: []
-                responses:
-                  '200':
-                    description: A list of supported action type strings.
-                    content:
-                      application/json:
-                        schema:
-                          type: array
-                          items:
-                            type: string
-                            pattern: ^[A-Z][a-zA-Z]*$
-                            example: Amendment
-                          example:
-                            - Amendment
-                            - Revocation
-                            - Creation
-                            - Repeal
-                  '401':
-                    $ref: ../../openapi.yaml#/components/responses/Unauthorized
-                  '403':
-                    $ref: ../../openapi.yaml#/components/responses/Forbidden
-            /item-types/roots:
-              get:
-                tags:
-                  - Introspection & Metadata Actions
-                summary: Gets the root nodes of the ItemType taxonomy.
-                operationId: getRootItemTypes
-                description: |
-                  Retrieves a list of all `ItemType` objects that are at the root of the type taxonomy
-                  (i.e., types that have no parents).
-
-                  ### Discussion
-                  This is the primary action for exploring the ItemType taxonomy. It provides an efficient
-                  entry point to the type system, allowing clients to render the top-level types and then
-                  "lazy-load" sub-trees by fetching children as needed.
-
-                  **Use Cases:**
-                  - Build type selectors in UIs and expand children as needed
-                  - Understand the top-level structure of the type system
-                  - Initialize type navigation interfaces
-                  - Generate documentation of the type hierarchy
-
-                  ### DataSource Filtering
-                  Different data sources may maintain their own ItemType taxonomies tailored to their specific
-                  document types and organizational structures. The optional `dataSources` parameter allows
-                  clients to scope the results to specific data sources, which is particularly useful in
-                  federated or multi-tenant scenarios where each institution maintains its own type system.
-                security:
-                  - ApiKeyAuth: []
-                parameters:
-                  - $ref: '#/components/parameters/DataSourcesParameter'
-                responses:
-                  '200':
-                    description: A list of root ItemType objects.
-                    content:
-                      application/json:
-                        schema:
-                          type: array
-                          items:
-                            $ref: '#/components/schemas/ItemType'
-                  '400':
-                    $ref: '#/components/responses/BadRequest'
-                  '401':
-                    $ref: '#/components/responses/Unauthorized'
-                  '403':
-                    $ref: '#/components/responses/Forbidden'
-            /themes/roots:
-              get:
-                tags:
-                  - Introspection & Metadata Actions
-                summary: Gets the root nodes of the thematic taxonomy.
-                operationId: getRootThemes
-                description: |
-                  Retrieves a list of all `Theme` objects that are at the root of the thematic taxonomy (i.e., themes that have no parents).
-
-                  ### Discussion
-                  This is the primary action for an agent or user interface to begin exploring the thematic ontology. It provides an efficient entry point to the taxonomy, allowing a client to render the top-level themes and then "lazy-load" sub-trees by fetching the children of each theme as needed. This approach is highly performant and scalable, avoiding the "N+1 query problem" that would arise from fetching a flat list of all themes.
-
-                  ### DataSource Filtering
-                  Different data sources may maintain their own thematic taxonomies. The optional `dataSources` parameter allows clients to scope the results to specific data sources, which is particularly useful in federated or multi-tenant scenarios.
-                security:
-                  - ApiKeyAuth: []
-                parameters:
-                  - $ref: '#/components/parameters/DataSourcesParameter'
-                responses:
-                  '200':
-                    description: A list of the root Theme objects. The list will be empty if no themes are defined.
-                    content:
-                      application/json:
-                        schema:
-                          type: array
-                          items:
-                            $ref: ../../schemas/entities/Theme.yaml
-                  '401':
-                    $ref: ../../openapi.yaml#/components/responses/Unauthorized
-                  '403':
-                    $ref: ../../openapi.yaml#/components/responses/Forbidden
-        '401':
-          $ref: ../../openapi.yaml#/components/responses/Unauthorized
-        '403':
-          $ref: ../../openapi.yaml#/components/responses/Forbidden
-        '404':
-          description: Not Found - One or both of the specified Version IDs could not be found.
-          content:
-            application/json:
-              schema:
-                $ref: ../../openapi.yaml#/components/schemas/ErrorResponse
   /meta/languages:
     get:
       tags:
@@ -14235,6 +13598,8 @@ paths:
                 $ref: ./schemas/requests/GetItemHierarchyRequest.yaml
               GetRelationsRequest:
                 $ref: ./schemas/requests/GetRelationsRequest.yaml
+              GetActionsRequest:
+                $ref: ./schemas/requests/GetActionsRequest.yaml
               GetBatchActionsRequest:
                 $ref: ./schemas/requests/GetBatchActionsRequest.yaml
               GetBatchItemsRequest:
@@ -14407,8 +13772,6 @@ paths:
               $ref: ./paths/causal-analysis/get-actions-by-source.yaml
             /query-actions:
               $ref: ./paths/causal-analysis/query-actions.yaml
-            /versions/compare:
-              $ref: ./paths/analysis/compare-versions.yaml
             /meta/languages:
               $ref: ./paths/introspection/get-available-languages.yaml
             /meta/action-types:
@@ -14631,6 +13994,8 @@ paths:
                 $ref: ./schemas/requests/GetItemHierarchyRequest.yaml
               GetRelationsRequest:
                 $ref: ./schemas/requests/GetRelationsRequest.yaml
+              GetActionsRequest:
+                $ref: ./schemas/requests/GetActionsRequest.yaml
               GetBatchActionsRequest:
                 $ref: ./schemas/requests/GetBatchActionsRequest.yaml
               GetBatchItemsRequest:
@@ -14803,8 +14168,6 @@ paths:
               $ref: ./paths/causal-analysis/get-actions-by-source.yaml
             /query-actions:
               $ref: ./paths/causal-analysis/query-actions.yaml
-            /versions/compare:
-              $ref: ./paths/analysis/compare-versions.yaml
             /meta/languages:
               $ref: ./paths/introspection/get-available-languages.yaml
             /meta/action-types:
@@ -15039,6 +14402,8 @@ paths:
                 $ref: ./schemas/requests/GetItemHierarchyRequest.yaml
               GetRelationsRequest:
                 $ref: ./schemas/requests/GetRelationsRequest.yaml
+              GetActionsRequest:
+                $ref: ./schemas/requests/GetActionsRequest.yaml
               GetBatchActionsRequest:
                 $ref: ./schemas/requests/GetBatchActionsRequest.yaml
               GetBatchItemsRequest:
@@ -15211,8 +14576,6 @@ paths:
               $ref: ./paths/causal-analysis/get-actions-by-source.yaml
             /query-actions:
               $ref: ./paths/causal-analysis/query-actions.yaml
-            /versions/compare:
-              $ref: ./paths/analysis/compare-versions.yaml
             /meta/languages:
               $ref: ./paths/introspection/get-available-languages.yaml
             /meta/action-types:

@@ -329,13 +329,6 @@ paths:
     $ref: './paths/causal-analysis/query-actions.yaml'
 
   # ---------------------------------------------------------------------------
-  # Analysis Actions
-  # Comparative and structural analysis operations
-  # ---------------------------------------------------------------------------
-  /versions/compare:
-    $ref: './paths/analysis/compare-versions.yaml'
-
-  # ---------------------------------------------------------------------------
   # Introspection & Metadata Actions
   # System metadata and configuration queries
   # ---------------------------------------------------------------------------
