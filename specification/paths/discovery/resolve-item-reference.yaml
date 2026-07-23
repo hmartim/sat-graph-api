@@ -12,6 +12,19 @@ get:
     This function handles this by returning a ranked list of candidates rather than forcing a single, potentially incorrect guess.
     The optional `contextId` parameter significantly enhances its precision for context-aware interactions.
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      First step of any referential plan: turn a textual reference or URN into a
+      canonical itemId before temporal, structural, or causal navigation.
+    not-for: >-
+      Thematic questions with no explicit reference (use searchTextUnits/searchItems);
+      structural class names like "Article" (use resolveItemTypeReference).
+    pairs-with: [getValidVersions, getItemVersions, getItemChildren, getItemAncestors]
+    caveats: >-
+      Returns confidence-scored candidates; if confidence is low or several are close, disambiguate before deterministic traversal.
+    role: anchor
+
   security:
     - ApiKeyAuth: []
 

@@ -24,6 +24,14 @@ get:
     clients to scope the results to specific data sources, which is particularly useful in
     federated or multi-tenant scenarios where each institution maintains its own type system.
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Discover the top of the structural-type taxonomy when the type vocabulary
+      is unknown.
+    pairs-with: [getItemTypeHierarchy, resolveItemTypeReference]
+    role: introspection
+
   security:
     - ApiKeyAuth: []
 

@@ -21,6 +21,17 @@ post:
 
     This action is essential for comprehensive impact analysis at scale. Rather than making individual `/items/{itemId}/history` or `/items/{sourceWorkId}/actions-caused` calls, a single `/query-actions` call can retrieve all relevant actions across multiple items and versions, dramatically improving efficiency for temporal and causal analysis workflows.
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Structured impact analysis at scale: filter Actions jointly by items,
+      versions, types, and time.
+    not-for: >-
+      Single-item history — use getItemHistory. A single source act —
+      use getActionsBySource.
+    pairs-with: [getSupportedActionTypes, getBatchVersions]
+    role: causal
+
   security:
     - ApiKeyAuth: []
 

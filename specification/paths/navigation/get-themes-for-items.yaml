@@ -17,6 +17,14 @@ post:
     Items (e.g., via `searchItems` or `getItemAncestors`) and needs to understand their
     thematic context without issuing one request per item.
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Retrieve the Themes associated with a set of known Items, to ground
+      thematic context.
+    pairs-with: [resolveItemReference, getThemeHierarchy]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
 

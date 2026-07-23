@@ -33,6 +33,14 @@ get:
     The returned list is unordered and includes the root ItemType ID itself, making it
     ready to use directly in filter parameters.
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Enumerate all descendant ItemType IDs of a type, e.g. to expand a broad
+      type filter before search.
+    pairs-with: [resolveItemTypeReference, getBatchItemTypes]
+    role: structural
+
   security:
     - ApiKeyAuth: []
 

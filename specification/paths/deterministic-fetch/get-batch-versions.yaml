@@ -17,6 +17,14 @@ post:
 
     **Note:** This is distinct from `getBatchValidVersions`, which resolves Versions by Item IDs
     + time. Use `getBatchVersions` when you already have specific Version IDs to hydrate.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Hydrate several Versions by ID in one call (e.g. targets returned by
+      causal or search tools).
+    pairs-with: [getActionsBySource, getBatchTextUnits]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
 

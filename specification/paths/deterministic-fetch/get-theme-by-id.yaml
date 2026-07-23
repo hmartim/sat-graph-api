@@ -8,6 +8,12 @@ get:
     
     ### Discussion
     This is a core deterministic action for retrieving a specific node from the classification ontology. It is a direct, primary-key-based lookup.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: Hydrate one Theme by canonical ID.
+    pairs-with: [resolveThemeReference, getThemeHierarchy]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
 

@@ -11,6 +11,14 @@ get:
 
     ### DataSource Filtering
     Different data sources may maintain their own thematic taxonomies. The optional `dataSources` parameter allows clients to scope the results to specific data sources, which is particularly useful in federated or multi-tenant scenarios.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Discover the top of the thematic taxonomy when the theme vocabulary is
+      unknown.
+    pairs-with: [getThemeHierarchy, resolveThemeReference]
+    role: introspection
+
   security:
     - ApiKeyAuth: []
 

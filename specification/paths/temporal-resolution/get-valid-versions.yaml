@@ -87,6 +87,19 @@ get:
     Reproduces the exact legal knowledge available to a lawyer on 2015-06-01, essential for evaluating
     whether professional advice was reasonable based on information available at the time.
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      After anchoring an Item, to get the version(s) formally valid at a date.
+      Omit `at` for the current legal truth; may return multiple overlaid versions.
+    not-for: >-
+      Material applicability / effects such as vacatio legis (use getApplicableVersions);
+      full amendment history (use getItemVersions).
+    pairs-with: [resolveItemReference, getApplicableVersions, getBatchTextUnits]
+    caveats: >-
+      `observerTime` sets the temporal perspective: omit for the current truth about the past (including retroactive effects); set it for what was known at a past date.
+    role: temporal
+
   security:
     - ApiKeyAuth: []
 

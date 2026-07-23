@@ -4,6 +4,13 @@ get:
   summary: "Get a single Relation by its unique ID."
   operationId: "getRelation"
   description: "Retrieves the full `Relation` object given its unique identifier. Useful for inspecting the details of a specific link between entities."
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: Hydrate one Relation edge by ID.
+    not-for: Discovering relations by criteria — use getRelations.
+    pairs-with: [getRelations]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
   parameters:

@@ -10,6 +10,14 @@ get:
     ### Discussion
     This action is the conceptual counterpart to `resolveItemReference`. It performs entity linking for thematic nodes, allowing an agent to deterministically identify a theme mentioned by name before using it as a scope in other actions.
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Turn a thematic label into candidate Theme IDs before a thematic search.
+    not-for: Entity references — use resolveItemReference.
+    pairs-with: [getThemeHierarchy, searchTextUnits, searchItems]
+    role: anchor
+
   security:
     - ApiKeyAuth: []
 

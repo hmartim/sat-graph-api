@@ -21,6 +21,19 @@ post:
 
     The `aspects` parameter enables a truly holistic search, allowing a query to match a `Work`'s 'textual_metadata' just as easily as a `Version`'s 'canonical' text.
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Hybrid semantic+lexical search over provision text — the entry point for
+      thematic, open questions with no explicit reference.
+    not-for: >-
+      Enumerating all units of a container — use getItemHierarchy. A known
+      reference — use resolveItemReference.
+    pairs-with: [resolveThemeReference, getVersion, getItemAncestors]
+    caveats: >-
+      Results are scored candidates, not final legal evidence — verify version, structure, and applicability before citing.
+    role: search
+
   security:
     - ApiKeyAuth: []
 

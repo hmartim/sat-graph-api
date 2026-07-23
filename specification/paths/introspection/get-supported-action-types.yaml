@@ -8,6 +8,14 @@ get:
 
     ### Discussion
     This action provides the canonical list of values that can be used in the `actionTypes` filter of other functions like `getItemHistory`. It allows a client application to dynamically build filtering interfaces without hardcoding ontology-specific values.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Discover the canonical Action-type vocabulary before building a causal
+      query.
+    pairs-with: [queryActions, getItemHistory]
+    role: introspection
+
   security:
     - ApiKeyAuth: []
 

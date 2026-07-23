@@ -14,6 +14,14 @@ post:
 
     ### Discussion
     This action is essential for efficiently reconstructing the state of a complex hierarchical item at a specific point in time. It is designed to be used directly with the output of `enumerateItems` to avoid the "N+1 query problem" for temporal reconstruction.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Valid versions for several known Items at one date — prefer over repeated
+      getValidVersions when checking many items.
+    pairs-with: [getItemHierarchy, getBatchTextUnits]
+    role: temporal
+
   security:
     - ApiKeyAuth: []
 

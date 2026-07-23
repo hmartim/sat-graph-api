@@ -8,6 +8,17 @@ get:
     
     ### Discussion
     This is a core deterministic action for retrieving a specific structural node from the graph. It is a direct, primary-key-based lookup.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Hydrate one Item by canonical ID when a single object's fields (label,
+      typeId, parentId) are needed.
+    not-for: >-
+      Several known IDs — use getBatchItems. Turning a textual reference into an
+      ID — use resolveItemReference.
+    pairs-with: [getItemAncestors, getValidVersions]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
 

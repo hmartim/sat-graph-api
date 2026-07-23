@@ -16,6 +16,15 @@ get:
     ### Discussion
     This action is the primary tool for temporal contextualization. After `searchTextUnits` returns a relevant result, an agent should use `getVersionAncestors` (with the same `at` used in the search) to retrieve the structural path of that Version at that point in time. This allows the generation of richer, context-aware responses such as "Article 186 was located under Title I, Chapter I of the Civil Code (Lei nº 10.406/2002) as of 2010-01-01."
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Ancestor chain of a specific Version at a point in time —
+      version-sensitive contextualization.
+    not-for: The stable/current item tree — use getItemAncestors.
+    pairs-with: [getValidVersions]
+    role: structural
+
   security:
     - ApiKeyAuth: []
 

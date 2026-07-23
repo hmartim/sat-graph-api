@@ -15,6 +15,13 @@ get:
     probabilistic discovery tool, `getVersionTextUnits` is a deterministic fetch. It serves
     the critical use case where an agent has already identified a specific `Version`
     (e.g., via `getValidVersions`) and requires its complete textual content.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: Retrieve the text units of one Version, optionally by language.
+    not-for: Several versions at once — use getBatchTextUnits.
+    pairs-with: [getValidVersions]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
 

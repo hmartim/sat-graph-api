@@ -12,6 +12,16 @@ get:
     This endpoint is designed for efficient structural navigation without loading
     potentially large child arrays into every Item response. It is particularly useful
     for items with many children (e.g., articles with numerous paragraphs or incisos).
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Hydrated immediate children of an Item — one-level structural exploration.
+    not-for: >-
+      The whole subtree as IDs — use getItemHierarchy. Content search in a
+      scope — use searchTextUnits.
+    pairs-with: [resolveItemReference, getBatchValidVersions]
+    role: structural
+
   security:
     - ApiKeyAuth: []
 

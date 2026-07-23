@@ -17,6 +17,15 @@ get:
 
     This endpoint is designed for efficient structural navigation without loading potentially
     large child arrays into every Version response.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Immediate structural children of a specific Version — when the shape of
+      that version matters.
+    not-for: The current item tree — use getItemChildren.
+    pairs-with: [getValidVersions]
+    role: structural
+
   security:
     - ApiKeyAuth: []
 

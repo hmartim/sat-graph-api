@@ -8,6 +8,14 @@ get:
     
     ### Discussion
     This is a core deterministic action used for auditing and causal analysis. It allows an agent to inspect the exact event that caused a change in a legal norm's version history.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Hydrate one Action by ID when its causal detail is needed.
+    not-for: Several known IDs — use getBatchActions.
+    pairs-with: [getBatchVersions]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
 

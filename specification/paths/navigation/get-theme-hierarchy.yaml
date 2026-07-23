@@ -37,6 +37,14 @@ get:
     set includes all nodes reachable by following any path downward from the root Theme.
     This may result in larger sets than expected if the taxonomy has significant overlap.
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Enumerate all descendant Theme IDs of a broad theme before using them as
+      a search filter.
+    pairs-with: [resolveThemeReference, searchTextUnits, searchItems]
+    role: structural
+
   security:
     - ApiKeyAuth: []
 

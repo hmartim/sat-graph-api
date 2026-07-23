@@ -10,6 +10,16 @@ get:
 
     ### Discussion
     This action is the logical inverse of `traceCausality`. It traces forwards from a high-level cause to all of its granular effects, answering the critical question: "What did Law X do?".
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Forward causality: starting from a source Work (an amending act, a
+      complementary law), list the Actions it caused.
+    not-for: >-
+      Retrospective "what changed this provision" — use getItemHistory.
+    pairs-with: [resolveItemReference, getBatchVersions, getItemAncestors]
+    role: causal
+
   security:
     - ApiKeyAuth: []
 

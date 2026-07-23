@@ -30,6 +30,19 @@ get:
     - Auditing the complete lifecycle of an Item without traversing Actions
     - Efficiently retrieving only the versions valid during a specific period (e.g., a presidential term)
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      The full chronological version history of an Item (amendment-chain
+      reconstruction), optionally windowed by time.
+    not-for: >-
+      The single version valid at a date — use getValidVersions. The causing act
+      of each change — use getItemHistory.
+    pairs-with: [resolveItemReference, getBatchTextUnits]
+    caveats: >-
+      History spans interpretive versions (I-TV) overlaying statutory versions (S-TV), not just amendments — account for overlays.
+    role: temporal
+
   security:
     - ApiKeyAuth: []
 

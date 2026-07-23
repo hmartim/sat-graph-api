@@ -8,6 +8,14 @@ get:
 
     ### Discussion
     This action enables an agent or user interface to dynamically present language options to the user, ensuring that requests are only made for languages that the system actually supports.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Discover the language codes the corpus serves, before fixing a language
+      parameter.
+    pairs-with: [getVersionTextUnits, getBatchTextUnits]
+    role: introspection
+
   security:
     - ApiKeyAuth: []
 

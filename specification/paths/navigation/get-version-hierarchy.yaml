@@ -19,6 +19,13 @@ get:
 
     **Efficiency Note:** Returns only Version ID strings rather than full Version objects, making it ideal for hierarchical traversal workflows where IDs are subsequently used in batch operations.
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: Enumerate all descendant Version IDs within a Version's structure.
+    not-for: The stable item subtree — use getItemHierarchy.
+    pairs-with: [getValidVersions, getBatchVersions]
+    role: structural
+
   security:
     - ApiKeyAuth: []
 

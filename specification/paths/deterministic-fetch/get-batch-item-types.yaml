@@ -8,6 +8,12 @@ post:
 
     ### Discussion
     This is a fundamental utility action used to hydrate `parentIds`, `childrenIds`, or `allowedPartsIds` references found on an `ItemType` into full objects. It is the primary solution to avoid the "N+1 query problem," where a client would otherwise need to make one API call per ID when expanding the type taxonomy.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: Hydrate several ItemTypes by ID in one call.
+    pairs-with: [getItemTypeHierarchy, getRootItemTypes]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
 

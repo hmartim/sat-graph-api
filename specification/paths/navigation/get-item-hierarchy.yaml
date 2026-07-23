@@ -17,6 +17,18 @@ get:
     This action's purpose is **structural enumeration and navigation**, not search filtering. It is the correct tool for tasks like collecting all items in a subtree for further processing. For performing content-based searches within a scope, agents should pass the scope's ID directly to the search functions (`searchTextUnits`, `searchItems`), as this is significantly more performant.
 
     **Efficiency Note:** Returns only IDs (strings) rather than full Item objects, making it ideal for hierarchical traversal workflows where IDs are subsequently used in batch operations.
+
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Structural enumeration: collect all descendant Item IDs of a container
+      (mereological completeness) with a cheap ID-only payload.
+    not-for: >-
+      Content search within a scope (pass the scope ID to searchTextUnits/searchItems);
+      hydrated objects for a single level (use getItemChildren).
+    pairs-with: [resolveItemReference, getBatchItems, getBatchValidVersions]
+    role: structural
+
   security:
     - ApiKeyAuth: []
 

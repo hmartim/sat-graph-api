@@ -8,6 +8,14 @@ post:
 
     ### Discussion
     This action is essential for the "hydration" step of analytical queries. After an agent discovers a set of relevant `Action` IDs via discovery functions, this batch operation allows it to retrieve the full details of each action to build a complete and auditable report without the high performance cost of N+1 individual requests.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Hydrate several Actions by ID in one call (e.g. IDs returned by
+      getItemHistory or queryActions).
+    pairs-with: [getItemHistory, queryActions]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
 

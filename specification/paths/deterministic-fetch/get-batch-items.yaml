@@ -8,6 +8,14 @@ post:
 
     ### Discussion
     This is a fundamental utility action used after any discovery process to hydrate references into full objects. It is the primary solution to avoid the "N+1 query problem," where a client would otherwise need to make one API call per ID.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Hydrate several Items by canonical ID (or URN) in one call; prefer over
+      repeated getItem.
+    pairs-with: [getItemHierarchy, searchItems]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
 

@@ -4,6 +4,14 @@ get:
   summary: "Get a single Version by its unique ID."
   operationId: "getVersion"
   description: "Retrieves the full `Version` object given its unique identifier. This is the primary way to inspect the details of a specific temporal snapshot of an Item."
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Hydrate one Version by ID to inspect its validity interval or metadata.
+    not-for: Several known IDs — use getBatchVersions.
+    pairs-with: [getBatchTextUnits]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
   parameters:

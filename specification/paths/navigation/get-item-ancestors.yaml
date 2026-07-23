@@ -10,6 +10,15 @@ get:
 
     ### Discussion
     This action is the fundamental tool for contextualization. After a search identifies a relevant item, an agent should use `getItemAncestors` to retrieve its structural path. This allows the generation of richer, context-aware responses, significantly improving the quality and explainability of the final answer.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Contextualize an Item by its ancestor chain to the root (article →
+      chapter → title) — e.g. to build a citation breadcrumb.
+    not-for: Descendants — use getItemHierarchy or getItemChildren.
+    pairs-with: [resolveItemReference, getItem]
+    role: structural
+
   security:
     - ApiKeyAuth: [ ]
 

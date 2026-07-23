@@ -15,6 +15,19 @@ post:
 
     ### Discussion
     This action's purpose is **structural discovery**, not content retrieval. It is used to find the *item* that, at any point in its history, has dealt with a concept. This is fundamentally different from `searchTextUnits`, which finds the specific *text* that was valid at a specific point in time.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Hybrid search for stable Items tied to a concept or metadata pattern,
+      across version history — when you need entities to anchor on, not passages.
+    not-for: >-
+      Reading provision text — use searchTextUnits. Enumerating children of a
+      container — use getItemHierarchy or getItemChildren.
+    pairs-with: [resolveThemeReference, getBatchItems, getValidVersions]
+    caveats: >-
+      Returns scored candidate Items — anchoring hypotheses to verify, not final evidence.
+    role: search
+
   security:
     - ApiKeyAuth: []
 

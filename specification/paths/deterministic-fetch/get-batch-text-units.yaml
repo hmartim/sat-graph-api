@@ -10,6 +10,15 @@ post:
     versions, such as finding the exact point of a textual change within a long version history.
     It prevents the severe performance degradation that would result from iterating and calling
     getVersionTextUnits individually for each version.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Retrieve canonical text for several known Versions in one call — the
+      precise tool once version IDs are resolved.
+    not-for: Text of a single version by traversal — use getVersionTextUnits.
+    pairs-with: [getValidVersions, getItemVersions]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
   requestBody:

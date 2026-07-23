@@ -10,6 +10,17 @@ get:
     ### Discussion
     This action is the structural counterpart to `resolveThemeReference`. It performs entity linking for item type nodes, allowing an agent to deterministically identify an item type mentioned by name before using it as a filter in other actions like `searchItems`.
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Turn a structural-class name ("Article", "Paragraph") into a canonical
+      ItemType ID before applying a type filter.
+    not-for: >-
+      Entity references — use resolveItemReference. Theme labels —
+      use resolveThemeReference.
+    pairs-with: [searchItems, searchTextUnits, getItemTypeHierarchy]
+    role: anchor
+
   security:
     - ApiKeyAuth: []
 

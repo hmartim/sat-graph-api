@@ -52,6 +52,18 @@ get:
     - **`getItemVersions`**: returns every version ever created, with optional interval
       filtering, without point-in-time semantics.
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      The version(s) materially applicable (producing effects) at a date — for
+      vacatio legis, transitional regimes, staggered effect.
+    not-for: >-
+      Formal validity — use getValidVersions. Full history — use getItemVersions.
+    pairs-with: [resolveItemReference, getValidVersions, getBatchTextUnits]
+    caveats: >-
+      `observerTime` sets the temporal perspective: omit for current truth about the past; set it for what was known at a past date.
+    role: temporal
+
   security:
     - ApiKeyAuth: []
 

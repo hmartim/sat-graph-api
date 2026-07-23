@@ -21,6 +21,15 @@ get:
 
     **Root Versions:** If the Version has no structural parents (i.e., it is a root Work),
     an empty array is returned.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: The structural parent Versions of a specific Version.
+    not-for: The current item tree — use getItemAncestors.
+    pairs-with: [getValidVersions]
+    caveats: >-
+      Without `at`, may return structural parents across the whole history; pass `at` to reconstruct a single point in time.
+    role: structural
+
   security:
     - ApiKeyAuth: []
 

@@ -17,6 +17,12 @@ get:
     - Building type-aware editors and forms
     - Understanding the type system structure
 
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: Hydrate one ItemType (structural class) by ID.
+    pairs-with: [getItemTypeHierarchy]
+    role: hydration
+
   security:
     - ApiKeyAuth: []
 
