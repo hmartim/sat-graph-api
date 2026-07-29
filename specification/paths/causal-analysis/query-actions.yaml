@@ -41,7 +41,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/GetActionsRequest'
+          $ref: '../../openapi.yaml#/components/schemas/GetActionsRequest'
 
   responses:
     '200':
@@ -51,10 +51,10 @@ post:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/Action'
+              $ref: '../../openapi.yaml#/components/schemas/Action'
     '400':
-      $ref: '#/components/responses/BadRequest'
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'

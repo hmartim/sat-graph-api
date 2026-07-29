@@ -34,7 +34,7 @@ get:
       required: true
       description: "The unique identifier of the Version whose ancestors are to be retrieved."
       schema:
-        $ref: '#/components/schemas/ID'
+        $ref: '../../openapi.yaml#/components/schemas/ID'
     - name: at
       in: query
       required: false
@@ -56,12 +56,12 @@ get:
             type: array
             description: "An array of Version objects representing ancestors, ordered from root Version to immediate parent. Excludes the Version itself."
             items:
-              $ref: '#/components/schemas/Version'
+              $ref: '../../openapi.yaml#/components/schemas/Version'
     '400':
-      $ref: '#/components/responses/BadRequest'
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
     '404':
-      $ref: '#/components/responses/NotFound'
+      $ref: '../../openapi.yaml#/components/responses/NotFound'

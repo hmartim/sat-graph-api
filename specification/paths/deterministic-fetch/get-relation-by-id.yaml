@@ -19,17 +19,17 @@ get:
       required: true
       description: "The unique identifier of the Relation to retrieve."
       schema:
-        $ref: '#/components/schemas/ID'
+        $ref: '../../openapi.yaml#/components/schemas/ID'
   responses:
     '200':
       description: "Successfully retrieved the Relation object."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Relation'
+            $ref: '../../openapi.yaml#/components/schemas/Relation'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
     '404':
-      $ref: '#/components/responses/NotFound'
+      $ref: '../../openapi.yaml#/components/responses/NotFound'

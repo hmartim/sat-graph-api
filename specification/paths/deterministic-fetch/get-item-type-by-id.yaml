@@ -32,7 +32,7 @@ get:
       required: true
       description: "The unique ID of the ItemType to retrieve."
       schema:
-        $ref: '#/components/schemas/ID'
+        $ref: '../../openapi.yaml#/components/schemas/ID'
       example: "item-type:123456"
 
   responses:
@@ -41,12 +41,12 @@ get:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ItemType'
+            $ref: '../../openapi.yaml#/components/schemas/ItemType'
     '400':
-      $ref: '#/components/responses/BadRequest'
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
     '404':
-      $ref: '#/components/responses/NotFound'
+      $ref: '../../openapi.yaml#/components/responses/NotFound'

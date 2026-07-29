@@ -15,6 +15,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@apidevtools/swagger-parser": "^10.1.0",
     "js-yaml": "^4.1.0",
     "@apidevtools/swagger-cli": "^4.0.4"
   }

@@ -57,8 +57,10 @@ properties:
   type:
     type: string
     description: >-
-      The type of action. The enumerated values represent a baseline
-      set; a concrete implementation may extend this list.
+      The deployment's canonical Action-type value. Action ontologies are extensible
+      and may use atomic or composite values, so clients must discover supported
+      values through `getSupportedActionTypes` instead of validating against a
+      hard-coded enum.
 
       **Legislative Actions** create or modify statutory text:
       - `Amendment`: Modifies existing statutory text.
@@ -78,17 +80,7 @@ properties:
       **Hybrid Actions** bridge legislative and judicial domains:
       - `Legislative Override`: A legislative act specifically enacted to supersede
         a judicial interpretation.
-    enum:
-      - "Amendment"
-      - "Revocation"
-      - "Creation"
-      - "Repeal"
-      - "Interpretation"
-      - "Overruling"
-      - "Distinguishing"
-      - "Constitutional Mutation"
-      - "Legislative Override"
-    example: "Amendment"
+    example: "INSERTION"
   eventTime:
     type: string
     format: date-time

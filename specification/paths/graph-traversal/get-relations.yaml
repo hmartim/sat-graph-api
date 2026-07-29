@@ -26,7 +26,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/GetRelationsRequest'
+          $ref: '../../openapi.yaml#/components/schemas/GetRelationsRequest'
 
   responses:
     '200':
@@ -36,10 +36,10 @@ post:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/Relation'
+              $ref: '../../openapi.yaml#/components/schemas/Relation'
     '400':
-      $ref: '#/components/responses/BadRequest'
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'

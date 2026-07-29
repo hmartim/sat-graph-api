@@ -23,7 +23,7 @@ get:
     - ApiKeyAuth: []
 
   parameters:
-    - $ref: '#/components/parameters/DataSourcesParameter'
+    - $ref: '../../openapi.yaml#/components/parameters/DataSourcesParameter'
 
   responses:
     '200':

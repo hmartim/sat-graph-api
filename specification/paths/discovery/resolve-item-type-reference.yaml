@@ -44,7 +44,7 @@ get:
         default: 3
         minimum: 1
 
-    - $ref: '#/components/parameters/DataSourcesParameter'
+    - $ref: '../../openapi.yaml#/components/parameters/DataSourcesParameter'
 
   responses:
     '200':
@@ -54,10 +54,10 @@ get:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/ResolvedItemTypeCandidate'
+              $ref: '../../openapi.yaml#/components/schemas/ResolvedItemTypeCandidate'
     '400':
-      $ref: '#/components/responses/BadRequest'
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'

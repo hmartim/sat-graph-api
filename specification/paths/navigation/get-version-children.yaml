@@ -35,7 +35,7 @@ get:
       required: true
       description: "The unique identifier of the Version whose children are to be retrieved."
       schema:
-        $ref: '#/components/schemas/ID'
+        $ref: '../../openapi.yaml#/components/schemas/ID'
 
   responses:
     '200':
@@ -46,8 +46,8 @@ get:
             type: array
             description: "An array of Version objects representing the immediate structural children."
             items:
-              $ref: '#/components/schemas/Version'
-    '400': { $ref: '#/components/responses/BadRequest' }
-    '401': { $ref: '#/components/responses/Unauthorized' }
-    '403': { $ref: '#/components/responses/Forbidden' }
-    '404': { $ref: '#/components/responses/NotFound' }
+              $ref: '../../openapi.yaml#/components/schemas/Version'
+    '400': { $ref: '../../openapi.yaml#/components/responses/BadRequest' }
+    '401': { $ref: '../../openapi.yaml#/components/responses/Unauthorized' }
+    '403': { $ref: '../../openapi.yaml#/components/responses/Forbidden' }
+    '404': { $ref: '../../openapi.yaml#/components/responses/NotFound' }

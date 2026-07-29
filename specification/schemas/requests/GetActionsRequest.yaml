@@ -7,22 +7,39 @@ properties:
       $ref: '../core/ID.yaml'
     description: "Optional. A list of Item IDs. Returns actions that affected any of these items."
 
+  sourceVersionIds:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: "Optional. A list of source Version IDs. Returns actions authorized by any of these versions."
+
   producesVersionIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: "Optional. A list of Version IDs. Returns actions that produced any of these versions."
 
+  terminatesVersionIds:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    description: "Optional. A list of Version IDs. Returns actions that terminated any of these versions."
+
   actionTypes:
     type: array
     items:
       type: string
-      enum:
-        - Amendment
-        - Revocation
-        - Creation
-        - Repeal
-    description: "Optional. Filters actions to only those of the specified types."
+    description: "Optional. Filters by deployment-defined values returned by getSupportedActionTypes."
+
+  startTime:
+    type: string
+    format: date-time
+    description: "Optional. Includes actions with eventTime greater than or equal to this instant."
+
+  endTime:
+    type: string
+    format: date-time
+    description: "Optional. Includes actions with eventTime less than or equal to this instant."
 
   granularity:
     type: string
@@ -51,3 +68,10 @@ properties:
   dataSources:
     $ref: '../common/DataSourcesSchema.yaml'
     description: "Optional. Restricts results to specified data sources."
+
+  limit:
+    type: integer
+    minimum: 1
+    maximum: 1000
+    default: 1000
+    description: "Maximum number of Actions returned."

@@ -48,12 +48,11 @@ get:
     - name: actionTypes
       in: query
       required: false
-      description: "Optional. Filters for specific types of actions (e.g., 'Amendment', 'Revocation')."
+      description: "Optional. Filters by deployment-defined values returned by getSupportedActionTypes."
       schema:
         type: array
         items:
           type: string
-          enum: [ "Amendment", "Revocation", "Creation", "Repeal" ]
     - name: granularity
       in: query
       required: false

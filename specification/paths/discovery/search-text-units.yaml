@@ -43,7 +43,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/SearchTextUnitsRequest'
+          $ref: '../../openapi.yaml#/components/schemas/SearchTextUnitsRequest'
 
   responses:
     '200':
@@ -53,10 +53,10 @@ post:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/SearchedTextUnitResult'
+              $ref: '../../openapi.yaml#/components/schemas/SearchedTextUnitResult'
     '400':
-      $ref: '#/components/responses/BadRequest'
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'

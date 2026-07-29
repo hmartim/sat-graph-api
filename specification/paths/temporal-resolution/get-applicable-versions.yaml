@@ -73,7 +73,7 @@ get:
       required: true
       description: "The canonical ID of the Item whose applicable versions are being requested."
       schema:
-        $ref: '#/components/schemas/ID'
+        $ref: '../../openapi.yaml#/components/schemas/ID'
     - name: at
       in: query
       required: false
@@ -105,16 +105,16 @@ get:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/Version'
+              $ref: '../../openapi.yaml#/components/schemas/Version'
     '404':
       description: "Not Found - Either the Item with the given ID does not exist, or it existed but had no version that was applicable at the specified time."
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '../../openapi.yaml#/components/schemas/ErrorResponse'
     '400':
-      $ref: '#/components/responses/BadRequest'
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'

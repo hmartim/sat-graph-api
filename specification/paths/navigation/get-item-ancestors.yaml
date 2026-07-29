@@ -28,7 +28,7 @@ get:
       required: true
       description: "The canonical ID of the Item whose ancestors are to be retrieved."
       schema:
-        $ref: '#/components/schemas/ID'
+        $ref: '../../openapi.yaml#/components/schemas/ID'
 
   responses:
     '200':
@@ -39,12 +39,12 @@ get:
             type: array
             description: "An array of Item objects representing ancestors, ordered from root Work to immediate parent. Excludes the item itself."
             items:
-              $ref: '#/components/schemas/Item'
+              $ref: '../../openapi.yaml#/components/schemas/Item'
     '400':
-      $ref: '#/components/responses/BadRequest'
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
     '404':
-      $ref: '#/components/responses/NotFound'
+      $ref: '../../openapi.yaml#/components/responses/NotFound'

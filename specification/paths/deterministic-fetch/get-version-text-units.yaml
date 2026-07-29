@@ -31,7 +31,7 @@ get:
       required: true
       description: "The unique identifier of the Version whose TextUnits are requested."
       schema:
-        $ref: '#/components/schemas/ID'
+        $ref: '../../openapi.yaml#/components/schemas/ID'
     - name: language
       in: query
       required: false
@@ -63,10 +63,10 @@ get:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/TextUnit'
+              $ref: '../../openapi.yaml#/components/schemas/TextUnit'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
     '404':
-      $ref: '#/components/responses/NotFound'
+      $ref: '../../openapi.yaml#/components/responses/NotFound'

@@ -31,7 +31,7 @@ get:
       required: true
       description: "The unique identifier of the Item whose children are to be retrieved."
       schema:
-        $ref: '#/components/schemas/ID'
+        $ref: '../../openapi.yaml#/components/schemas/ID'
 
   responses:
     '200':
@@ -42,8 +42,8 @@ get:
             type: array
             description: "An array of Item objects representing the immediate children."
             items:
-              $ref: '#/components/schemas/Item'
-    '400': { $ref: '#/components/responses/BadRequest' }
-    '401': { $ref: '#/components/responses/Unauthorized' }
-    '403': { $ref: '#/components/responses/Forbidden' }
-    '404': { $ref: '#/components/responses/NotFound' }
+              $ref: '../../openapi.yaml#/components/schemas/Item'
+    '400': { $ref: '../../openapi.yaml#/components/responses/BadRequest' }
+    '401': { $ref: '../../openapi.yaml#/components/responses/Unauthorized' }
+    '403': { $ref: '../../openapi.yaml#/components/responses/Forbidden' }
+    '404': { $ref: '../../openapi.yaml#/components/responses/NotFound' }

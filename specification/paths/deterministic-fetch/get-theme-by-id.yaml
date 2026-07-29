@@ -23,7 +23,7 @@ get:
       required: true
       description: "The canonical ID of the Theme to retrieve."
       schema:
-        $ref: '#/components/schemas/ID'
+        $ref: '../../openapi.yaml#/components/schemas/ID'
 
   responses:
     '200':
@@ -31,11 +31,11 @@ get:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Theme'
+            $ref: '../../openapi.yaml#/components/schemas/Theme'
 
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
     '404':
-      $ref: '#/components/responses/NotFound'
+      $ref: '../../openapi.yaml#/components/responses/NotFound'

@@ -18,6 +18,10 @@ get:
     not-for: >-
       Retrospective "what changed this provision" — use getItemHistory.
     pairs-with: [resolveItemReference, getBatchVersions, getItemAncestors]
+    caveats: >-
+      A source Work may cause hundreds of atomic Actions. For a bounded question,
+      scope by targetRootItemId, targetItemTypeIds, actionTypes, and limit before
+      hydrating produced or terminated Versions.
     role: causal
 
   security:
@@ -33,13 +37,11 @@ get:
     - name: actionTypes
       in: query
       required: false
-      description: "Optional. Filters for specific types of actions."
+      description: "Optional. Filters by deployment-defined values returned by getSupportedActionTypes."
       schema:
         type: array
         items:
           type: string
-          # Este enum deve ser mantido em sincronia com Action.yaml
-          enum: [ "Amendment", "Revocation", "Creation", "Repeal" ]
     - name: granularity
       in: query
       required: false
@@ -54,6 +56,33 @@ get:
         type: string
         enum: [ "macro", "micro" ]
       example: "micro"
+    - name: targetRootItemId
+      in: query
+      required: false
+      description: >-
+        Optional. Keeps only Actions that produce or terminate a Version in the
+        specified target Work/subtree.
+      schema:
+        $ref: '../../schemas/core/ID.yaml'
+    - name: targetItemTypeIds
+      in: query
+      required: false
+      description: >-
+        Optional. Keeps only Actions whose produced or terminated target belongs
+        to one of these structural Item types.
+      schema:
+        type: array
+        items:
+          $ref: '../../schemas/core/ID.yaml'
+    - name: limit
+      in: query
+      required: false
+      description: "Maximum number of Actions returned."
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 1000
     - $ref: '../../openapi.yaml#/components/parameters/DataSourcesParameter'
 
   responses:

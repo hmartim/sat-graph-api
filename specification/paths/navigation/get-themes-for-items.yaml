@@ -40,7 +40,7 @@ post:
             itemIds:
               type: array
               items:
-                $ref: '#/components/schemas/ID'
+                $ref: '../../openapi.yaml#/components/schemas/ID'
               minItems: 1
               uniqueItems: true
               description: "The list of Item IDs whose associated Themes are requested."
@@ -56,10 +56,10 @@ post:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/Theme'
+              $ref: '../../openapi.yaml#/components/schemas/Theme'
     '400':
-      $ref: '#/components/responses/BadRequest'
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'

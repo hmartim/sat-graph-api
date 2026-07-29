@@ -4,7 +4,7 @@ get:
   summary: "Gets the list of all supported action types."
   operationId: "getSupportedActionTypes"
   description: |
-    Returns a list of all legislative action types (e.g., `Amendment`, `Revocation`) recognized by the graph's ontology.
+    Returns the Action-type values recognized by the deployment's graph ontology.
 
     ### Discussion
     This action provides the canonical list of values that can be used in the `actionTypes` filter of other functions like `getItemHistory`. It allows a client application to dynamically build filtering interfaces without hardcoding ontology-specific values.
@@ -28,10 +28,8 @@ get:
             type: array
             items:
               type: string
-              # Adicionando um pattern para garantir a consistência do formato.
-              pattern: '^[A-Z][a-zA-Z]*$'
-              example: "Amendment"
-            example: ["Amendment", "Revocation", "Creation", "Repeal"]
+              example: "INSERTION"
+            example: ["INSERTION", "TEXT_CHANGE", "REVOCATION"]
     '401':
       $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':

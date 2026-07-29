@@ -39,7 +39,7 @@ get:
       required: true
       description: "The unique identifier of the Version whose parents are to be retrieved."
       schema:
-        $ref: '#/components/schemas/ID'
+        $ref: '../../openapi.yaml#/components/schemas/ID'
     - name: at
       in: query
       required: false
@@ -61,9 +61,9 @@ get:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/Version'
+              $ref: '../../openapi.yaml#/components/schemas/Version'
             description: "All parent Version objects that structurally contain this Version. Empty if this is a root Version."
-    '400': { $ref: '#/components/responses/BadRequest' }
-    '401': { $ref: '#/components/responses/Unauthorized' }
-    '403': { $ref: '#/components/responses/Forbidden' }
-    '404': { $ref: '#/components/responses/NotFound' }
+    '400': { $ref: '../../openapi.yaml#/components/responses/BadRequest' }
+    '401': { $ref: '../../openapi.yaml#/components/responses/Unauthorized' }
+    '403': { $ref: '../../openapi.yaml#/components/responses/Forbidden' }
+    '404': { $ref: '../../openapi.yaml#/components/responses/NotFound' }

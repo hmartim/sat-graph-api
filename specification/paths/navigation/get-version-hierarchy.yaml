@@ -35,7 +35,7 @@ get:
       required: true
       description: The unique ID of the Version whose descendants should be retrieved.
       schema:
-        $ref: '#/components/schemas/ID'
+        $ref: '../../openapi.yaml#/components/schemas/ID'
     - name: depth
       in: query
       required: false
@@ -53,12 +53,12 @@ get:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/ID'
+              $ref: '../../openapi.yaml#/components/schemas/ID'
     '400':
-      $ref: '#/components/responses/BadRequest'
+      $ref: '../../openapi.yaml#/components/responses/BadRequest'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
-      $ref: '#/components/responses/Forbidden'
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
     '404':
-      $ref: '#/components/responses/NotFound'
+      $ref: '../../openapi.yaml#/components/responses/NotFound'

@@ -37,7 +37,7 @@ post:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/SearchItemsRequest'
+          $ref: '../../openapi.yaml#/components/schemas/SearchItemsRequest'
 
   responses:
     '200':
@@ -47,7 +47,7 @@ post:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/SearchedItemResult'
-    '400': { $ref: '#/components/responses/BadRequest' }
-    '401': { $ref: '#/components/responses/Unauthorized' }
-    '403': { $ref: '#/components/responses/Forbidden' }
+              $ref: '../../openapi.yaml#/components/schemas/SearchedItemResult'
+    '400': { $ref: '../../openapi.yaml#/components/responses/BadRequest' }
+    '401': { $ref: '../../openapi.yaml#/components/responses/Unauthorized' }
+    '403': { $ref: '../../openapi.yaml#/components/responses/Forbidden' }
