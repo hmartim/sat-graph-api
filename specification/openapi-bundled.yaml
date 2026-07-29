@@ -3523,12 +3523,27 @@ paths:
 
         ### Filtering Logic
 
-        - **itemIds**: If provided, returns actions that affected any of the specified items
-        - **producesVersionIds**: If provided, returns actions that produced any of the specified versions
-        - **actionTypes**: If provided, filters to only actions of the specified types
-        - **timeInterval**: Filters actions by effective date. If only `startTime` is provided, returns all actions from that date onwards. If only `endTime` is provided, returns all actions up to that date.
+        The identity fields form one alternative-anchor group:
 
-        When multiple filter types are provided, results are the **union** of all matching actions (OR logic).
+        - **itemIds**: matches Actions that produced or terminated a Version of any specified Item.
+        - **sourceVersionIds**: matches Actions authorized by any specified source Version.
+        - **producesVersionIds**: matches Actions that produced any specified Version.
+        - **terminatesVersionIds**: matches Actions that terminated any specified Version.
+
+        An Action that matches **any** populated identity field is inside the identity
+        scope (`itemIds OR sourceVersionIds OR producesVersionIds OR
+        terminatesVersionIds`). If no identity field is populated, the identity scope
+        is the whole corpus.
+
+        The remaining filters narrow that scope conjunctively:
+
+        - **actionTypes**: keeps only Actions of any specified type.
+        - **startTime/endTime** (or **timeInterval**): keep only Actions whose
+          `eventTime` falls within the requested bounds.
+        - **granularity**: keeps only the requested macro- or micro-event level.
+
+        Therefore, different filter families combine with **AND**:
+        `(identity scope) AND actionTypes AND time bounds AND granularity`.
 
         ### Discussion
 
