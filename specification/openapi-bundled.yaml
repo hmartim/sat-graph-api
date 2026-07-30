@@ -1073,12 +1073,6 @@ components:
         dataSources:
           $ref: '#/components/schemas/DataSourcesSchema'
           description: Optional. Restricts results to specified data sources.
-        limit:
-          type: integer
-          minimum: 1
-          maximum: 1000
-          default: 1000
-          description: Maximum number of Actions returned.
     GetBatchActionsRequest:
       type: object
       description: Specifies the criteria for retrieving a batch of Action objects.
@@ -3435,7 +3429,7 @@ paths:
           - resolveItemReference
           - getBatchVersions
           - getItemAncestors
-        caveats: A source Work may cause hundreds of atomic Actions. For a bounded question, scope by targetRootItemId, targetItemTypeIds, actionTypes, and limit before hydrating produced or terminated Versions.
+        caveats: A source Work may cause hundreds of atomic Actions. For a bounded question, scope by targetRootItemId, targetItemTypeIds, and actionTypes before hydrating produced or terminated Versions.
         role: causal
       security:
         - ApiKeyAuth: []
@@ -3483,15 +3477,6 @@ paths:
             type: array
             items:
               $ref: '#/components/schemas/ID'
-        - name: limit
-          in: query
-          required: false
-          description: Maximum number of Actions returned.
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 1000
-            default: 1000
         - $ref: '#/components/parameters/DataSourcesParameter'
       responses:
         '200':

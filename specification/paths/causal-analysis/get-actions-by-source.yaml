@@ -20,7 +20,7 @@ get:
     pairs-with: [resolveItemReference, getBatchVersions, getItemAncestors]
     caveats: >-
       A source Work may cause hundreds of atomic Actions. For a bounded question,
-      scope by targetRootItemId, targetItemTypeIds, actionTypes, and limit before
+      scope by targetRootItemId, targetItemTypeIds, and actionTypes before
       hydrating produced or terminated Versions.
     role: causal
 
@@ -74,15 +74,6 @@ get:
         type: array
         items:
           $ref: '../../schemas/core/ID.yaml'
-    - name: limit
-      in: query
-      required: false
-      description: "Maximum number of Actions returned."
-      schema:
-        type: integer
-        minimum: 1
-        maximum: 1000
-        default: 1000
     - $ref: '../../openapi.yaml#/components/parameters/DataSourcesParameter'
 
   responses:
