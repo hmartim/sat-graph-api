@@ -2,7 +2,7 @@ openapi: 3.0.3
 
 info:
   title: "SAT-Graph API"
-  version: "1.0.0"
+  version: "2.0.0"
   description: |
     This is the official OpenAPI 3.x specification for the **SAT-Graph API**,
     a formal, auditable interface for querying the Structure-Aware Temporal Graph (SAT-Graph).

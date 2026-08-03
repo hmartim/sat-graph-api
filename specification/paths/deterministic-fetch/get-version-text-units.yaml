@@ -1,12 +1,12 @@
 get:
   tags:
     - "Deterministic Fetch Actions"
-  summary: "Gets all TextUnits for a Version, optionally filtered by language."
+  summary: "Gets all TextUnits for a Version, optionally filtered by language and aspects."
   operationId: "getVersionTextUnits"
   description: |
     Deterministically retrieves all `TextUnit` objects associated with a single, known `Version`,
-    optionally filtered by language. Returns all aspects (canonical, summary, description, etc.)
-    available for that Version.
+    optionally filtered by language and one or more textual aspects. If `aspects` is omitted,
+    returns all aspects (canonical, summary, description, etc.) available for that Version.
 
     This is a direct-access, primary-key-based lookup, not a search operation.
 
@@ -17,7 +17,7 @@ get:
     (e.g., via `getValidVersions`) and requires its complete textual content.
   x-sat-graph-agent:
     version: 1
-    when-to-use: Retrieve the text units of one Version, optionally by language.
+    when-to-use: Retrieve the text units of one Version, optionally by language and aspects.
     not-for: Several versions at once — use getBatchTextUnits.
     pairs-with: [getValidVersions]
     role: hydration
@@ -42,18 +42,21 @@ get:
         type: string
         pattern: "^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]+)*$"
       example: "pt-BR"
-    - name: aspect
+    - name: aspects
       in: query
       required: false
       description: |
-        Optional. Filters results to TextUnits of a specific semantic role relative to the Version.
+        Optional. Filters results to TextUnits whose semantic role is one of the supplied values.
         Common values include `canonical` (the authoritative legal text), `summary` (a condensed
         description), `indexical` (popular names or aliases), and `textual_metadata` (linearized
         structured attributes). If omitted, TextUnits of all aspects are returned.
       schema:
-        type: string
-        enum: [ "canonical", "summary", "indexical", "textual_metadata" ]
-      example: "canonical"
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items:
+          type: string
+      example: [ "canonical", "summary" ]
 
   responses:
     '200':
