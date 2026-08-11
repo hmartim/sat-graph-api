@@ -103,10 +103,14 @@ properties:
     type: array
     items:
       $ref: '../core/ID.yaml'
-    minItems: 1
     description: >-
       The IDs of the specific 'Version(s)' of the legal text that **authorize**
       or **command** this single change. This is the source of the causal link.
+
+      This array may be empty when a deployment has an action whose source
+      provenance is unavailable or has not yet been linked. An empty array
+      means "source provenance unavailable"; it is not evidence that the
+      action had no legal or documentary source.
 
       Multiple sources capture convergent rationale from multiple concurring opinions
       or related judgment components that jointly establish the binding reasoning
