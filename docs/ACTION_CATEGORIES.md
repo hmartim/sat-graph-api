@@ -117,20 +117,26 @@ Each step builds upon the previous, creating a transparent, auditable chain.
 
 #### Item (Atemporal) Navigation
 
+Item-level navigation traverses the canonical atemporal hierarchy adopted by the implementation. It does not filter Items by whether they currently have a valid or applicable Version. Historical structural position is represented through Version-level relationships.
+
 | Primitive | Input | Output | Use Case |
 |-----------|-------|--------|----------|
 | `getItemChildren` | Item ID | Array of child Item objects | Get immediate structural children of an item |
 | `getItemAncestors` | Item ID | Ordered array of ancestor Items | Get hierarchical path: Article → Chapter → Title → Work |
-| `getItemHierarchy` | Item ID + `depth?` | Array of descendant Item IDs | Get all article IDs in a chapter for batch processing |
+| `getItemHierarchy` | Item ID + `depth?` | Array of descendant Item IDs | Enumerate a canonical Item subtree for batch processing |
 
 #### Version (Temporal) Navigation
 
+A Version represents a specific stored structural state. Downward Version navigation traverses the child/descendant relationships that compose that Version state and does not perform temporal resolution. Upward navigation may require `at` because a Version can be reused by different parent Versions over time.
+
 | Primitive | Input | Output | Use Case |
 |-----------|-------|--------|----------|
-| `getVersionChildren` | Version ID | Array of child Version objects | Get immediate structural child Versions |
-| `getVersionParents` | Version ID | Array of parent Version objects | Get parent Versions (multiple possible due to structural sharing) |
-| `getVersionAncestors` | Version ID + `at?` | Ordered array of ancestor Versions | Get breadcrumb of a provision as it existed at a point in time |
-| `getVersionHierarchy` | Version ID + `at?` | HierarchyResponse | Get full temporal subtree at a point in time |
+| `getVersionChildren` | Version ID | Array of child Version objects | Get immediate structural children composing a Version state |
+| `getVersionParents` | Version ID + `at?` | Array of parent Version objects | Get structural parent Versions; optionally restrict to a point in time |
+| `getVersionAncestors` | Version ID + `at?` | Ordered array of ancestor Versions | Get the contextual ancestor path of a Version at a point in time |
+| `getVersionHierarchy` | Version ID + `depth?` | Array of descendant Version IDs | Enumerate the stored structural subtree of a specific Version state |
+
+**Design Note:** Version-level structural navigation does not independently evaluate descendant validity or applicability intervals. Use temporal resolution or Version retrieval primitives when the temporal status of individual descendant Versions is required.
 
 #### Taxonomy Navigation
 
@@ -140,7 +146,7 @@ Each step builds upon the previous, creating a transparent, auditable chain.
 | `getThemeHierarchy` | Theme ID | HierarchyResponse | Get all sub-themes of "Public Law" for thematic scoping |
 | `getThemesForItems` | Array of Item IDs | Array of Themes | Map retrieved Items to their associated thematic categories |
 
-**Design Note:** `getItemHierarchy` and taxonomy hierarchy primitives return IDs (lightweight) rather than full objects for deep traversal efficiency. Use batch fetch operations when full objects are needed.
+**Design Note:** `getItemHierarchy`, `getVersionHierarchy`, and taxonomy hierarchy primitives return IDs (lightweight) rather than full objects for deep traversal efficiency. Use batch fetch operations when full objects are needed.
 
 ---
 
