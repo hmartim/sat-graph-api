@@ -2,7 +2,9 @@ type: object
 description: |
   The request body for the searchTextUnits operation.
 
-  This endpoint performs **semantic and lexical discovery** within a defined scope. For deterministic fetching of TextUnits by specific Version IDs, use `getBatchTextUnits` instead.
+  This endpoint performs **semantic and lexical discovery** within a defined scope. All search strategies, including `lexicalOnly`, are ranked discovery strategies and do not guarantee exhaustive enumeration of all matching TextUnits. For deterministic fetching of TextUnits by specific Version IDs, use `getBatchTextUnits` instead.
+
+  For exhaustive inspection of a known Version scope, explicitly enumerate that scope, retrieve its TextUnits with `getBatchTextUnits`, and evaluate the desired criterion over the complete retrieved set.
 
   **Scoping:**
   - Use `itemIds` and/or `themeIds` to define the structural or thematic scope
@@ -135,7 +137,8 @@ properties:
     format: int32
     default: 10
     minimum: 1
-    description: "The maximum number of results to return."
+    description: |
+      The maximum number of ranked results to return. Increasing `topK` increases result coverage but does not convert this operation into exhaustive enumeration and does not guarantee that all lexical matches are returned.
   dataSources:
     $ref: '../common/DataSourcesSchema.yaml'
     description: "Optional. Scopes the search to a specific list of granted data sources."
