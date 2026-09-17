@@ -1,30 +1,34 @@
 type: object
+deprecated: true
 description: |
-  Specifies the scope and filters for enumerating Item objects.
+  **Deprecated.** This request schema belonged to an earlier multi-scope Item hierarchy operation and is retained for compatibility only. It is not used by the current hierarchy endpoint.
 
-  Filters are applied after scope resolution (itemIds/themeIds/depth).
+  Structural Item enumeration is performed by `GET /items/{itemId}/hierarchy`, which accepts a single Item root and an optional `depth` parameter. Multiple roots can be traversed through independent calls to that endpoint.
+
+  This schema may be removed in a future major version.
 properties:
   itemIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
-    description: "Optional. A list of 'Item' IDs to define a structural scope. The function will return these items and/or their descendants."
+    description: "Legacy. A list of Item IDs that defined structural scopes for the former multi-scope hierarchy operation."
   themeIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
-    description: "Optional. A list of 'Theme' IDs to define a thematic scope. The function will return all member items of these themes."
+    description: "Legacy. A list of Theme IDs that defined thematic scopes for the former multi-scope hierarchy operation."
   depth:
     type: integer
     description: >
-      Controls traversal depth for 'itemIds' scopes. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively. This parameter is ignored for 'themeIds' scopes.
+      Legacy. Controlled traversal depth for Item-based scopes. The current `GET /items/{itemId}/hierarchy` endpoint exposes `depth` directly as a query parameter.
     default: -1
   itemTypeIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: >
-      Optional. Filter results to only items of the specified types (references to ItemType entities).
+      Legacy. Filtered the results of the former multi-scope hierarchy operation by ItemType.
     example: ["item-type:article", "item-type:paragraph"]
   dataSources:
     $ref: '../common/DataSourcesSchema.yaml'
+    description: "Legacy. Explicit data-source scoping for the former multi-scope hierarchy operation."
