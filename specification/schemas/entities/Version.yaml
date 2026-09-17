@@ -16,15 +16,20 @@
 # correct temporal semantics:
 # - A Version can be reused by multiple parent Versions over time (e.g., an
 #   unchanged paragraph may be part of 100+ brazilian federal Constitution amendment versions)
-# - GET /versions/{versionId}/parent?at={time} returns the contextually
-#   correct parent for a specific point in time
+# - GET /versions/{versionId}/parents?at={time} returns the contextually
+#   correct parent(s) for a specific point in time
 # - GET /versions/{versionId}/children returns immediate structural children
 #
 type: object
 description: >
   Represents a specific, time-bound version of an Item (a TV/CTV). It captures
-  the semantic state and structural position of an item at a specific point in time,
-  but is language-agnostic and contains no direct textual content.
+  the semantic state and a specific structural state of an Item, but is
+  language-agnostic and contains no direct textual content. The structural
+  children and descendants associated with this Version are the Versions that
+  compose this stored structural state; Version-level navigation traverses
+  those relationships deterministically and does not itself perform temporal
+  resolution. Temporal resolution is handled separately by primitives such as
+  getValidVersions and getApplicableVersions.
 required:
   - id
   - itemId
