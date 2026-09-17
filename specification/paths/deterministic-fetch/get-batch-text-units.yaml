@@ -16,6 +16,11 @@ post:
     batch size. If a request exceeds an implementation-specific limit, the operation MUST fail
     explicitly; it MUST NOT silently truncate the requested Version set or return a partial batch
     as if it were complete.
+
+    When consumers inspect or apply local lexical criteria to returned `content`, they should
+    account for the implementation-specific materialization conventions of the requested aspects.
+    Segmentation, normalization, contextualization, generation, and related conventions are not
+    prescribed by the SAT-Graph API and should be documented by the implementation.
   x-sat-graph-agent:
     version: 1
     when-to-use: >-
@@ -25,7 +30,9 @@ post:
     pairs-with: [getValidVersions, getItemVersions, getVersionHierarchy]
     caveats: >-
       Implementations may impose batch-size limits, but requests exceeding such
-      limits must fail explicitly and must never be silently truncated.
+      limits must fail explicitly and must never be silently truncated. Interpretation
+      of returned content must follow the implementation's documented materialization
+      conventions for the requested aspects.
     role: hydration
 
   security:
