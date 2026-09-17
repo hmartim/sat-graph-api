@@ -6,6 +6,8 @@ post:
   description: |
     Performs a hybrid search to discover `TextUnit` nodes by combining semantic, lexical, and structured criteria, returning a ranked list of the most relevant results. This is the primary, optimized entry point for all standard RAG queries.
 
+    All search strategies exposed through this operation, including `lexicalOnly`, are ranked discovery strategies. This operation does not guarantee exhaustive enumeration of all lexical matches.
+
     ### Scoping
     Define the search scope using:
     - `itemIds` and/or `itemUrns` for structural boundaries (hierarchical traversal — all descendants of the provided items are included; prefer `itemUrns` for LEX URN implementations)
@@ -34,8 +36,10 @@ post:
     - Supplying `temporalPredicate` without `at` is invalid and returns HTTP 400.
     - This operation uses the graph's current legal truth. Transaction-time projection via `observerTime` is not supported by ranked TextUnit search.
 
-    ### Deterministic Retrieval
+    ### Deterministic Retrieval and Exhaustive Inspection
     **Important:** `versionIds` scopes a ranked search; it does not make the search deterministic. If you already have specific Version IDs and want deterministic retrieval rather than ranking, use `getBatchTextUnits` instead. That endpoint is optimized for bulk retrieval without search overhead.
+
+    For exhaustive inspection of a known Version scope, enumerate that scope explicitly (for example with `getVersionHierarchy`), retrieve the corresponding TextUnits with `getBatchTextUnits`, and evaluate the desired criterion over the complete retrieved set. Exhaustiveness comes from explicit control of the admissible universe, not from increasing `topK` or selecting `lexicalOnly`.
 
     ### Filtering and Aspects
     Additional optional filters like `itemTypeIds` can further narrow results to specific structural components, enabling use cases such as searching only within articles or specific item hierarchies.
@@ -48,14 +52,17 @@ post:
       Hybrid semantic+lexical search over TextUnits, including ranked search
       within an explicit Item, Theme, or Version scope.
     not-for: >-
-      Enumerating all units of a container — use getItemHierarchy/getVersionHierarchy.
-      Deterministic retrieval of known Versions — use getBatchTextUnits.
+      Exhaustive enumeration of lexical matches or all TextUnits in a known scope —
+      enumerate the scope and use getBatchTextUnits. Deterministic retrieval of
+      known Versions — use getBatchTextUnits.
     pairs-with: [resolveThemeReference, getVersionHierarchy, getBatchTextUnits, getItemAncestors]
     caveats: >-
       Results are scored candidates, not final legal evidence. `versionIds` defines
-      an exact Version scope but does not make ranking deterministic. If temporal
-      filtering is required, supply `at`; `temporalPredicate` without `at` is invalid.
-      Ranked search uses current legal truth and does not expose `observerTime`.
+      an exact Version scope but does not make ranking deterministic. `lexicalOnly`
+      selects lexical retrieval/ranking and does not guarantee exhaustive coverage.
+      If temporal filtering is required, supply `at`; `temporalPredicate` without
+      `at` is invalid. Ranked search uses current legal truth and does not expose
+      `observerTime`.
     role: search
 
   security:
