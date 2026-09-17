@@ -88,10 +88,12 @@ properties:
     type: string
     minLength: 1
     description: >-
-      The raw textual content of this unit. This content can be a direct
-      segment from the raw document or a segment with complete semantics--
-      this approach is proposed in:
-            [Unlocking Legal Knowledge with Multi-Layered Embedding-Based Retrieval](https://arxiv.org/abs/2411.07739).
+      The textual content of this unit. How content is segmented, normalized,
+      contextualized, generated, or otherwise materialized is implementation-
+      and domain-specific and may vary by `aspect`. The API does not prescribe
+      those materialization conventions. Consumers should consult the
+      implementation's documentation for the conventions applicable to each
+      aspect. Unit-specific information may be provided in `metadata`.
     example: "Todo o poder emana do povo, que o exerce por meio de representantes eleitos ou diretamente, nos termos desta Constituição."
   metadata:
     $ref: '../core/JSON.yaml'
