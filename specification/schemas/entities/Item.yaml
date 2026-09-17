@@ -9,7 +9,6 @@
 # It is intentionally atemporal and does not contain textual content itself; that
 # is handled by the 'Version' and 'TextUnit' models.
 #
-
 type: object
 description: >
   Represents a timeless, foundational entity within the SAT Graph. An 'Item'
@@ -23,6 +22,10 @@ description: >
   The 'Item' itself is just a structural and conceptual anchor. Its semantic meaning and
   textual content are provided by associated 'TextUnit' objects, typically with an
   aspect like 'description', 'summary'.
+
+  An Item remains addressable independently of whether it currently has a valid or
+  applicable Version. Revocation, repeal, expiration, or other temporal changes affect
+  Versions and their temporal state; they do not by themselves remove the canonical Item.
 required:
   - id
   - typeId
@@ -77,9 +80,12 @@ properties:
     $ref: '../core/ID.yaml'
     nullable: true
     description: >-
-      The canonical ID of the single structural parent of this item. This field is
-      primarily relevant for 'Concept Component' items to define the document hierarchy.
-      For other categories like 'Abstract Concept', it may be used to build a taxonomy.
+      The canonical, atemporal structural parent adopted by the implementation for
+      this Item. This field defines the Item-level hierarchy used by Item navigation
+      and does not encode the Item's historical structural position. Historical
+      structural states are represented through Version-level relationships.
+      For non-document Item categories, implementations may use this field according
+      to the hierarchy semantics of that category.
   metadata:
     $ref: '../core/JSON.yaml'
     nullable: true
