@@ -6,8 +6,10 @@ description: |
 
   **Scoping:**
   - Use `itemIds` and/or `themeIds` to define the structural or thematic scope
+  - Use `versionIds` to restrict ranked search to an exact set of Versions
   - Use `at` to constrain temporally (if omitted, no temporal filter is applied)
-  - If neither `itemIds`, `itemUrns`, nor `themeIds` is provided, the search applies globally across all accessible data
+  - If none of `itemIds`, `itemUrns`, `versionIds`, or `themeIds` is provided, the search applies globally across all accessible data
+  - When multiple scope filters are provided, results must satisfy their intersection
 
   **Structural Scoping — `itemIds` vs `itemUrns`:**
   Both filters perform **hierarchical traversal** — passing a root Item's identifier causes the search to include TextUnits from all descendant Items as well. They differ in mechanism:
@@ -15,6 +17,9 @@ description: |
   - `itemUrns`: optimization for LEX URN implementations; implemented via an index range scan (`LIKE 'urn:lex:...;10406!%'`), avoiding recursive traversal at the cost of portability
 
   If both are provided, implementations should prefer `itemUrns` for performance when URNs are available.
+
+  **Version Scoping:**
+  `versionIds` defines an exact Version scope and performs no hierarchical expansion. This supports ranked search over historically exact substructures obtained through temporal resolution and Version-level navigation (for example, `getVersionHierarchy`).
 
   **Search Query:**
   - `contentQuery`: A unified JSON structure for hybrid search combining semantic and lexical queries with advanced filtering
@@ -52,12 +57,27 @@ properties:
 
       If both `itemIds` and `itemUrns` are provided, implementations should prefer `itemUrns`.
     example: ["urn:lex:br:federal:lei:2002-01-10;10406", "urn:lex:br:federal:lei:1973-10-10;6015"]
+  versionIds:
+    type: array
+    items:
+      $ref: '../core/ID.yaml'
+    minItems: 1
+    uniqueItems: true
+    description: |
+      Optional. A list of exact Version IDs to define the ranked-search scope.
+
+      Unlike `itemIds` and `itemUrns`, this filter performs **no hierarchical expansion**. Only TextUnits associated with one of the supplied Versions are eligible.
+
+      This is intended for historically exact structural scopes. A typical workflow is to resolve a container Version at time `t`, call `getVersionHierarchy` to enumerate its descendant Version IDs, include the root Version ID when needed, and pass that set here for ranked search within the historical subtree.
+
+      When combined with other scope or content filters, the constraints are intersected.
+    example: ["urn:lex:br:federal:constituicao:1988@2020-01-15!tit2_cap2", "urn:lex:br:federal:constituicao:1988@2020-01-15!art6"]
   itemTypeIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: |
-      Optional. Filter search results to only TextUnits from Items of the specified types (references to ItemType entities).
+      Optional. Filter results to only TextUnits from Items of the specified types (references to ItemType entities).
       More efficient than using `metadataFilter` for type-based filtering.
     example: ["item-type:article", "item-type:paragraph"]
   themeIds:
