@@ -7,7 +7,9 @@ description: |
   **Search Strategies:**
   - `hybrid`: Combines both semantic and lexical search with database-managed ranking fusion (default)
   - `semanticOnly`: Uses only vector similarity search
-  - `lexicalOnly`: Uses only full-text keyword search
+  - `lexicalOnly`: Uses only full-text keyword search for candidate retrieval and ranking. It does **not** request or guarantee exhaustive enumeration of all lexical matches.
+
+  All strategies in this schema are search/ranking strategies. Exhaustive inspection of a known Version scope is performed by explicitly enumerating that scope and retrieving its TextUnits, rather than by treating search `topK` as an exhaustive enumeration mechanism.
 
   **Basic Usage:**
   For simple queries, only specify the queryText for the desired search type. The system will apply sensible defaults for weights and operators.
@@ -24,7 +26,7 @@ properties:
       The search strategy to employ:
       - `hybrid`: Leverage both semantic and lexical search with RRF (recommended for most use cases)
       - `semanticOnly`: Only perform vector similarity search
-      - `lexicalOnly`: Only perform keyword/phrase full-text search
+      - `lexicalOnly`: Only perform keyword/phrase full-text retrieval and ranking. This remains a ranked search strategy and does not imply exhaustive enumeration of all matching TextUnits.
     example: "hybrid"
 
   semantic:
@@ -89,7 +91,7 @@ properties:
         format: int32
         minimum: 1
         description: |
-          Optional. The number of top candidates to retrieve from lexical search before RRF fusion.
+          Optional. The number of top candidates to retrieve from lexical search before RRF fusion or final ranking. This is a candidate/ranking limit, not a request for exhaustive lexical enumeration.
         example: 100
     required:
       - queryText
