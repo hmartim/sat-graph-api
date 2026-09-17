@@ -7,7 +7,8 @@ description: |
   **Scoping:**
   - Use `itemIds` and/or `themeIds` to define the structural or thematic scope
   - Use `versionIds` to restrict ranked search to an exact set of Versions
-  - Use `at` to constrain temporally (if omitted, no temporal filter is applied)
+  - Use `at` to constrain temporally; if omitted, no temporal filter is applied
+  - Use `temporalPredicate` to select formal validity or material applicability when `at` is provided
   - If none of `itemIds`, `itemUrns`, `versionIds`, or `themeIds` is provided, the search applies globally across all accessible data
   - When multiple scope filters are provided, results must satisfy their intersection
 
@@ -20,6 +21,14 @@ description: |
 
   **Version Scoping:**
   `versionIds` defines an exact Version scope and performs no hierarchical expansion. This supports ranked search over historically exact substructures obtained through temporal resolution and Version-level navigation (for example, `getVersionHierarchy`).
+
+  **Temporal Filtering:**
+  - If `at` is omitted, no temporal filter is applied.
+  - If `at` is provided and `temporalPredicate` is omitted, `validity` is used.
+  - `validity` filters by `validityInterval`.
+  - `applicability` filters by `applicabilityInterval`. If a Version has no explicit `applicabilityInterval`, the implementation MUST fall back to `validityInterval`, matching `getApplicableVersions`.
+  - Supplying `temporalPredicate` without `at` is invalid and MUST result in HTTP 400.
+  - Ranked search operates over the current legal truth; transaction-time projection via `observerTime` is not part of this operation.
 
   **Search Query:**
   - `contentQuery`: A unified JSON structure for hybrid search combining semantic and lexical queries with advanced filtering
@@ -68,6 +77,8 @@ properties:
 
       Unlike `itemIds` and `itemUrns`, this filter performs **no hierarchical expansion**. Only TextUnits associated with one of the supplied Versions are eligible.
 
+      This parameter restricts the candidate universe for ranked search; it does not perform deterministic retrieval by ID. Use `getBatchTextUnits` for deterministic retrieval of known Versions.
+
       This is intended for historically exact structural scopes. A typical workflow is to resolve a container Version at time `t`, call `getVersionHierarchy` to enumerate its descendant Version IDs, include the root Version ID when needed, and pass that set here for ranked search within the historical subtree.
 
       When combined with other scope or content filters, the constraints are intersected.
@@ -77,7 +88,7 @@ properties:
     items:
       $ref: '../core/ID.yaml'
     description: |
-      Optional. Filter results to only TextUnits from Items of the specified types (references to ItemType entities).
+      Optional. Filter search results to only TextUnits from Items of specified types (references to ItemType entities).
       More efficient than using `metadataFilter` for type-based filtering.
     example: ["item-type:article", "item-type:paragraph"]
   themeIds:
@@ -92,7 +103,21 @@ properties:
     type: string
     format: date-time
     description: |
-      Optional. A UTC date-time to constrain the search to TextUnits valid at that point in time. If omitted, no temporal filter is applied and all versions are returned regardless of validity period.
+      Optional. A UTC date-time at which to apply the selected temporal predicate.
+      If omitted, no temporal filter is applied and Versions from any time may participate in the ranked search.
+  temporalPredicate:
+    type: string
+    enum:
+      - validity
+      - applicability
+    default: validity
+    description: |
+      Optional. Selects the temporal predicate used when `at` is provided.
+
+      - `validity`: filter by `validityInterval`.
+      - `applicability`: filter by `applicabilityInterval`; if a Version has no explicit `applicabilityInterval`, fall back to `validityInterval`, using the same rule as `getApplicableVersions`.
+
+      Defaults to `validity` when `at` is provided. Supplying this parameter without `at` is invalid and MUST result in HTTP 400.
   contentQuery:
     $ref: '../common/ContentQuery.yaml'
   language:
