@@ -10,13 +10,22 @@ post:
     versions, such as finding the exact point of a textual change within a long version history.
     It prevents the severe performance degradation that would result from iterating and calling
     getVersionTextUnits individually for each version.
+
+    This operation is also the recommended deterministic hydration step for exhaustive inspection
+    of an explicitly enumerated Version scope. Implementations MAY impose operational limits on
+    batch size. If a request exceeds an implementation-specific limit, the operation MUST fail
+    explicitly; it MUST NOT silently truncate the requested Version set or return a partial batch
+    as if it were complete.
   x-sat-graph-agent:
     version: 1
     when-to-use: >-
-      Retrieve canonical text for several known Versions in one call — the
-      precise tool once version IDs are resolved.
+      Retrieve TextUnits for several known Versions in one call — the precise
+      hydration tool once the Version IDs defining the admissible universe are resolved.
     not-for: Text of a single version by traversal — use getVersionTextUnits.
-    pairs-with: [getValidVersions, getItemVersions]
+    pairs-with: [getValidVersions, getItemVersions, getVersionHierarchy]
+    caveats: >-
+      Implementations may impose batch-size limits, but requests exceeding such
+      limits must fail explicitly and must never be silently truncated.
     role: hydration
 
   security:
@@ -30,7 +39,7 @@ post:
           $ref: '../../schemas/requests/GetBatchTextUnitsRequest.yaml'
   responses:
     '200':
-      description: "A list of the requested TextUnit objects."
+      description: "A complete list of TextUnit objects matching the requested Version IDs, language, and aspects within the accepted batch."
       content:
         application/json:
           schema:
