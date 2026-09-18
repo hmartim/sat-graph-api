@@ -1,0 +1,38 @@
+get:
+  tags:
+    - "Introspection & Metadata Actions"
+  summary: "Gets the Version types supported by this deployment."
+  operationId: "getSupportedVersionTypes"
+  description: |
+    Returns the deployment-defined Version-type vocabulary together with a label
+    and semantic description for each value. Version types are not fixed by the
+    SAT-Graph core and may vary by implementation and domain.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Discover the Version-type vocabulary and the meaning of each value in this deployment.
+    role: introspection
+
+  security:
+    - ApiKeyAuth: []
+
+  responses:
+    '200':
+      description: "The supported Version-type vocabulary."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../../openapi.yaml#/components/schemas/VocabularyEntry'
+          example:
+            - value: "statutory"
+              label: "Statutory Version"
+              description: "Legal-domain example: a Version representing the textual state established by legislation."
+            - value: "interpretive"
+              label: "Interpretive Version"
+              description: "Legal-domain example: a Version representing an interpretive state associated with case law or another authoritative interpretation."
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
