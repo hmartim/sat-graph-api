@@ -108,5 +108,5 @@ properties:
       The maximum number of ranked results to return. Increasing `topK` does not convert
       this operation into exhaustive enumeration.
   dataSources:
-    $ref: '../common/DataSourcesSchema.yaml'
+    $ref: '../common/DatasourcesSchema.yaml'
     description: "Optional. Scopes the search to a specific list of granted data sources."
