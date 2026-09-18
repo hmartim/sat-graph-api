@@ -66,5 +66,5 @@ properties:
         description: "Optional. Includes actions with eventTime <= endTime."
 
   dataSources:
-    $ref: '../common/DataSourcesSchema.yaml'
+    $ref: '../common/DatasourcesSchema.yaml'
     description: "Optional. Restricts results to specified data sources."
