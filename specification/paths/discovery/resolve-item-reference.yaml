@@ -51,9 +51,10 @@ get:
       in: query
       required: false
       description: >-
-        Optional. The specific UTC date-time for which to resolve the reference.
-        Defaults to "now" if omitted. When provided, the Item labels and structure are evaluated as they existed at that point in time.
-        Useful for disambiguating references when entities have been renamed or reorganized.
+        Optional. A UTC date-time used to temporally constrain the evidence considered
+        during reference resolution, such as Version- or TextUnit-level evidence available
+        for that point in time. It does not make the resolved Item or the Item hierarchy temporal.
+        If omitted, the implementation uses its current resolution perspective.
       schema:
         type: string
         format: date-time
