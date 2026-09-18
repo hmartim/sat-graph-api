@@ -2,7 +2,7 @@ openapi: 3.0.3
 
 info:
   title: "SAT-Graph API"
-  version: "2.0.0"
+  version: "3.0.0"
   description: |
     This is the official OpenAPI 3.x specification for the **SAT-Graph API**,
     a formal interface for querying the Structure-Aware Temporal Graph (SAT-Graph).
@@ -51,9 +51,6 @@ info:
 
 components:
   schemas:
-    # -------------------------------------------------------------------------
-    # Core Schemas - Primitive and foundational types
-    # -------------------------------------------------------------------------
     ID:
       $ref: './schemas/core/ID.yaml'
     JSON:
@@ -61,9 +58,6 @@ components:
     TimeInterval:
       $ref: './schemas/core/TimeInterval.yaml'
 
-    # -------------------------------------------------------------------------
-    # Common/Shared Schemas - Used in both requests and responses
-    # -------------------------------------------------------------------------
     DataSourcesSchema:
       $ref: './schemas/common/DataSourcesSchema.yaml'
     MetadataFilter:
@@ -75,9 +69,6 @@ components:
     VocabularyEntry:
       $ref: './schemas/common/VocabularyEntry.yaml'
 
-    # -------------------------------------------------------------------------
-    # Entity Schemas - Core domain models (graph nodes)
-    # -------------------------------------------------------------------------
     Item:
       $ref: './schemas/entities/Item.yaml'
     Version:
@@ -89,17 +80,11 @@ components:
     TextUnit:
       $ref: './schemas/entities/TextUnit.yaml'
 
-    # -------------------------------------------------------------------------
-    # Relationship Schemas - Graph edge models
-    # -------------------------------------------------------------------------
     Action:
       $ref: './schemas/relationships/Action.yaml'
     Relation:
       $ref: './schemas/relationships/Relation.yaml'
 
-    # -------------------------------------------------------------------------
-    # Request Schemas - Input data transfer objects
-    # -------------------------------------------------------------------------
     SearchItemsRequest:
       $ref: './schemas/requests/SearchItemsRequest.yaml'
     SearchTextUnitsRequest:
@@ -121,9 +106,6 @@ components:
     GetBatchItemTypesRequest:
       $ref: './schemas/requests/GetBatchItemTypesRequest.yaml'
 
-    # -------------------------------------------------------------------------
-    # Response Schemas - Output data transfer objects
-    # -------------------------------------------------------------------------
     ResolvedItemCandidate:
       $ref: './schemas/responses/ResolvedItemCandidate.yaml'
     ResolvedThemeCandidate:
