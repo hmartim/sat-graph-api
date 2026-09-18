@@ -19,9 +19,11 @@ properties:
   aspects:
     type: array
     description: |
-      Optional. A list of textual aspects to retrieve for all Versions
-      (e.g., ["canonical", "summary"]). Defaults to ["canonical"].
+      Optional. Restricts retrieval to the specified deployment-defined TextUnit
+      aspects. If omitted, all available aspects are returned. Supported values
+      and their meanings can be discovered through `getSupportedTextUnitAspects`.
     items:
       type: string
-    default: ["canonical"]
+    minItems: 1
+    uniqueItems: true
     example: ["canonical", "summary"]
