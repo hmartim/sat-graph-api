@@ -48,41 +48,17 @@ properties:
     example: "pt-BR"
   aspect:
     type: string
+    minLength: 1
     description: >-
-      The semantic role of the text relative to its source node, forming the core
-      of the multi-aspect retrieval model. The `canonical` aspect is special; it
-      represents a segment of the official text of a document (e.g. legal provision, 
-      i.e., the content of a legal norm's component). It is associated with a `Version`.
-      Other aspects represent secondary or descriptive texts about a node.
-      `textualMetadata` is a representation in natural language of object's metadata and
-      allow semantic filters in their contents (structured metadata can also be declared 
-      in `Item` and `Version`, to ensure deterministic filters).
-      `textualRelation` is a representation in natural language of object's relation and
-      allow semantic filters in their contents--this approach is described in the:
-            [SAT Graph RAG paper)](https://arxiv.org/abs/2505.00039).
-      `indexical` is a alterative identifier or name (surname) that can be used in semantic
-      reference search--this approach is proposed in:
-            [Poly-Vector Retrieval: Reference and Content Embeddings for Legal Documents)](https://arxiv.org/abs/2504.10508).
-      
-      The enumerated values represent a baseline set of common aspects. A concrete
-      implementation of the SAT-Graph may extend this list with additional,
-      domain-specific aspects.
+      The deployment-defined semantic role of this TextUnit relative to its source
+      node. Aspect vocabularies are implementation- and domain-specific; consumers
+      can discover supported values and their meanings through
+      `getSupportedTextUnitAspects`.
 
-      **Judicial/Case Law Aspects:**
-      - `ratio`: The ratio decidendi—the core legal reasoning that carries normative force.
-      - `facts`: The narrative of evidentiary facts essential for distinguishing cases.
-      - `holding`: The final dispositive command or decision outcome.
-    pattern: "^[a-zA-Z]+$"
-    enum:
-      - "canonical"
-      - "description"
-      - "summary"
-      - "textualMetadata"
-      - "textualRelation"
-      - "indexical"
-      - "ratio"
-      - "facts"
-      - "holding"
+      For example, a legal-domain implementation may define aspects such as
+      `canonical` for primary official text, `summary` for a condensed description,
+      `indexical` for alternative identifiers or names, and `ratio`, `facts`, or
+      `holding` for case-law material.
     example: "canonical"
   content:
     type: string
