@@ -1,273 +1,103 @@
 # Use Case 4: Point-in-Time Comparison and Causal Pinpointing
 
-> **Based on:** Research Paper Section 5.4.1
+## User query
 
-## User Query
+> What were the exact textual differences in Article 6 of the Brazilian Constitution before and after the amendment that introduced the right to housing?
 
-_"What were the exact textual differences in Article 6 of the Brazilian Constitution **before and after** the amendment that introduced the right to 'housing' (direito à moradia)?"_
+The current SAT-Graph API does not expose a dedicated `compareVersions` primitive. The comparison is composed from causal tracing plus deterministic TextUnit retrieval.
 
-## The Challenge
-
-A standard RAG system would likely:
-- ❌ Retrieve multiple, conflicting versions of Article 6 from its index
-- ❌ Unable to deterministically isolate versions immediately preceding/succeeding a specific conceptual change
-- ❌ Lacks causal understanding to link the introduction of a word to a specific legislative event
-
-## Agent Execution Plan
-
-The agent's strategy is to **find the specific Action** that introduced the change, which inherently contains the identifiers for the "before" and "after" states.
-
-### Prerequisites
-
-```bash
-export API_KEY="your_api_key_here"
-export BASE_URL="https://api.example.com"
-```
-
----
-
-### Step 1: Identify the Item
-
-Ground the query by resolving the textual reference to its canonical identifier.
+## Step 1 — Resolve the target Item
 
 ```bash
 curl -G "$BASE_URL/items/by-reference" \
   -H "Authorization: $API_KEY" \
   --data-urlencode "referenceText=Article 6, caput of the Brazilian Constitution"
-  # Agent knows that the text of a article is in its caput
 ```
 
-**Response:**
+Illustrative response:
+
 ```json
 [
   {
-    "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt",
+    "item": {
+      "id": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt",
+      "typeId": "article-component",
+      "label": "Article 6, caput"
+    },
     "confidence": 0.98
   }
 ]
 ```
 
-**Agent Logic:**
-```python
-candidates = resolve_item_reference(referenceText="Article 6, caput of the Brazilian Constitution")
-targetItemId = candidates[0].id  # Agent proceeds with top candidate
-# targetItemId = "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt"
-```
-
----
-
-### Step 2: Retrieve the Full Historical Lineage
-
-Fetch the complete, time-ordered history of all legislative events that affected the item.
+## Step 2 — Retrieve the causal history
 
 ```bash
 curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/items/urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt/history"
+  "$BASE_URL/items/{itemId}/history"
 ```
 
-**Response:**
-```json
-[
-  {
-    "id": "action_amendment_2000_...",
-    "type": "Amendment",
-    "eventTime": "2000-02-14T00:00:00Z",
-    "sourceVersionIds": ["urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt_..."],
-    "terminatesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt"],
-    "producesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"]
-  },
-  {
-    "id": "action_amendment_2010_...",
-    "type": "Amendment",
-    "eventTime": "2010-02-04T00:00:00Z",
-    "sourceVersionIds": ["urn:lex:br:federal:emenda.constitucional:2010-02-04;64@2010-02-04!art1_cpt_alt_..."],
-    "terminatesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"],
-    "producesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt"]
-  },
-  {
-    "id": "action_amendment_2015_...",
-    "type": "Amendment",
-    "eventTime": "2015-09-15T00:00:00Z",
-    "sourceVersionIds": ["urn:lex:br:federal:emenda.constitucional:2015-09-15;90@2015-09-15!art1_cpt_alt_..."],
-    "terminatesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt"],
-    "producesVersionIds": ["urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt"]
-  }
-]
-```
+Each Action can identify source Versions and Versions it terminates or produces.
 
-**Agent Logic:**
-```python
-history = get_item_history(itemId=targetItemId)  # Returns list[Action]
-# history contains all legislative events in chronological order
-```
+## Step 3 — Identify the pivotal Action
 
----
-
-### Step 3: Pinpoint the Pivotal Action
-
-The agent must find the **first Action** in the history whose resulting text contains the keyword "moradia".
-
-To do this efficiently:
-1. Collect all `producesVersionIds` from the history
-2. Make a single `getBatchTextUnits` call to retrieve all texts at once
-3. Iterate through texts units to identify the pivotal Action
+A deterministic strategy is to collect the produced Version IDs, retrieve their primary legal text, and inspect the returned set for the first state containing the target expression.
 
 ```bash
-# Batch retrieve all version texts
 curl -X POST "$BASE_URL/text-units/batch-get" \
   -H "Authorization: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "versionIds": [
-      "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
-      "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
-      "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt"
+      "version-2000",
+      "version-2010",
+      "version-2015"
     ],
-    "language": "pt-br"
+    "language": "pt-BR",
+    "aspects": ["canonical"]
   }'
 ```
 
-**Response:**
-```json
-[
-  {
-    "id": "text_2000_...",
-    "sourceType": "Version",
-    "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt",
-    "language": "pt-br",
-    "aspect": "canonical",
-    "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, o trabalho, a moradia, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
-  },
-  {
-    "id": "text_2010_...",
-    "sourceType": "Version",
-    "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2010-02-04!art6_cpt",
-    "language": "pt-br",
-    "aspect": "canonical",
-    "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, a alimentação, o trabalho, a moradia, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
-  },
-  {
-    "id": "text_2015_...",
-    "sourceType": "Version",
-    "sourceId": "urn:lex:br:federal:constituicao:1988-10-05;1988@2015-09-15!art6_cpt",
-    "language": "pt-br",
-    "aspect": "canonical",
-    "content": "[ Art. 6º ] São direitos sociais a educação, a saúde, a alimentação, o trabalho, a moradia, o transporte, o lazer, a segurança, a previdência social, a proteção à maternidade e à infância, a assistência aos desamparados, na forma desta Constituição."
-  }
-]
+The `canonical` aspect is a legal-deployment convention discovered through `getSupportedTextUnitAspects`; it is not a universal SAT-Graph enum.
+
+After finding the pivotal Action, use its links:
+
+```text
+beforeVersionId = pivotalAction.terminatesVersionIds[0]
+afterVersionId  = pivotalAction.producesVersionIds[0]
 ```
 
-**Agent Logic:**
-```python
-# Collect all version IDs produced by actions
-versionIds = [vid for action in history for vid in action.producesVersionIds]
+The exact cardinality is domain- and event-dependent; clients should not assume every Action has exactly one terminated and one produced Version unless the deployment documents that convention.
 
-# Batch retrieve all texts
-texts = get_batch_text_units(
-    versionIds=versionIds,
-    language="pt-br"
-)
-
-# Find the first text containing "moradia"
-pivotalAction = None
-for i, text in enumerate(texts):
-    if "moradia" in text.content.lower():
-        pivotalAction = history[i]
-        break
-
-# pivotalAction = action_amendment_2000_...
-```
-
----
-
-### Step 4: Compare "Before" and "After" States
-
-The pivotal Action object contains direct references to the state it terminated and the state it created.
+## Step 4 — Retrieve the before and after texts
 
 ```bash
-curl -H "Authorization: $API_KEY" \
-  "$BASE_URL/versions/compare?versionIdA=urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt&versionIdB=urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt"
+curl -X POST "$BASE_URL/text-units/batch-get" \
+  -H "Authorization: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "versionIds": ["beforeVersionId", "afterVersionId"],
+    "language": "pt-BR",
+    "aspects": ["canonical"]
+  }'
 ```
 
-**Response:**
-```json
-{
-  "changes": [
-    {
-      "type": "addition",
-      "level": "word",
-      "componentId": "urn:lex:br:federal:constituicao:1988-10-05;1988!art6_cpt",
-      "contentBefore": "",
-      "contentAfter": "a moradia, "
-    }
-  ]
-}
-```
+At this point the consumer has both exact textual states. The textual diff itself can be computed locally by the application, agent harness, or another analysis component.
 
-**Agent Logic:**
-```python
-versionIdBefore = pivotalAction.terminatesVersionIds[0]
-versionIdAfter = pivotalAction.producesVersionIds[0]
-
-diffReport = compare_versions(
-    versionIdA=versionIdBefore,
-    versionIdB=versionIdAfter
-)
-```
-
----
-
-## Synthesized Outcome
-
-The agent now has **complete, verifiable data** to pass to an LLM for synthesis:
+For example:
 
 ```python
-synthesisData = {
-    "pivotalAction": {
-        "eventTime": pivotalAction.eventTime,
-        "sourceLaw": pivotalAction.sourceVersionIds[0],
-        "type": pivotalAction.type
-    },
-    "versionBefore": {
-        "id": versionIdBefore,
-        "validityPeriod": "1988-10-05 to 2000-02-14"
-    },
-    "versionAfter": {
-        "id": versionIdAfter,
-        "validityPeriod": "2000-02-14 to 2010-02-04"
-    },
-    "diffReport": diffReport
-}
-
-# LLM receives this structured, auditable data
+before_text = text_by_version[beforeVersionId]
+after_text = text_by_version[afterVersionId]
+changes = local_diff(before_text, after_text)
 ```
 
-### Generated Response
+## Why this composition is useful
 
-> "The right to 'housing' (moradia) was introduced into Article 6 by **Constitutional Amendment No. 26/2000**, effective on **February 14, 2000**, which terminated the validity of version `urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt` and created version `urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt`.
->
-> **Exact Change:** The word 'moradia' (housing) was inserted after 'o trabalho,' (work) in the list of social rights.
->
-> **Before:** _"São direitos sociais a educação, a saúde, o trabalho, o lazer, a segurança..."_
->
-> **After:** _"São direitos sociais a educação, a saúde, o trabalho, **a moradia**, o lazer, a segurança..."_
->
-> This answer is precise, verifiable, and causally grounded—a capability far beyond standard RAG systems."
+The SAT-Graph API supplies the formal graph evidence needed for comparison:
 
----
+- the stable target Item;
+- its causal Action history;
+- the exact Version IDs before and after the event;
+- the exact TextUnits for those Version IDs.
 
-## Key Takeaways
-
-✅ **Causal Precision:** The API enables pinpointing the exact event
-✅ **Temporal Accuracy:** Deterministic before/after state identification
-✅ **Verifiability:** Every claim is backed by canonical IDs and structured data
-✅ **Efficiency:** Batch operations prevent N+1 query problems
-
-This workflow demonstrates capabilities **impossible for standard RAG systems**:
-- Causal understanding (linking word introduction to specific amendment)
-- Deterministic versioning (exact before/after states)
-- Auditable trail (every step traceable via IDs)
-
----
-
-*This use case is based on the research paper's real-world legal analysis scenarios.*
+The API does not need a monolithic comparison endpoint to support the workflow. Textual diffing is application logic over deterministically retrieved states.
