@@ -9,6 +9,10 @@ properties:
   score:
     type: number
     format: float
-    description: "The relevance score of the result, typically between 0.0 and 1.0."
+    description: >-
+      An implementation-specific ranking signal for this search result. It MUST NOT
+      be interpreted as a probability. Scores are not guaranteed to be comparable
+      across different queries, scopes, partitions, implementations, or implementation
+      states unless the implementation explicitly documents such comparability.
     minimum: 0.0
     maximum: 1.0
