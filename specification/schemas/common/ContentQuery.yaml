@@ -16,9 +16,7 @@ description: |
   enumeration mechanism.
 
   Concrete deployments may implement these semantics using different search engines,
-  indexes, ranking functions, or fusion mechanisms. Domain-specific options in this
-  schema, such as citation-aware boosting, are optional search features rather than
-  requirements of the SAT-Graph core.
+  indexes, ranking functions, or fusion mechanisms.
 
 properties:
   strategy:
@@ -141,35 +139,6 @@ properties:
       - type: "shouldContain"
         text: "direitos sociais"
         boost: 1.8
-
-  citationBoost:
-    type: object
-    description: |
-      Optional domain-specific feature for boosting results that contain recognized
-      citations. A legal-domain deployment, for example, may use this to recognize
-      references such as articles, statutes, or case identifiers. Detection rules and
-      ranking effects are implementation-specific.
-    properties:
-      enabled:
-        type: boolean
-        default: false
-        description: "Whether citation-aware boosting is enabled."
-
-      multiplier:
-        type: number
-        format: float
-        minimum: 1.0
-        default: 1.5
-        description: "Relative boost applied to results containing recognized citations."
-        example: 1.8
-
-      patterns:
-        type: array
-        items:
-          type: string
-        description: |
-          Optional deployment-specific patterns used to recognize citations.
-        example: ["CF/\\d{2}", "Decreto \\d+"]
 
 anyOf:
   - required: [semantic]
