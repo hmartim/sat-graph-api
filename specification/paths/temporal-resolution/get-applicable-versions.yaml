@@ -28,40 +28,39 @@ get:
     ### Temporal Query Logic
 
     The primitive implements **bi-temporal semantics**, distinguishing between:
-    - **Valid Time** (`at`): When was the legal fact applicable in the real world?
-    - **Transaction Time** (`observerTime`): When did the system know about this fact?
+    - **Valid Time** (`at`): When was the fact applicable in the modeled domain?
+    - **Transaction Time** (`observerTime`): From which recorded knowledge perspective is the graph observed?
 
     **Default Behavior (observerTime = null):**
-    Returns the "Current Legal Truth" about applicability, considering all events known to the
-    system today, including retroactive modifications.
+    Returns the current recorded knowledge perspective about applicability, including
+    retroactive effects already known to the system.
 
     **Historical Mode (observerTime provided):**
-    Returns the "Historical Truth" — what applicability state was known at a specific point
-    in time. The system filters the graph, ignoring any events that occurred after the
-    observer time.
+    Returns the applicability state from the specified transaction-time perspective.
+    Only facts known or recorded by the system at or before `observerTime` may affect
+    the result. This perspective is distinct from the event time or valid time of those facts.
+    Providing an explicit `observerTime` enables reproducible temporal queries against a
+    fixed knowledge perspective.
 
     The query returns **all** versions of the Item whose applicability interval encompasses
     the target date (`applicabilityStart <= targetDate < applicabilityEnd`), filtered by the
     observer's temporal perspective.
 
     ### Relationship to other endpoints
-    - **`getValidVersions`**: queries by `validityInterval`. Use for "which versions were
-      formally in force at time T?"
-    - **`getApplicableVersions`**: queries by `applicabilityInterval`. Use for "which versions
-      were materially applicable at time T?"
+    - **`getValidVersions`**: queries by `validityInterval`.
+    - **`getApplicableVersions`**: queries by `applicabilityInterval`.
     - **`getItemVersions`**: returns every version ever created, with optional interval
       filtering, without point-in-time semantics.
 
   x-sat-graph-agent:
     version: 1
     when-to-use: >-
-      The version(s) materially applicable (producing effects) at a date — for
-      vacatio legis, transitional regimes, staggered effect.
+      The version(s) materially applicable at a date.
     not-for: >-
       Formal validity — use getValidVersions. Full history — use getItemVersions.
     pairs-with: [resolveItemReference, getValidVersions, getBatchTextUnits]
     caveats: >-
-      `observerTime` sets the temporal perspective: omit for current truth about the past; set it for what was known at a past date.
+      `observerTime` sets the transaction-time perspective: omit for the current recorded knowledge perspective; set it to observe a fixed historical perspective.
     role: temporal
 
   security:
@@ -88,10 +87,10 @@ get:
       in: query
       required: false
       description: >-
-        Optional. The temporal perspective from which to view the graph (Transaction Time).
-        If omitted, defaults to "now" (current legal truth, including retroactive effects).
-        If provided, the system filters out any Actions that occurred after this time,
-        returning the historical state of knowledge.
+        Optional. The transaction-time perspective from which to view the graph.
+        Only facts known or recorded by the system at or before this perspective may
+        affect the result. This is distinct from the event time or valid time of those
+        facts. If omitted, defaults to "now" (the current recorded knowledge perspective).
       schema:
         type: string
         format: date-time
