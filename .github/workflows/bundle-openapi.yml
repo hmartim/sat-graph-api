@@ -18,7 +18,7 @@ jobs:
   validate-and-bundle:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install dependencies
         run: |
@@ -56,8 +56,19 @@ jobs:
           path: specification/openapi-bundled.yaml
           retention-days: 30
 
+      - name: Synchronize committed bundle
+        if: github.event_name == 'push'
+        run: |
+          if ! git diff --quiet -- specification/openapi-bundled.yaml; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add specification/openapi-bundled.yaml
+            git commit -m "Regenerate OpenAPI bundle"
+            git push
+          fi
+
       - name: Verify committed bundle is synchronized
-        if: github.event_name != 'release'
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         run: |
           git diff --exit-code -- specification/openapi-bundled.yaml
 
