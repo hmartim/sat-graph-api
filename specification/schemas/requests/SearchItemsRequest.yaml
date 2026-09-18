@@ -3,11 +3,11 @@ description: |
   The request body for the searchItems operation.
 
   **Structural Scoping — `itemIds` vs `itemUrns`:**
-  Both filters perform **hierarchical traversal** — passing a root Item's identifier causes the search to include Items from all descendant Items as well. They differ in mechanism:
-  - `itemIds`: portable, works with any ID scheme; implemented via recursive SQL (e.g., `CONNECT BY` / recursive CTE on the `parent_id` column)
-  - `itemUrns`: optimization for LEX URN implementations; implemented via an index range scan (`LIKE 'urn:lex:...;10406!%'`), avoiding recursive traversal at the cost of portability
-
-  If both are provided, implementations should prefer `itemUrns` for performance when URNs are available.
+  Both filters define hierarchical structural scope. `itemIds` uses deployment
+  identifiers. `itemUrns` is available to deployments whose semantic URN scheme
+  supports structural identification or hierarchical scoping. The traversal and
+  optimization mechanism are implementation-specific. In the legal reference
+  domain, LEX URNs are one example.
 
 properties:
   itemIds:
@@ -15,40 +15,28 @@ properties:
     items:
       $ref: '../core/ID.yaml'
     description: |
-      Optional. A list of Item IDs to define the structural scope for the search.
-
-      The traversal is **hierarchical**: each provided ID is treated as a root, and the search includes Items from all its descendants as well.
-      Implemented via recursive SQL (e.g., `CONNECT BY PRIOR id = parent_id` in Oracle, or a recursive CTE in ANSI SQL).
-
-      Use this when Item IDs are known and the implementation does not use the LEX URN convention.
-      For LEX URN-based implementations, prefer `itemUrns` for better query performance.
+      Optional. A list of Item IDs treated as roots of a hierarchical structural scope.
     example: ["urn:lex:br:federal:lei:2002-01-10;10406", "urn:lex:br:federal:lei:1973-10-10;6015"]
   itemUrns:
     type: array
     items:
       type: string
     description: |
-      Optional. A list of Item URNs (LEX URN standard) to define the structural scope for the search.
-
-      The traversal is **hierarchical**: each URN is used as a prefix to match the target Item and all its descendants via an index range scan on the `urn` column (`LIKE 'urn:lex:...;10406!%'`).
-      This avoids recursive SQL traversal and is significantly more efficient for large norm hierarchies.
-
-      **This filter is only effective when the implementation populates the `urn` field on `Item` following the LEX URN convention**, where component URNs are formed by appending `!<component-path>` to the parent norm's URN (e.g., `urn:lex:br:federal:lei:2002-01-10;10406!art186`).
-      If `urn` is null or does not follow this convention, use `itemIds` instead.
-
-      If both `itemIds` and `itemUrns` are provided, implementations should prefer `itemUrns`.
+      Optional. Semantic URNs treated as roots of a hierarchical structural scope
+      when the deployment's URN scheme supports that behavior. The identifier scheme
+      and traversal mechanism are implementation-specific; LEX URNs are a legal-domain example.
     example: ["urn:lex:br:federal:lei:2002-01-10;10406", "urn:lex:br:federal:lei:1973-10-10;6015"]
   themeIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
-    description: "Optional. A list of 'Theme' IDs to expand the search scope."
+    description: "Optional. A list of Theme IDs to expand the search scope."
   itemTypeIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: >
-      Optional. Filter search results to only items of the specified types (references to ItemType entities).
+      Optional. Filter search results to only Items of the specified types.
     example: ["item-type:article", "item-type:paragraph"]
   itemMetadataFilter:
     $ref: '../common/ItemMetadataFilterSchema.yaml'
