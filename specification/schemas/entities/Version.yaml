@@ -50,10 +50,10 @@ properties:
     type: string
     nullable: true
     description: >-
-      The persistent semantic identifier in the URN LEX standard, typically extending
-      the Item's URN with temporal information (e.g., @2020-01-15 suffix). Represents
-      the ontological identity of this specific version, enabling precise temporal
-      citations and version tracking across systems for interoperability.
+      A persistent semantic identifier for this specific Version when the deployment
+      uses a URN-based identification scheme. In the legal reference domain, URN LEX
+      may extend an Item identifier with temporal information to support precise
+      version citation and interoperability.
     minLength: 1
     example: "urn:lex:br:federal:constituicao:1988-10-05;1988@2020-01-15!art5"
   url:
@@ -73,29 +73,29 @@ properties:
   type:
     type: string
     description: >-
-      Distinguishes between textual legislative versions (statutory) and non-textual
-      judicial interpretive versions. Statutory Versions (S-TV) result from legislative
-      amendments and contain modified text. Interpretive Versions (I-TV) result from
-      judicial decisions that alter the normative meaning without changing the statutory
-      text—modeling the phenomenon of "interpretive drift" where courts reshape legal
-      norms through binding precedents.
-    enum:
-      - "statutory"
-      - "interpretive"
+      The deployment-defined classification of this Version. The vocabulary and
+      semantics are implementation- and domain-specific; consumers can discover
+      supported values through `getSupportedVersionTypes`.
+
+      For example, in a legal-domain implementation, Version types may include
+      `statutory` for legislative textual states and `interpretive` for interpretive
+      states associated with case law or another authoritative interpretation.
     example: "statutory"
   validityInterval:
     $ref: '../core/TimeInterval.yaml'
-    description: "The time interval during which this version was legally valid."
+    description: >-
+      The time interval during which this Version is considered valid according to
+      the temporal semantics of the deployment. In the legal reference domain, this
+      corresponds to the period of legal validity.
   applicabilityInterval:
     $ref: '../core/TimeInterval.yaml'
     nullable: true
     description: >-
-      The time interval during which this version can produce legal effects.
-      Distinct from validityInterval, this captures the period when the norm is
-      actually applicable, enabling management of complex scenarios such as
-      temporary suspension of efficacy or tax precedence rules, where the capacity
-      to produce effects may not coincide with the formal lifetime of the rule.
-      Inspired by the ELI ontology's distinction between validity and application.
+      The time interval during which this Version is applicable or effective according
+      to the deployment's domain semantics. It is distinct from `validityInterval` when
+      a domain needs to represent a difference between formal validity and effective
+      applicability. In the legal reference domain, this supports cases where a norm is
+      valid but not yet, or no longer, producing legal effects.
   producedByActionId:
     $ref: '../core/ID.yaml'
     nullable: true
@@ -131,18 +131,12 @@ properties:
     items:
       $ref: '../core/ID.yaml'
     description: >-
-      References to the **Actions** that used this specific version as authorizing
-      source to modify other parts of the graph (Forward Causality).
+      References to the **Actions** that used this specific version as source or
+      provenance for changes elsewhere in the graph (Forward Causality).
       This property materializes the inverse relationship of LRMoo **R15 has used**.
 
-
-      Through this property, the agent can discover the effects of a norm
-      (e.g., "The caput of Art. 1 of this Constitutional Amendment modified
-      the caput of Article 5 of the Federal Constitution of 1988").
-
-
-      This is typically populated for versions of legislative commands (alteration
-      provisions) that serve as the legal basis for modifications.
+      In the legal reference domain, this may represent a legislative command whose
+      content authorizes or specifies modifications to another provision.
     example:
       - "urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6_cpt"
   metadata:
