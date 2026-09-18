@@ -5,13 +5,17 @@ info:
   version: "2.0.0"
   description: |
     This is the official OpenAPI 3.x specification for the **SAT-Graph API**,
-    a formal, auditable interface for querying the Structure-Aware Temporal Graph (SAT-Graph).
+    a formal interface for querying the Structure-Aware Temporal Graph (SAT-Graph).
 
     **Domain neutrality:** The SAT-Graph core models structured Items, temporal Versions,
     state-changing Actions, textual representations, classifications, and relations without
     fixing a particular application domain. Legal information is the motivating and primary
     reference domain used in the accompanying research and examples, but deployment-defined
     vocabularies are not restricted to legal values unless explicitly stated by the core contract.
+
+    Structured outputs and composable primitives allow consumers to construct verifiable
+    and auditable retrieval workflows; logging and preservation of execution traces are
+    responsibilities of the consuming application or agent harness.
 
     The complete architectural framework is proposed in the paper:
     - **[An Ontology-Driven Graph RAG for Legal Norms: A Structural, Temporal, and Deterministic Approach](https://arxiv.org/abs/2508.00827)**
@@ -34,14 +38,12 @@ info:
     - **Convenience Operations**: Optimized endpoints for common patterns
     - Implements "Future Directions" outlined in the research paper
 
-    **Design Principle:** Extensions maintain the same guarantees of composability,
-    auditability, and verifiability as the canonical core.
-
     ---
 
-    **Authentication Note:** All endpoints in this API are protected. A valid API Key
-    must be sent in the `Authorization` header on every request. Please refer to the
-    'securitySchemes' section below for details.
+    **Authentication Note:** Authentication and authorization are not part of the
+    SAT-Graph graph model or retrieval semantics. This OpenAPI profile uses API-key
+    authentication through the `Authorization` header. Other deployments may use
+    different security mechanisms while preserving the SAT-Graph API semantics.
 
     **Data Scoping Note:** The API serves data from multiple providers, called **DataSources**.
     All requests are automatically scoped to the DataSources granted to your API key.
@@ -102,8 +104,6 @@ components:
       $ref: './schemas/requests/SearchItemsRequest.yaml'
     SearchTextUnitsRequest:
       $ref: './schemas/requests/SearchTextUnitsRequest.yaml'
-    GetItemHierarchyRequest:
-      $ref: './schemas/requests/GetItemHierarchyRequest.yaml'
     GetRelationsRequest:
       $ref: './schemas/requests/GetRelationsRequest.yaml'
     GetActionsRequest:
@@ -141,9 +141,6 @@ components:
     HierarchyResponse:
       $ref: './schemas/responses/HierarchyResponse.yaml'
 
-  # ---------------------------------------------------------------------------
-  # Reusable Parameters
-  # ---------------------------------------------------------------------------
   parameters:
     DataSourcesParameter:
       name: dataSources
@@ -151,10 +148,8 @@ components:
       required: false
       description: |
         **Optional.** A list of identifiers for the DataSources to scope the search.
-
-        A DataSource is the system or provider where an entity originates (e.g., 'dataSource_Senate'). This parameter allows you to narrow a search to a specific subset of the DataSources you have access to.
-
-        The API will only return results from DataSources that are both *requested* in this parameter and *granted* to your API key. If this parameter is omitted, the search will run against all DataSources your key is granted to.
+        The API will only return results from DataSources that are both requested here
+        and granted to the current credential. If omitted, all granted DataSources are used.
       schema:
         type: array
         items:
@@ -162,25 +157,15 @@ components:
         uniqueItems: true
       example: ["dataSource_A"]
 
-  # ---------------------------------------------------------------------------
-  # Security Schemes
-  # ---------------------------------------------------------------------------
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
       in: header
       name: Authorization
       description: |
-        API Key-based authentication. Each consumer must provide their unique API Key
-        directly in the `Authorization` header for every request.
+        API-key authentication used by this OpenAPI profile.
+        Example: `Authorization: YOUR_API_KEY`
 
-        **Example:** `Authorization: YOUR_API_KEY`
-
-        API Keys can be obtained by contacting the system administrator.
-
-  # ---------------------------------------------------------------------------
-  # Reusable Responses
-  # ---------------------------------------------------------------------------
   responses:
     BadRequest:
       description: "Bad Request - The request is missing a required parameter, includes an invalid parameter value, or is otherwise malformed."
@@ -191,9 +176,8 @@ components:
           example:
             code: "INVALID_PARAMETER"
             message: "The 'topK' parameter must be a positive integer."
-
     Unauthorized:
-      description: "Unauthorized - The request lacks valid authentication credentials. The API Key is missing or invalid."
+      description: "Unauthorized - The request lacks valid authentication credentials."
       content:
         application/json:
           schema:
@@ -201,17 +185,15 @@ components:
           example:
             code: "UNAUTHORIZED"
             message: "Authentication credentials were not provided or are invalid."
-
     Forbidden:
-      description: "Forbidden - The server understood the request, but is refusing to fulfill it. The API Key is valid but lacks permission for the requested resource or data source."
+      description: "Forbidden - The request is authenticated but access to the requested resource or data source is denied."
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             code: "FORBIDDEN_DATASOURCE"
-            message: "The provided API Key does not have access to the 'dataSource_STF' data source."
-
+            message: "The credential does not have access to the requested data source."
     NotFound:
       description: "Not Found - The requested resource could not be found."
       content:
@@ -220,22 +202,12 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             code: "RESOURCE_NOT_FOUND"
-            message: "No Item found with the specified ID."
+            message: "No resource found with the specified ID."
 
-# =============================================================================
-# Security
-# =============================================================================
 security:
   - ApiKeyAuth: []
 
-# =============================================================================
-# API Endpoints
-# =============================================================================
 paths:
-  # ---------------------------------------------------------------------------
-  # Discovery & Search Actions
-  # Entity resolution and hybrid search operations
-  # ---------------------------------------------------------------------------
   /items/by-reference:
     $ref: './paths/discovery/resolve-item-reference.yaml'
   /themes/by-reference:
@@ -247,10 +219,6 @@ paths:
   /text-units/search:
     $ref: './paths/discovery/search-text-units.yaml'
 
-  # ---------------------------------------------------------------------------
-  # Deterministic Fetch Actions
-  # Direct retrieval of entities by unique identifiers
-  # ---------------------------------------------------------------------------
   /actions/{actionId}:
     $ref: './paths/deterministic-fetch/get-action-by-id.yaml'
   /items/{itemId}:
@@ -280,10 +248,6 @@ paths:
   /themes/by-items:
     $ref: './paths/navigation/get-themes-for-items.yaml'
 
-  # ---------------------------------------------------------------------------
-  # Temporal Resolution Actions
-  # Point-in-time version resolution and temporal enumeration
-  # ---------------------------------------------------------------------------
   /items/{itemId}/valid-versions:
     $ref: './paths/temporal-resolution/get-valid-versions.yaml'
   /items/{itemId}/applicable-versions:
@@ -293,10 +257,6 @@ paths:
   /versions/batch-valid-at:
     $ref: './paths/temporal-resolution/get-batch-valid-versions.yaml'
 
-  # ---------------------------------------------------------------------------
-  # Structural Navigation Actions
-  # Hierarchy traversal and contextual path retrieval
-  # ---------------------------------------------------------------------------
   /items/{itemId}/children:
     $ref: './paths/navigation/get-item-children.yaml'
   /items/{itemId}/ancestors:
@@ -316,17 +276,9 @@ paths:
   /themes/{themeId}/hierarchy:
     $ref: './paths/navigation/get-theme-hierarchy.yaml'
 
-  # ---------------------------------------------------------------------------
-  # Graph Traversal Actions
-  # Relationship queries and entity connections
-  # ---------------------------------------------------------------------------
   /query-relations:
     $ref: './paths/graph-traversal/get-relations.yaml'
 
-  # ---------------------------------------------------------------------------
-  # Causal Analysis Actions
-  # Event tracing and legislative lineage
-  # ---------------------------------------------------------------------------
   /items/{itemId}/history:
     $ref: './paths/causal-analysis/get-item-history.yaml'
   /items/{sourceWorkId}/actions-caused:
@@ -334,10 +286,6 @@ paths:
   /query-actions:
     $ref: './paths/causal-analysis/query-actions.yaml'
 
-  # ---------------------------------------------------------------------------
-  # Introspection & Metadata Actions
-  # System metadata and configuration queries
-  # ---------------------------------------------------------------------------
   /meta/languages:
     $ref: './paths/introspection/get-available-languages.yaml'
   /meta/action-types:
