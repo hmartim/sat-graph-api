@@ -1,50 +1,36 @@
 # SAT-Graph API Examples
 
-This directory contains practical examples demonstrating the power and flexibility of the SAT-Graph API for legal document retrieval and analysis.
+This directory contains practical examples using the legal reference domain.
 
-## Example Structure
+The examples are intentionally concrete: they demonstrate the domain-neutral SAT-Graph primitives with Brazilian legislation and case-law data. Legal vocabulary in these examples is illustrative rather than a restriction of the core API.
 
-All examples are based on the research paper and demonstrate real-world legal analysis scenarios.
+## Maintained examples
 
-### Fundamental Patterns (§5.3.1)
-- **[00-fundamental-patterns.md](./00-fundamental-patterns.md)** - Core patterns for agentic reasoning
-  - Example 1: Point-in-Time Retrieval Plan
-  - Example 2: Thematic Analysis with Server-Side Aggregation
-  - Example 3: Robustness and Multilingual Fallback
+- [01 — Point-in-time retrieval](01-point-in-time-retrieval.md)
+- [02 — Constitutional evolutionary analysis](02-constitutional-evolutionary-analysis.md)
+- [03 — Multilingual fallback](03-multilingual-fallback.md)
+- [04 — Point-in-time comparison and causal pinpointing](04-point-in-time-comparison.md)
+- [Case-law examples](caselaw/)
 
-### Complete Use Cases (§5.4)
-- **[01-point-in-time-comparison.md](./01-point-in-time-comparison.md)** - Use Case 1: Causal pinpointing of constitutional amendments
-- **[02-causal-lineage-tracing.md](./02-causal-lineage-tracing.md)** - Use Case 2: Legal audit with parallel task execution
-- **[03-hierarchical-impact-summarization.md](./03-hierarchical-impact-summarization.md)** - Use Case 3: Hierarchical legislative change analysis
-- **[04-structural-normative-predecessors.md](./04-structural-normative-predecessors.md)** - Use Case 4: Dual-path disambiguation for legal succession
-- **[05-thematic-legal-scope-discovery.md](./05-thematic-legal-scope-discovery.md)** - Use Case 5: Multi-document legal scope discovery via structural navigation
-- **[06-cascading-impact-analysis-social-rights.md](./06-cascading-impact-analysis-social-rights.md)** - Use Case 6: Cascading impact analysis - temporal evolution of social rights
+## Principles illustrated
 
-## Getting Started
+- ranked discovery followed by formal graph operations;
+- explicit valid-time resolution;
+- deterministic retrieval after identifiers are known;
+- structural navigation over Items and stored Version states;
+- causal tracing through Actions;
+- batch hydration for known identifier sets;
+- separation between ranked search and exhaustive inspection.
 
-1. Set up your environment:
-```bash
-export API_KEY="your_api_key_here"
-export BASE_URL="https://api.example.com"
-```
+## Important conventions
 
-2. Start with [Fundamental Patterns](./00-fundamental-patterns.md) to understand core concepts
+- Search `topK` is always a positive ranking limit. It is never an exhaustive-enumeration switch.
+- Resolver responses contain the full candidate entity plus `confidence`, for example `{ "item": {...}, "confidence": 0.95 }`.
+- `getBatchTextUnits` accepts `versionIds`, `language`, and optional `aspects`.
+- If a workflow needs specifically the legal deployment's primary text, it should request `aspects: ["canonical"]` rather than relying on omission, because omission now means all available aspects.
 
-3. Explore complete use cases to see real-world applications
+## Additional resources
 
-## Key Principles
-
-All examples demonstrate:
-- ✅ **Composability** - Atomic actions combine into complex workflows
-- ✅ **Determinism** - Guaranteed results after initial grounding  
-- ✅ **Auditability** - Complete trail of IDs and structured data
-- ✅ **Efficiency** - Server-side aggregation and batch operations
-
-## Additional Resources
-
-- [Getting Started Guide](../getting-started.md)
+- [Getting Started](../getting-started.md)
+- [Primitive Categories](../ACTION_CATEGORIES.md)
 - [OpenAPI Specification](../../specification/openapi.yaml)
-
----
-
-*These examples showcase capabilities impossible for standard RAG systems.*
