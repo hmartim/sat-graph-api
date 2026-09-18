@@ -1,227 +1,92 @@
 # Scope and Boundaries
 
-This document clarifies what SAT-Graph **does** and **does not** provide, establishing clear boundaries for the specification and helping implementers understand where SAT-Graph fits within a complete legal document management pipeline.
+This document defines what the SAT-Graph API does and does not specify.
 
----
+## Domain neutrality
 
-## What SAT-Graph Provides
+SAT-Graph is domain-neutral. It models structured Items, temporal Versions, reified Actions, textual representations, classifications, and Relations without requiring a particular application domain.
 
-SAT-Graph is a **specification** (not an implementation) for:
+Legal information is the motivating and primary reference domain used in the accompanying research and examples. Legal constructs such as statutes, amendments, precedents, URN LEX identifiers, and legal TextUnit aspects are therefore useful implementation examples, not universal requirements of the core contract unless explicitly stated.
 
-1. **Temporal Graph Data Model**
-   - Representing documents as hierarchical, temporally-aware graphs
-   - Modeling versions, items, themes, relations, and actions
-   - Supporting temporal reuse (M:N relationships between items and versions)
+## What SAT-Graph provides
 
-2. **Deterministic Retrieval API**
-   - Point-in-time queries (`at` parameter) for temporal consistency
-   - Batch operations to prevent N+1 query problems
-   - Filtering by data sources for federated/multi-tenant scenarios
+SAT-Graph specifies a query and retrieval interface over structured temporal graph data:
 
-3. **Semantic Interoperability Guidelines**
-   - Best practices for using schema.org vocabularies in metadata
-   - URI-based identification using standards like LEX URN
-   - Zero-shot AI understanding through structured metadata
+1. **Structured graph model**
+   - stable Items and Item hierarchies;
+   - temporal Versions and Version-level structural states;
+   - reified Actions for causal state transitions;
+   - Themes, ItemTypes, TextUnits, and typed Relations.
 
-4. **Audit Trail Foundation**
-   - Action entities to track events (e.g. amendments, revocations, etc. for legal domain)
-   - Temporal intervals for validity tracking
-   - Provenance metadata for assertion sources
+2. **Temporal resolution**
+   - valid-time resolution through `at`;
+   - optional transaction-time perspective through `observerTime` where exposed;
+   - distinction between validity and applicability.
 
----
+3. **Deterministic retrieval and navigation**
+   - direct fetch by identifier;
+   - batch retrieval;
+   - structural navigation;
+   - causal and relational traversal.
 
-## What SAT-Graph Does NOT Provide
+4. **Ranked discovery**
+   - natural-language reference resolution;
+   - semantic, lexical, and hybrid ranked retrieval;
+   - explicit separation between ranked discovery and exhaustive inspection of an already enumerated scope.
 
-### 1. Document Parsing and Extraction
+5. **Runtime introspection**
+   - available languages;
+   - deployment-defined Action types, Version types, TextUnit aspects, and Relation predicates;
+   - root taxonomies and deployment implementation guidance.
 
-**SAT-Graph does NOT provide tooling for converting raw text documents into structured representations.**
+Structured outputs and composable primitives allow consumers to construct verifiable and auditable workflows. The API does not itself define how an agent records, preserves, or presents an audit trail.
 
-The initial conversion of a legal norm (or any document) from raw text into SAT-Graph's structured, hierarchical, and temporal format is considered a **pre-processing step** outside the scope of this specification.
+## What SAT-Graph does not provide
 
-#### This Pre-Processing Phase Typically Involves:
+### Document parsing and extraction
 
-- **Text segmentation**: Breaking documents into hierarchical components (articles, paragraphs, clauses)
-- **Structure identification**: Detecting document hierarchy and relationships
-- **Action detection**: Identifying events (e.g. amendments, revocations, etc.)
-- **Temporal resolution**: Determining validity intervals for versions
-- **Version reuse analysis**: Detecting when components are reused across documents
+SAT-Graph does not specify how raw PDF, HTML, XML, or plain text is converted into Items, Versions, Actions, Relations, or TextUnits. Segmentation, structure detection, event extraction, version reuse detection, and materialization are upstream implementation concerns.
 
-#### Recommended Approaches for Pre-Processing:
+### Ingestion and persistence policy
 
-1. **Rule-Based Parsers**
-   - Pros: Fast, precise, deterministic
-   - Cons: Rigid, require manual rules for each document format
-   - Best for: Well-structured, standardized document formats (e.g., Brazilian legislation with consistent numbering)
+The API describes the observable graph and retrieval semantics. It does not prescribe how a deployment stores data, constructs Version structures, propagates temporal changes, materializes TextUnits, or maps source documents into graph objects.
 
-2. **Fine-Tuned LLMs**
-   - Pros: Flexible, can handle format variations
-   - Cons: Expensive, non-deterministic, require training data
-   - Best for: Complex documents, semantic understanding, action identification
+Implementations may use relational databases, graph databases, temporal stores, search indexes, or other technologies, provided the exposed behavior satisfies the API contract.
 
-3. **Hybrid Approaches**
-   - Combine rule-based extraction with LLM-based validation
-   - Use LLMs for ambiguous cases, rules for standard patterns
-   - Best for: Production systems requiring both flexibility and reliability
+### Search technology
 
-#### Version Reuse Detection
+SAT-Graph defines observable ranked-retrieval semantics, not a specific database, vector store, full-text engine, embedding model, fusion algorithm, or ranking implementation.
 
-SAT-Graph supports temporal reuse (0..M parent cardinality in versions), but **does not specify how to identify which components should be reused**. This analysis must be performed during the pre-processing phase:
+### Agent orchestration
 
-- Manual annotation by experts
-- Similarity analysis (textual diffing, embeddings)
-- LLM-based semantic comparison
-- Hybrid approaches combining multiple strategies
+The API provides primitives and lightweight agent-oriented usage metadata. Planning strategies, stopping criteria, retries, logging, audit-trail preservation, and output policy belong to the consuming application or agent harness.
 
----
+### User interfaces
 
-### 2. Implementation
+Web applications, administrative interfaces, diff viewers, and end-user search experiences are application-layer concerns.
 
-SAT-Graph is a **specification**, not an implementation. It defines:
+## Authentication and authorization
 
-- Data models (schemas)
-- API contracts (endpoints)
-- Behavioral requirements (temporal semantics)
+Authentication and authorization are not part of the SAT-Graph graph model or retrieval semantics. The OpenAPI profile in this repository uses API-key authentication through the `Authorization` header. Other deployments may use different security mechanisms while preserving the same SAT-Graph API semantics.
 
-**SAT-Graph does NOT provide:**
+DataSource scoping is part of this profile and can be used by implementations to restrict the data visible to a credential.
 
-- Database implementation (graph DB, relational DB, etc.)
-- API server implementation
-- Client libraries or SDKs
-- Deployment configurations
+## Reference domain: legal information
 
-Implementers are free to choose any technology stack that satisfies the specification (e.g., Neo4j, PostgreSQL with temporal tables, custom graph database).
+The repository intentionally retains rich legal examples because they make temporal, structural, and causal behavior concrete. In the legal reference domain, implementations may use conventions such as:
 
----
+- URN LEX identifiers;
+- statutory and interpretive Version types;
+- canonical, ratio, facts, and holding TextUnit aspects;
+- legislative and judicial Action vocabularies;
+- schema.org/Legislation metadata.
 
-### 3. User Interfaces
+These examples illustrate the API; deployment-defined vocabularies can differ and are discoverable through the introspection primitives.
 
-SAT-Graph does NOT provide:
+## Related documentation
 
-- Web interfaces for document browsing
-- Diff viewers for comparing versions
-- Administrative dashboards
-- End-user search interfaces
-
-These are application-layer concerns that should be built **on top of** SAT-Graph-compliant APIs.
-
----
-
-### 4. Authorization and Authentication
-
-While SAT-Graph supports **data source-based filtering** (useful for multi-tenancy and access control), it does NOT specify:
-
-- Authentication mechanisms (OAuth, JWT, etc.)
-- Authorization policies (RBAC, ABAC, etc.)
-- User management
-- API key management
-
-Implementers must layer their own auth mechanisms on top of SAT-Graph endpoints.
-
----
-
-## The Complete Pipeline
-
-Understanding where SAT-Graph fits in the complete workflow:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 1. RAW DOCUMENTS (Out of Scope)                             │
-│    - PDFs, HTML, XML, plain text                            │
-│    - Unstructured or semi-structured formats                │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 2. PARSING & EXTRACTION (Out of Scope)                      │
-│    - Text segmentation                                      │
-│    - Structure identification                               │
-│    - Action detection                                       │
-│    - Temporal resolution                                    │
-│    - Version reuse analysis                                 │
-│                                                             │
-│    Tools: Custom parsers, fine-tuned LLMs, hybrid systems   │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 3. STRUCTURED DATA                                          │
-│    - Items, Versions, Relations, Actions                    │
-│    - Hierarchical structure (parent/children)               │
-│    - Temporal intervals (validityInterval)                 │
-│    - Metadata (schema.org vocabularies)                     │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 4. SAT-GRAPH API (IN SCOPE) ✓                               │
-│    - Storage: Persist structured data                       │
-│    - Retrieval: Deterministic, auditable queries            │
-│    - Temporal semantics: Point-in-time consistency          │
-│    - Batch operations: Efficient data fetching              │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 5. APPLICATIONS (Out of Scope)                             │
-│    - Web UIs for document browsing                          │
-│    - Diff viewers and comparison tools                      │
-│    - Search interfaces                                      │
-│    - RAG pipelines for AI-assisted legal research           │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Why This Separation?
-
-### 1. **Separation of Concerns**
-- Parsing is a **non-deterministic ML/NLP problem**
-- Storage/retrieval is a **deterministic data modeling problem**
-- Each requires different expertise and tools
-
-### 2. **Flexibility**
-- Clients can choose **any** parsing strategy
-- SAT-Graph remains agnostic to upstream tooling
-- Parsing strategies can evolve without changing the API
-
-### 3. **Testability**
-- SAT-Graph implementations can be tested with synthetic data
-- No dependency on parsing quality for API testing
-- Clear contracts between pipeline stages
-
-### 4. **Auditability**
-- Parsing may be non-deterministic (LLMs evolve)
-- SAT-Graph guarantees deterministic retrieval
-- Clear boundary for what must be auditable
-
----
-
-## For Implementers
-
-If you're building a **complete legal document management system**, you'll need:
-
-1. **Pre-Processing Pipeline** (your responsibility)
-   - Document ingestion
-   - Parsing and extraction
-   - Version reuse detection
-   - Data validation
-
-2. **SAT-Graph-Compliant API** (implement per this spec)
-   - Database layer
-   - API endpoints
-   - Temporal query logic
-   - DataSource filtering
-
-3. **Application Layer** (your responsibility)
-   - User interfaces
-   - Authentication/authorization
-   - Business logic
-   - Integration with other systems
-
----
-
-## Related Documentation
-
-- **[Metadata Best Practices](METADATA_BEST_PRACTICES.md)**: Guidelines for structuring metadata within SAT-Graph
-- **[README.md](../README.md)**: Overview of SAT-Graph specification
-- **[Example Use Cases](../specification/schemas/examples/)**: Practical examples of SAT-Graph data models
+- [README](../README.md)
+- [API Primitive Categories](ACTION_CATEGORIES.md)
+- [Metadata Best Practices](METADATA_BEST_PRACTICES.md)
+- [Getting Started](getting-started.md)
+- [OpenAPI specification](../specification/openapi.yaml)
