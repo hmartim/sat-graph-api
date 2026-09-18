@@ -1,0 +1,23 @@
+type: object
+description: >-
+  Describes one deployment-defined vocabulary value exposed through an
+  introspection primitive. The `value` is the machine-readable token used in API
+  requests and responses, while `label` and `description` provide human- and
+  agent-readable semantics for that deployment.
+required:
+  - value
+  - label
+  - description
+properties:
+  value:
+    type: string
+    minLength: 1
+    description: "The canonical machine-readable value used by the API."
+  label:
+    type: string
+    minLength: 1
+    description: "A human-readable name for the vocabulary entry."
+  description:
+    type: string
+    minLength: 1
+    description: "A semantic explanation of what the value means in this deployment."
