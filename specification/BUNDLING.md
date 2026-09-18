@@ -1,86 +1,52 @@
 # OpenAPI Specification Bundling
 
-This directory contains a multi-file OpenAPI specification that uses `$ref` to reference external files for better organization and maintainability.
+This directory contains a multi-file OpenAPI specification that uses external `$ref` files for maintainability, plus a generated single-file bundle for consumers that require one document.
 
-## Problem
+## Source of truth
 
-The **Swagger Editor** (online version at https://editor.swagger.io/) and some other OpenAPI tools cannot resolve external file references. When you paste the `openapi.yaml` file directly, you'll see errors like:
+The multi-file specification rooted at **`openapi.yaml`** is the authoritative source. **`openapi-bundled.yaml`** is generated from that source and must not be edited manually.
 
-```
-$ref paths must begin with `#/`
-Could not resolve reference: undefined undefined
-```
+## Local workflow
 
-## Solution
-
-We provide a bundling script that consolidates all external references into a single `openapi-bundled.yaml` file that can be used with Swagger Editor and other tools.
-
-## Usage
-
-### Option 1: Using the Bundling Script (Recommended)
-
-1. **Install dependencies:**
-   ```bash
-   cd specification
-   npm install
-   ```
-
-2. **Generate the bundled specification:**
-   ```bash
-   npm run bundle
-   ```
-
-   This creates `openapi-bundled.yaml` in the `specification/` directory.
-
-3. **Use the bundled file:**
-   - Upload `openapi-bundled.yaml` to [Swagger Editor](https://editor.swagger.io/)
-   - Or use it with any OpenAPI tool that doesn't support external references
-
-### Option 2: Using OpenAPI Generator CLI
-
-If you have `openapi-generator-cli` installed globally, you can use it to validate and bundle:
+1. Install dependencies:
 
 ```bash
-openapi-generator-cli validate -i openapi.yaml
+cd specification
+npm install
 ```
 
-### Option 3: Using Swagger CLI
-
-The package.json includes swagger-cli for validation:
+2. Validate the source specification:
 
 ```bash
-npm run validate        # Validates the multi-file spec
-npm run validate-bundled  # Validates the bundled spec
+npm run validate
+```
+
+3. Generate the bundle:
+
+```bash
+npm run bundle
+```
+
+4. Validate the generated bundle:
+
+```bash
+npm run validate-bundled
 ```
 
 ## Files
 
-- **`openapi.yaml`** - Main specification file with external references (multi-file format)
-- **`bundle-spec.js`** - Node.js script that bundles all files into one
-- **`package.json`** - npm configuration with bundling scripts
-- **`openapi-bundled.yaml`** - Generated single-file specification (gitignored)
+- **`openapi.yaml`** — authoritative multi-file OpenAPI specification.
+- **`schemas/`** and **`paths/`** — referenced source files.
+- **`bundle-spec.js`** — bundling script.
+- **`package.json`** — validation and bundling commands.
+- **`openapi-bundled.yaml`** — generated single-file specification committed for convenient consumption.
 
-## For Development
+## Synchronization
 
-When working on the specification:
+Whenever the source specification changes, regenerate `openapi-bundled.yaml` before merging. CI validates the source, regenerates the bundle, validates it, and fails if the committed bundle differs from the generated result.
 
-1. **Edit the multi-file structure** (openapi.yaml and files in paths/, schemas/)
-2. **Run the bundler** to regenerate the single-file version
-3. **Test both versions** to ensure consistency
+The release workflow also generates the bundle from the authoritative source and uploads it as a release asset.
 
-## Note on Git
+## Consumers
 
-The bundled file (`openapi-bundled.yaml`) is **not committed to the repository** since it's a generated artifact. This keeps the repository clean and avoids synchronization issues.
-
-**To obtain the bundled file:**
-- Run the bundling script locally (see instructions above)
-- Download from GitHub Releases (automatically generated for each release)
-- Use the GitHub Action workflow (see `.github/workflows/bundle-openapi.yml`)
-
-## Alternative Tools
-
-If you prefer GUI tools that support multi-file specs:
-
-- **[Stoplight Studio](https://stoplight.io/studio/)** - Desktop app with full multi-file support
-- **[VS Code OpenAPI Extension](https://marketplace.visualstudio.com/items?itemName=42Crunch.vscode-openapi)** - Supports $ref resolution
-- **[Redocly CLI](https://redocly.com/docs/cli/)** - Command-line tool with bundling: `redocly bundle openapi.yaml`
+Use `openapi.yaml` when your tooling supports external references. Use `openapi-bundled.yaml` when a single-file specification is required, for example by some Swagger/OpenAPI editors or client generators.
