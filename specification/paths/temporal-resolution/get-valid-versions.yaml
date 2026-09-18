@@ -11,16 +11,17 @@ get:
 
     The primitive implements **bi-temporal semantics**, distinguishing between:
     - **Valid Time** (`time`): When was the legal fact valid in the real world?
-    - **Transaction Time** (`observerTime`): When did the system know about this fact?
+    - **Transaction Time** (`observerTime`): From which recorded knowledge perspective is the graph observed?
 
     **Default Behavior (observerTime = null):**
-    Returns the "Current Legal Truth" about the past, considering all events known to the system today,
-    including retroactive annulments (ex tunc). This is the typical mode for legal research.
+    Returns the "Current Legal Truth" about the past, considering all facts known to the system today,
+    including retroactive effects.
 
     **Historical Mode (observerTime provided):**
-    Returns the "Historical Truth" - what was known at a specific point in time. The system filters the
-    graph, ignoring any legislative or judicial events that occurred after the observer time. This
-    enables reproducing the exact state of legal knowledge available at a past moment.
+    Returns the historical knowledge perspective recorded at the specified transaction time. Only facts
+    known or recorded by the system at or before `observerTime` may affect the result. This perspective
+    is distinct from the event time or valid time of those facts. Providing an explicit `observerTime`
+    enables reproducible temporal queries against a fixed knowledge perspective.
 
     The query returns **all** versions of the Item whose validity interval encompasses the target date
     (`validityStart <= targetDate < validityEnd`), filtered by the observer's temporal perspective.
@@ -77,15 +78,14 @@ get:
     ```
     GET /items/{itemId}/valid-versions?at=2010-01-01&observerTime=2010-01-01
     ```
-    Returns versions valid on 2010-01-01, considering ONLY events known by 2010-01-01. If a law was
-    annulled ex tunc in 2018, it WILL appear in results (the annulment was unknown at the time).
+    Returns versions valid on 2010-01-01 from the knowledge perspective recorded at
+    `observerTime=2010-01-01`.
 
     **Example 4: Professional Liability Analysis**
     ```
     GET /items/{itemId}/valid-versions?at=2015-06-01&observerTime=2015-06-01
     ```
-    Reproduces the exact legal knowledge available to a lawyer on 2015-06-01, essential for evaluating
-    whether professional advice was reasonable based on information available at the time.
+    Reproduces the recorded knowledge perspective for 2015-06-01.
 
   x-sat-graph-agent:
     version: 1
@@ -97,7 +97,7 @@ get:
       full amendment history (use getItemVersions).
     pairs-with: [resolveItemReference, getApplicableVersions, getBatchTextUnits]
     caveats: >-
-      `observerTime` sets the temporal perspective: omit for the current truth about the past (including retroactive effects); set it for what was known at a past date.
+      `observerTime` sets the transaction-time perspective: omit for the current recorded knowledge perspective; set it to observe a fixed historical perspective.
     role: temporal
 
   security:
@@ -124,12 +124,10 @@ get:
       in: query
       required: false
       description: >-
-        Optional. The temporal perspective from which to view the graph (Transaction Time).
-        If omitted, defaults to "now" (current legal truth, including retroactive effects).
-        If provided, the system filters out any Actions that occurred after this time,
-        returning the historical state of knowledge. Use cases: (1) Legal historical research,
-        (2) Professional liability analysis (what could be known at the time?), (3) Reproducing
-        past legal opinions.
+        Optional. The transaction-time perspective from which to view the graph.
+        Only facts known or recorded by the system at or before this perspective may
+        affect the result. This is distinct from the event time or valid time of those
+        facts. If omitted, defaults to "now" (the current recorded knowledge perspective).
       schema:
         type: string
         format: date-time
