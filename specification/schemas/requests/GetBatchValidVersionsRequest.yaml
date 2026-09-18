@@ -19,6 +19,7 @@ properties:
     type: string
     format: date-time
     description: >-
-      Optional. The temporal perspective from which to view the graph (Transaction Time).
-      If omitted, defaults to "now" (current legal truth). If provided, filters out Actions
-      that occurred after this time, enabling historical state reconstruction.
+      Optional. The transaction-time perspective from which to view the graph.
+      Only facts known or recorded by the system at or before this perspective may
+      affect the result. This is distinct from the event time or valid time of those
+      facts. If omitted, defaults to "now" (the current recorded knowledge perspective).
