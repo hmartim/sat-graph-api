@@ -5,15 +5,15 @@ get:
   operationId: "getVersionChildren"
   description: |
     Given a Version ID, this action returns the list of its immediate structural children
-    (component Versions that comprise this Version).
+    (component Versions that comprise this stored Version state).
 
     This is a **deterministic action**: Given the same `versionId`, it will always return
     the same set of children Versions.
 
-    **Temporal Aggregation:** Under the SAT-Graph's aggregation model, a Version is composed
-    by aggregating the most recent valid versions of all its child components at the time
-    of its creation. Some children may be newly created while others are reused from previous
-    states (unchanged components).
+    The endpoint traverses the structural relationships recorded for the supplied Version.
+    It does not prescribe how an implementation ingests, constructs, propagates, or reuses
+    those relationships, and it does not independently resolve the temporal status of child
+    Versions during traversal.
 
     This endpoint is designed for efficient structural navigation without loading potentially
     large child arrays into every Version response.
