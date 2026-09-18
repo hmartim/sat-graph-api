@@ -6,7 +6,11 @@ get:
   description: |
     Deterministically retrieves all `TextUnit` objects associated with a single, known `Version`,
     optionally filtered by language and one or more textual aspects. If `aspects` is omitted,
-    returns all aspects (canonical, summary, description, etc.) available for that Version.
+    returns all aspects available for that Version.
+
+    If the Version exists but no TextUnits satisfy the requested language and/or aspects,
+    the operation returns `200 OK` with an empty array. A `404` indicates that the requested
+    Version itself does not exist.
 
     This is a direct-access, primary-key-based lookup, not a search operation.
 
@@ -14,7 +18,7 @@ get:
     This action is fundamentally different from `searchTextUnits`. While the latter is a
     probabilistic discovery tool, `getVersionTextUnits` is a deterministic fetch. It serves
     the critical use case where an agent has already identified a specific `Version`
-    (e.g., via `getValidVersions`) and requires its complete textual content.
+    (e.g., via `getValidVersions`) and requires its textual content.
   x-sat-graph-agent:
     version: 1
     when-to-use: Retrieve the text units of one Version, optionally by language and aspects.
@@ -47,9 +51,10 @@ get:
       required: false
       description: |
         Optional. Filters results to TextUnits whose semantic role is one of the supplied values.
-        Common values include `canonical` (the authoritative legal text), `summary` (a condensed
-        description), `indexical` (popular names or aliases), and `textual_metadata` (linearized
-        structured attributes). If omitted, TextUnits of all aspects are returned.
+        Supported values are deployment-defined and can be discovered through
+        `getSupportedTextUnitAspects`. In the legal reference domain, examples may include
+        `canonical`, `summary`, `indexical`, `ratio`, `facts`, or `holding`.
+        If omitted, TextUnits of all aspects are returned.
       schema:
         type: array
         minItems: 1
@@ -60,7 +65,7 @@ get:
 
   responses:
     '200':
-      description: "Successfully retrieved the TextUnits for the specified Version."
+      description: "Successfully retrieved matching TextUnits for the specified Version. The array may be empty if no TextUnits satisfy the optional filters."
       content:
         application/json:
           schema:
@@ -72,4 +77,8 @@ get:
     '403':
       $ref: '../../openapi.yaml#/components/responses/Forbidden'
     '404':
-      $ref: '../../openapi.yaml#/components/responses/NotFound'
+      description: "Not Found - The requested Version does not exist."
+      content:
+        application/json:
+          schema:
+            $ref: '../../openapi.yaml#/components/schemas/ErrorResponse'
