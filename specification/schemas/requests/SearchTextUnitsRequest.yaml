@@ -7,67 +7,46 @@ description: |
   For exhaustive inspection of a known Version scope, explicitly enumerate that scope, retrieve its TextUnits with `getBatchTextUnits`, and evaluate the desired criterion over the complete retrieved set.
 
   **Scoping:**
-  - Use `itemIds` and/or `themeIds` to define the structural or thematic scope
-  - Use `versionIds` to restrict ranked search to an exact set of Versions
-  - Use `at` to constrain temporally; if omitted, no temporal filter is applied
-  - Use `temporalPredicate` to select formal validity or material applicability when `at` is provided
-  - If none of `itemIds`, `itemUrns`, `versionIds`, or `themeIds` is provided, the search applies globally across all accessible data
-  - When multiple scope filters are provided, results must satisfy their intersection
+  - Use `itemIds` and/or `themeIds` to define structural or thematic scope.
+  - Use `versionIds` to restrict ranked search to an exact set of Versions.
+  - Use `at` to constrain temporally; if omitted, no temporal filter is applied.
+  - Use `temporalPredicate` to select validity or applicability when `at` is provided.
+  - If none of `itemIds`, `itemUrns`, `versionIds`, or `themeIds` is provided, the search applies globally across accessible data.
+  - Multiple scope filters are intersected.
 
   **Structural Scoping — `itemIds` vs `itemUrns`:**
-  Both filters perform **hierarchical traversal** — passing a root Item's identifier causes the search to include TextUnits from all descendant Items as well. They differ in mechanism:
-  - `itemIds`: portable, works with any ID scheme; implemented via recursive SQL (e.g., `CONNECT BY` / recursive CTE on the `parent_id` column)
-  - `itemUrns`: optimization for LEX URN implementations; implemented via an index range scan (`LIKE 'urn:lex:...;10406!%'`), avoiding recursive traversal at the cost of portability
-
-  If both are provided, implementations should prefer `itemUrns` for performance when URNs are available.
+  Both filters define hierarchical structural scope. `itemIds` uses deployment identifiers.
+  `itemUrns` is available to deployments whose semantic URN scheme supports structural
+  identification or hierarchical scoping. The traversal and optimization mechanism are
+  implementation-specific. In the legal reference domain, LEX URNs are one example.
 
   **Version Scoping:**
-  `versionIds` defines an exact Version scope and performs no hierarchical expansion. This supports ranked search over historically exact substructures obtained through temporal resolution and Version-level navigation (for example, `getVersionHierarchy`).
+  `versionIds` defines an exact Version scope and performs no hierarchical expansion.
 
   **Temporal Filtering:**
   - If `at` is omitted, no temporal filter is applied.
   - If `at` is provided and `temporalPredicate` is omitted, `validity` is used.
   - `validity` filters by `validityInterval`.
-  - `applicability` filters by `applicabilityInterval`. If a Version has no explicit `applicabilityInterval`, the implementation MUST fall back to `validityInterval`, matching `getApplicableVersions`.
+  - `applicability` filters by `applicabilityInterval`; if absent, the implementation MUST fall back to `validityInterval`, matching `getApplicableVersions`.
   - Supplying `temporalPredicate` without `at` is invalid and MUST result in HTTP 400.
-  - Ranked search operates over the current legal truth; transaction-time projection via `observerTime` is not part of this operation.
-
-  **Search Query:**
-  - `contentQuery`: A unified JSON structure for hybrid search combining semantic and lexical queries with advanced filtering
-  - Required for effective discovery
-
-  **Optional Filters:**
-  - `itemTypeIds`: Filter results to only TextUnits from Items of specified types
-  - `metadataFilter`: Apply additional metadata-based filtering
+  - Ranked search uses the current transaction-time perspective; `observerTime` is not part of this operation.
 properties:
   itemIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
     description: |
-      Optional. A list of Item IDs to define the structural scope for the search.
-
-      The traversal is **hierarchical**: each provided ID is treated as a root, and the search includes TextUnits from all its descendant Items as well.
-      Implemented via recursive SQL (e.g., `CONNECT BY PRIOR id = parent_id` in Oracle, or a recursive CTE in ANSI SQL).
-
-      Use this when Item IDs are known and the implementation does not use the LEX URN convention.
-      For LEX URN-based implementations, prefer `itemUrns` for better query performance.
-    example: ["urn:lex:br:federal:lei:2002-01-10;10406", "urn:lex:br:federal:lei:1973-10-10;6015"]
+      Optional. Item IDs treated as roots of a hierarchical structural scope.
+    example: ["urn:lex:br:federal:lei:2002-01-10;10406"]
   itemUrns:
     type: array
     items:
       type: string
     description: |
-      Optional. A list of Item URNs (LEX URN standard) to define the structural scope for the search.
-
-      The traversal is **hierarchical**: each URN is used as a prefix to match the target Item and all its descendants via an index range scan on the `urn` column (`LIKE 'urn:lex:...;10406!%'`).
-      This avoids recursive SQL traversal and is significantly more efficient for large norm hierarchies.
-
-      **This filter is only effective when the implementation populates the `urn` field on `Item` following the LEX URN convention**, where component URNs are formed by appending `!<component-path>` to the parent norm's URN (e.g., `urn:lex:br:federal:lei:2002-01-10;10406!art186`).
-      If `urn` is null or does not follow this convention, use `itemIds` instead.
-
-      If both `itemIds` and `itemUrns` are provided, implementations should prefer `itemUrns`.
-    example: ["urn:lex:br:federal:lei:2002-01-10;10406", "urn:lex:br:federal:lei:1973-10-10;6015"]
+      Optional. Semantic URNs treated as roots of a hierarchical structural scope
+      when the deployment's URN scheme supports that behavior. The identifier scheme
+      and traversal mechanism are implementation-specific; LEX URNs are a legal-domain example.
+    example: ["urn:lex:br:federal:lei:2002-01-10;10406"]
   versionIds:
     type: array
     items:
@@ -75,51 +54,34 @@ properties:
     minItems: 1
     uniqueItems: true
     description: |
-      Optional. A list of exact Version IDs to define the ranked-search scope.
-
-      Unlike `itemIds` and `itemUrns`, this filter performs **no hierarchical expansion**. Only TextUnits associated with one of the supplied Versions are eligible.
-
-      This parameter restricts the candidate universe for ranked search; it does not perform deterministic retrieval by ID. Use `getBatchTextUnits` for deterministic retrieval of known Versions.
-
-      This is intended for historically exact structural scopes. A typical workflow is to resolve a container Version at time `t`, call `getVersionHierarchy` to enumerate its descendant Version IDs, include the root Version ID when needed, and pass that set here for ranked search within the historical subtree.
-
-      When combined with other scope or content filters, the constraints are intersected.
-    example: ["urn:lex:br:federal:constituicao:1988@2020-01-15!tit2_cap2", "urn:lex:br:federal:constituicao:1988@2020-01-15!art6"]
+      Optional. Exact Version IDs defining the ranked-search candidate universe.
+      No hierarchical expansion is performed. When combined with other filters,
+      all constraints are intersected.
   itemTypeIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
-    description: |
-      Optional. Filter search results to only TextUnits from Items of specified types (references to ItemType entities).
-      More efficient than using `metadataFilter` for type-based filtering.
-    example: ["item-type:article", "item-type:paragraph"]
+    description: "Optional. Restricts results to TextUnits associated with Items of the specified types."
   themeIds:
     type: array
     items:
       $ref: '../core/ID.yaml'
-    description: |
-      Optional. A list of Theme IDs to define the thematic scope for the search.
+    description: "Optional. Theme IDs defining thematic scope."
   metadataFilter:
     $ref: '../common/MetadataFilter.yaml'
   at:
     type: string
     format: date-time
     description: |
-      Optional. A UTC date-time at which to apply the selected temporal predicate.
-      If omitted, no temporal filter is applied and Versions from any time may participate in the ranked search.
+      Optional. UTC date-time at which to apply the selected temporal predicate.
+      If omitted, no temporal filter is applied.
   temporalPredicate:
     type: string
-    enum:
-      - validity
-      - applicability
+    enum: [validity, applicability]
     default: validity
     description: |
       Optional. Selects the temporal predicate used when `at` is provided.
-
-      - `validity`: filter by `validityInterval`.
-      - `applicability`: filter by `applicabilityInterval`; if a Version has no explicit `applicabilityInterval`, fall back to `validityInterval`, using the same rule as `getApplicableVersions`.
-
-      Defaults to `validity` when `at` is provided. Supplying this parameter without `at` is invalid and MUST result in HTTP 400.
+      Supplying this parameter without `at` is invalid and MUST result in HTTP 400.
   contentQuery:
     $ref: '../common/ContentQuery.yaml'
   language:
@@ -130,15 +92,21 @@ properties:
     type: array
     items:
       type: string
-    default: ["canonical"]
-    description: "A list of textual aspects to search within (e.g., 'canonical', 'summary')."
+    minItems: 1
+    uniqueItems: true
+    description: >-
+      Optional. Restricts ranked search to the specified deployment-defined TextUnit
+      aspects. If omitted, all available aspects are considered. Supported values and
+      their meanings can be discovered through `getSupportedTextUnitAspects`.
+    example: ["canonical", "summary"]
   topK:
     type: integer
     format: int32
     default: 10
     minimum: 1
     description: |
-      The maximum number of ranked results to return. Increasing `topK` increases result coverage but does not convert this operation into exhaustive enumeration and does not guarantee that all lexical matches are returned.
+      The maximum number of ranked results to return. Increasing `topK` does not convert
+      this operation into exhaustive enumeration.
   dataSources:
     $ref: '../common/DataSourcesSchema.yaml'
     description: "Optional. Scopes the search to a specific list of granted data sources."
