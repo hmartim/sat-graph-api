@@ -49,4 +49,4 @@ properties:
     minimum: 1
     description: "The maximum number of results to return."
   dataSources:
-    $ref: '../common/DataSourcesSchema.yaml'
+    $ref: '../common/DatasourcesSchema.yaml'
