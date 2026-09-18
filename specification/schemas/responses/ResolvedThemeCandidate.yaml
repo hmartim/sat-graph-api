@@ -1,5 +1,5 @@
 type: object
-description: "Represents a single candidate match when resolving a text reference to a Theme, including the full entity and the confidence score."
+description: "Represents a single candidate match when resolving a text reference to a Theme, including the full entity and a normalized confidence signal."
 required:
   - theme
   - confidence
@@ -10,7 +10,11 @@ properties:
   confidence:
     type: number
     format: float
-    description: "A score from 0.0 to 1.0 indicating the certainty of the match."
     minimum: 0.0
     maximum: 1.0
+    description: >-
+      A normalized, implementation-specific confidence signal used to rank candidates
+      within this resolution result. It MUST NOT be interpreted as a calibrated probability
+      or certainty measure. Comparability across different queries, deployments, or
+      implementation states is not guaranteed unless explicitly documented.
     example: 0.95
