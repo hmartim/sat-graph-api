@@ -2,16 +2,15 @@
 # OpenAPI 3.x Schema for the 'Relation' Data Model
 #
 # This file defines the schema for the 'Relation' object, which models a
-# directed, typed, and deterministic link between two 'Item' entities.
+# directed, typed, and deterministic link between two graph entities.
 #
 type: object
 description: >
   Represents a directed, typed, and potentially time-bound link between two
   entities in the graph (Items or Versions). This polymorphic design allows
   for modeling a rich web of interactions, distinguishing between timeless
-  conceptual links and time-bound references embedded in text.
-  The optional 'validityInterval' allows for modeling temporal
-  relationships that are only true for a specific period.
+  conceptual links and time-bound references. The optional `validityInterval`
+  allows relationships that are only true for a specific period.
 required:
   - id
   - sourceType
@@ -34,17 +33,16 @@ properties:
     example: "urn:lex:br:federal:constituicao:1988-10-05;1988"
   predicate:
     type: string
+    minLength: 1
     description: >-
-      The type of the relationship. This defines the semantics of the link. The
-      enumerated values represent a baseline set; a concrete implementation may
-      extend this list with a more detailed vocabulary or ontology.
-    enum:
-      - "succeeds"
-      - "relatedTo"
-      - "appliesTo"
-      - "cites"
-      - "definedIn"
-    example: "succeeds"
+      The deployment-defined predicate that gives this relationship its semantics.
+      Predicate vocabularies are implementation- and domain-specific; consumers can
+      discover supported values and their meanings through
+      `getSupportedRelationPredicates`.
+
+      For example, a legal-domain implementation may define predicates such as
+      `cites`, `succeeds`, `appliesTo`, `definedIn`, or `relatedTo`.
+    example: "cites"
   targetType:
     type: string
     description: "The type of the entity at the target of the relation."
@@ -55,19 +53,18 @@ properties:
     description: "The ID of the target entity."
     example: "urn:lex:br:federal:constituicao:1967-01-24;1967"
   validityInterval:
-      $ref: '../core/TimeInterval.yaml'
-      nullable: true
-      description: >-
-        The time interval during which this relation is valid.
-        If null, the relation is considered atemporal.
-      example: [ "2020-03-15T00:00:00Z", "2020-09-15T23:59:59Z" ]
+    $ref: '../core/TimeInterval.yaml'
+    nullable: true
+    description: >-
+      The time interval during which this relation is valid. If null, the relation
+      is considered atemporal.
+    example: [ "2020-03-15T00:00:00Z", "2020-09-15T23:59:59Z" ]
   metadata:
     $ref: '../core/JSON.yaml'
     nullable: true
     description: >-
       A flexible field for any valid JSON data providing more context about the
-      relation, such as its own validity interval or source of the assertion.
-
+      relation, such as source, confidence, or other domain-specific attributes.
 
       **Best Practice:** Use schema.org vocabularies to enable semantic interoperability.
       See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md) for guidance
