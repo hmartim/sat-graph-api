@@ -59,7 +59,7 @@ components:
       $ref: './schemas/core/TimeInterval.yaml'
 
     DataSourcesSchema:
-      $ref: './schemas/common/DataSourcesSchema.yaml'
+      $ref: './schemas/common/DatasourcesSchema.yaml'
     MetadataFilter:
       $ref: './schemas/common/MetadataFilter.yaml'
     ItemMetadataFilterSchema:
