@@ -1,190 +1,158 @@
 # Getting Started with the SAT-Graph API
 
-This guide will help you get up and running with the Canonical Primitive API for SAT-Graph RAG.
+SAT-Graph exposes composable primitives for ranked discovery, deterministic temporal resolution, structural navigation, causal traversal, and direct retrieval over structured temporal graph data.
 
-## Overview
-
-The SAT-Graph API provides a formal, auditable interface for querying documents with temporal and structural awareness. Unlike standard RAG systems, it can distinguish between current and historical versions of laws, understand document hierarchy, and trace changes over time.
-
-## Prerequisites
-
-- A valid API key (contact system administrator)
-- Understanding of REST APIs and JSON
-- Basic familiarity with document structure (helpful but not required)
+Legal information is the primary reference domain used in examples, but the core API is domain-neutral.
 
 ## Authentication
 
-All API endpoints require authentication using an API key in the `Authorization` header:
+This OpenAPI profile uses an API key in the `Authorization` header:
 
 ```bash
 curl -H "Authorization: YOUR_API_KEY" \
-     "https://api.example.com/items/item_id_123"
+  "https://api.example.com/items/item_id_123"
 ```
 
-## API Base URL
+Authentication is a profile concern, not part of the SAT-Graph graph semantics.
 
-The API is served at: `https://api.example.com`
+## Core concepts
 
-## Core Concepts
+- **Item** — stable, atemporal anchor.
+- **Version** — time-varying state of an Item.
+- **Action** — reified state-transition event.
+- **TextUnit** — textual representation attached to a graph node.
+- **Theme** — thematic classification.
+- **ItemType** — deployment-defined type taxonomy.
+- **Relation** — typed graph relation.
 
-### 1. Primitive Categories
+## Primitive categories
 
-The API provides primitives organized into functional categories. Understanding these categories is essential for building effective retrieval plans:
+| Category | Examples |
+|---|---|
+| Discovery & Search | `resolveItemReference`, `searchItems`, `searchTextUnits` |
+| Temporal Resolution | `getValidVersions`, `getApplicableVersions`, `getItemVersions` |
+| Deterministic Fetch | `getItemById`, `getVersionTextUnits`, batch fetches |
+| Structural Navigation | `getItemHierarchy`, `getVersionHierarchy`, ancestors/parents/children |
+| Causal Analysis | `getItemHistory`, `getActionsBySource`, `queryActions` |
+| Graph Traversal | `getRelations` |
+| Introspection | vocabulary, language, taxonomy, and implementation-guide endpoints |
 
-| Category | Purpose | Examples |
-|----------|---------|----------|
-| **Discovery & Search** | Find entities using natural language (probabilistic) | `resolveItemReference`, `searchTextUnits` |
-| **Deterministic Fetch** | Retrieve full objects by ID (deterministic) | `getItem`, `getVersion`, `getValidVersions` |
-| **Structural Navigation** | Traverse hierarchy (deterministic) | `getItemAncestors`, `getItemHierarchy` |
-| **Causal Analysis** | Trace events (deterministic) | `getItemHistory`, `getActionsBySource` |
-| **Analysis** | Comparative and structural analysis (deterministic) | `compareVersions` |
-| **Introspection** | Discover capabilities (deterministic) | `getAvailableLanguages` |
+See [Primitive Categories](ACTION_CATEGORIES.md) for the complete list.
 
-📖 **See [Primitive Categories Guide](./ACTION_CATEGORIES.md) for detailed taxonomy and workflow patterns.**
+## Runtime vocabulary discovery
 
-### 2. Data Models
+Deployment-defined vocabularies can be discovered before formulating a plan:
 
-The API operates on several key entities:
+```text
+GET /meta/action-types
+GET /meta/version-types
+GET /meta/text-unit-aspects
+GET /meta/relation-predicates
+```
 
-- **Item**: Timeless, structural entities (documents, articles, concepts)
-- **Version**: Temporal snapshots of Items at specific points in time
-- **Action**: Events that cause changes (amendments, revocations)
-- **Relation**: Connections between entities (citations, successions)
-- **Theme**: Classification system for discovery
-- **TextUnit**: Actual textual content in multiple languages
+Each entry contains `value`, `label`, and `description`.
 
-### 3. DataSources
-
-Data comes from multiple providers called "DataSources":
-- `dataSource_Senate`: Federal Senate data
-- `dataSource_Chamber`: Chamber of Deputies data
-- `dataSource_SupremeCourt`: Supreme Court jurisprudence
-
-Your API key grants access to specific data sources, and all queries are automatically scoped to your authorized data sources.
-
-### 4. Temporal Resolution
-
-The API supports bi-temporal semantics:
-
-- **Valid Time** (`at`): When was the legal fact valid in the real world?
-- **Transaction Time** (`observerTime`): When did the system know about this fact? (optional, defaults to "now")
-
-## Your First API Call
-
-Let's start with a simple search to find items:
+## First search
 
 ```bash
 curl -X POST "https://api.example.com/items/search" \
-     -H "Authorization: YOUR_API_KEY" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "contentQuery": {
-         "semantic": {
-           "queryText": "tax law amendments"
-         }
-       },
-       "topK": 5
-     }'
+  -H "Authorization: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contentQuery": {
+      "semantic": {
+        "queryText": "tax law amendments"
+      }
+    },
+    "topK": 5
+  }'
 ```
 
-This will return a list of items related to tax law amendments, each with a relevance score.
+Search results are ranked. `score` is a normalized implementation-specific ranking signal, not a calibrated probability.
 
-## Common Workflows
+## Point-in-time retrieval
 
-### 1. Find and Retrieve an Item
+A typical legal-domain workflow:
 
-```bash
-# Step 1: Search for items
-curl -X POST "https://api.example.com/items/search" \
-     -H "Authorization: YOUR_API_KEY" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "contentQuery": {
-         "semantic": {
-           "queryText": "constitutional amendments"
-         }
-       },
-       "topK": 3
-     }'
-
-# Step 2: Get full item details using the ID from step 1
-curl -H "Authorization: YOUR_API_KEY" \
-     "https://api.example.com/items/itemId_from_step_1"
+```text
+1. resolveItemReference("Article 6 of the Brazilian Constitution")
+2. getValidVersions(itemId, at="2001-05-20T00:00:00Z")
+3. getVersionTextUnits(versionId, language="pt-BR", aspects=["canonical"])
 ```
 
-### 2. Get Document Context
+The first step is ranked discovery. The later steps operate on formal identifiers.
+
+Example temporal call:
 
 ```bash
-# Get hierarchical ancestors
 curl -H "Authorization: YOUR_API_KEY" \
-     "https://api.example.com/items/itemId/ancestors"
+  "https://api.example.com/items/itemId/valid-versions?at=2020-01-01T00:00:00Z"
+```
 
-# Enumerate descendants
+## TextUnit aspects
+
+`aspect` is deployment-defined. If `aspects` is omitted from `getVersionTextUnits`, all available aspects are returned.
+
+For an existing Version:
+
+- matching TextUnits found → `200` with results;
+- no TextUnits satisfy optional language/aspect filters → `200 []`.
+
+A nonexistent Version returns `404`.
+
+## Structural navigation
+
+Item hierarchy is canonical and atemporal:
+
+```bash
 curl -G "https://api.example.com/items/itemId/hierarchy" \
-     -H "Authorization: YOUR_API_KEY" \
-     --data-urlencode "depth=-1"
+  -H "Authorization: YOUR_API_KEY" \
+  --data-urlencode "depth=-1"
 ```
 
-### 3. Point-in-Time Analysis
+Version hierarchy represents a stored structural state:
 
 ```bash
-# Get the versions of an item valid at a specific date
-curl -H "Authorization: YOUR_API_KEY" \
-     "https://api.example.com/items/itemId/valid-versions?at=2020-01-01T00:00:00Z"
+curl -G "https://api.example.com/versions/versionId/hierarchy" \
+  -H "Authorization: YOUR_API_KEY" \
+  --data-urlencode "depth=-1"
 ```
 
-## Error Handling
+The API does not prescribe how those Version relationships were created during ingestion.
 
-The API uses standard HTTP status codes:
+## Ranked search versus exhaustive inspection
 
-- `200`: Success
-- `400`: Bad Request (invalid parameters)
-- `401`: Unauthorized (missing/invalid API key)
-- `403`: Forbidden (insufficient permissions)
-- `404`: Not Found (resource doesn't exist)
+Do not use a special `topK` value to request exhaustive search. Ranked search remains ranked.
 
-Error responses include structured information:
+For exhaustive inspection of an explicitly known Version scope:
 
-```json
-{
-  "code": "FORBIDDEN_DATASOURCE",
-  "message": "Your API key does not have access to the requested data source."
-}
+```text
+getVersionHierarchy(rootVersionId)
+→ getBatchTextUnits(versionIds=[...], language=..., aspects=[...])
+→ inspect the complete retrieved set locally
 ```
 
-📖 **For complete error handling guide, see [Error Handling Documentation](./ERROR_HANDLING.md)**
+## Examples
 
-## Next Steps
+The maintained examples are in [docs/examples](examples/):
 
-1. **Explore Examples**: Start with [Fundamental Patterns](examples/00-fundamental-patterns.md) to understand core concepts
-2. **Study Use Cases**: See complete [Use Cases](examples/) for real-world analysis scenarios
-3. **Generate a Client**: Use the OpenAPI specification to generate a client SDK
-4. **Read the Full Reference**: Consult the [OpenAPI Specification](../specification/openapi.yaml) for complete details
+- [Point-in-time retrieval](examples/01-point-in-time-retrieval.md)
+- [Constitutional evolutionary analysis](examples/02-constitutional-evolutionary-analysis.md)
+- [Multilingual fallback](examples/03-multilingual-fallback.md)
+- [Point-in-time comparison and causal pinpointing](examples/04-point-in-time-comparison.md)
+- [Case-law examples](examples/caselaw/)
 
-## Client SDK Generation
+## Specification and client generation
 
-Generate a client for your preferred language:
+Authoritative source:
+
+- [OpenAPI specification](../specification/openapi.yaml)
+
+Example client generation:
 
 ```bash
-# Python client
 openapi-generator-cli generate \
   -i specification/openapi.yaml \
   -g python \
   -o ./generated-client/python
-
-# JavaScript client
-openapi-generator-cli generate \
-  -i specification/openapi.yaml \
-  -g javascript \
-  -o ./generated-client/javascript
 ```
-
-## Support
-
-- **Documentation**: This guide and linked resources
-- **API Specification**: [`../specification/openapi.yaml`](../specification/openapi.yaml)
-- **Contributing**: See [Contributing Guidelines](../CONTRIBUTING.md)
-
----
-
-*Ready to dive deeper? Check out the [Examples](examples/) for practical use cases.*
