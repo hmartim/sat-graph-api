@@ -1,21 +1,24 @@
 type: object
 description: |
-  A unified query structure for hybrid search that combines semantic (vector) and lexical (full-text) search capabilities.
-
-  This schema leverages Oracle 23ai's native hybrid search with Reciprocal Rank Fusion (RRF), allowing the database to optimally merge and rank results from both semantic and lexical searches in a single operation.
+  A unified query structure for ranked retrieval that can combine semantic and
+  lexical signals. The SAT-Graph API defines the observable search semantics;
+  the retrieval engine, index technology, fusion method, and ranking implementation
+  are deployment-specific.
 
   **Search Strategies:**
-  - `hybrid`: Combines both semantic and lexical search with database-managed ranking fusion (default)
-  - `semanticOnly`: Uses only vector similarity search
-  - `lexicalOnly`: Uses only full-text keyword search for candidate retrieval and ranking. It does **not** request or guarantee exhaustive enumeration of all lexical matches.
+  - `hybrid`: Combines semantic and lexical signals in ranked retrieval (default).
+  - `semanticOnly`: Uses only semantic similarity signals.
+  - `lexicalOnly`: Uses only lexical/full-text signals for candidate retrieval and ranking. It does **not** request or guarantee exhaustive enumeration of all lexical matches.
 
-  All strategies in this schema are search/ranking strategies. Exhaustive inspection of a known Version scope is performed by explicitly enumerating that scope and retrieving its TextUnits, rather than by treating search `topK` as an exhaustive enumeration mechanism.
+  All strategies in this schema are search/ranking strategies. Exhaustive inspection
+  of a known Version scope is performed by explicitly enumerating that scope and
+  retrieving its TextUnits, rather than by treating search `topK` as an exhaustive
+  enumeration mechanism.
 
-  **Basic Usage:**
-  For simple queries, only specify the queryText for the desired search type. The system will apply sensible defaults for weights and operators.
-
-  **Advanced Usage:**
-  Fine-tune the search with weights, mandatory clauses, boosting terms, and citation-aware scoring to match complex legal domain requirements.
+  Concrete deployments may implement these semantics using different search engines,
+  indexes, ranking functions, or fusion mechanisms. Domain-specific options in this
+  schema, such as citation-aware boosting, are optional search features rather than
+  requirements of the SAT-Graph core.
 
 properties:
   strategy:
@@ -24,20 +27,19 @@ properties:
     default: hybrid
     description: |
       The search strategy to employ:
-      - `hybrid`: Leverage both semantic and lexical search with RRF (recommended for most use cases)
-      - `semanticOnly`: Only perform vector similarity search
-      - `lexicalOnly`: Only perform keyword/phrase full-text retrieval and ranking. This remains a ranked search strategy and does not imply exhaustive enumeration of all matching TextUnits.
+      - `hybrid`: semantic and lexical signals both participate in ranked retrieval.
+      - `semanticOnly`: only semantic similarity participates in ranked retrieval.
+      - `lexicalOnly`: only lexical/full-text matching participates in ranked retrieval; this does not imply exhaustive enumeration.
     example: "hybrid"
 
   semantic:
     type: object
-    description: "Configuration for semantic (vector embedding) search"
+    description: "Configuration for semantic search."
     properties:
       queryText:
         type: string
         description: |
-          The natural language query string that will be embedded and used for vector similarity search.
-          Use complete sentences or phrases that express the semantic intent.
+          Natural-language query text used to express the semantic intent of the search.
         example: "políticas de garantia de renda mínima para famílias vulneráveis"
 
       weight:
@@ -47,9 +49,10 @@ properties:
         maximum: 1.0
         default: 0.5
         description: |
-          The relative weight (importance) of the semantic score in hybrid search mode.
-          Should sum to 1.0 with lexical.weight for balanced results.
-          Higher values prioritize conceptual similarity over exact keyword matches.
+          Relative contribution of the semantic signal in hybrid mode. Higher values
+          give greater weight to semantic similarity. When both semantic and lexical
+          weights are supplied, deployments should interpret them consistently as
+          relative contributions to hybrid ranking.
         example: 0.7
 
       topK:
@@ -57,21 +60,23 @@ properties:
         format: int32
         minimum: 1
         description: |
-          Optional. The number of top candidates to retrieve from semantic search before RRF fusion.
-          Useful for tuning performance vs. recall trade-offs in large corpora.
+          Optional. Maximum number of semantic candidates considered before final
+          ranking or fusion. This is a candidate/ranking limit, not an exhaustive
+          enumeration request.
         example: 100
     required:
       - queryText
 
   lexical:
     type: object
-    description: "Configuration for lexical (full-text keyword) search"
+    description: "Configuration for lexical/full-text search."
     properties:
       queryText:
         type: string
         description: |
-          Keywords or phrases for full-text search. Supports exact phrase matching with quotes.
-          Examples: "renda básica", "\"artigo 6º\" OR \"artigo 7º\""
+          Keywords or phrases for lexical/full-text retrieval. Exact syntax and
+          supported lexical operators are deployment-specific and should be documented
+          by the implementation.
         example: "\"artigo 6º\" OR \"renda básica\""
 
       weight:
@@ -81,9 +86,8 @@ properties:
         maximum: 1.0
         default: 0.5
         description: |
-          The relative weight of the lexical score in hybrid search mode.
-          Should sum to 1.0 with semantic.weight for balanced results.
-          Higher values prioritize exact keyword/phrase matches.
+          Relative contribution of the lexical signal in hybrid mode. Higher values
+          give greater weight to lexical matching.
         example: 0.3
 
       topK:
@@ -91,7 +95,9 @@ properties:
         format: int32
         minimum: 1
         description: |
-          Optional. The number of top candidates to retrieve from lexical search before RRF fusion or final ranking. This is a candidate/ranking limit, not a request for exhaustive lexical enumeration.
+          Optional. Maximum number of lexical candidates considered before final
+          ranking or fusion. This is a candidate/ranking limit, not an exhaustive
+          enumeration request.
         example: 100
     required:
       - queryText
@@ -99,8 +105,8 @@ properties:
   clauses:
     type: array
     description: |
-      Advanced clauses for mandatory, boosting, or exclusion conditions.
-      These map directly to Oracle 23ai's MUST_CONTAIN, SHOULD_CONTAIN, and exclusion operators.
+      Advanced clauses for mandatory, boosting, or exclusion conditions. The API
+      defines their observable intent; the underlying query mechanism is deployment-specific.
     items:
       type: object
       properties:
@@ -108,14 +114,14 @@ properties:
           type: string
           enum: [mustContain, shouldContain, mustNotContain]
           description: |
-            - `mustContain`: Results MUST include this term/phrase (filters out non-matching documents)
-            - `shouldContain`: Results containing this term/phrase receive a score boost
-            - `mustNotContain`: Results containing this term/phrase are excluded
+            - `mustContain`: results must satisfy this lexical condition.
+            - `shouldContain`: matching results receive a relevance boost.
+            - `mustNotContain`: matching results are excluded.
           example: "mustContain"
 
         text:
           type: string
-          description: "The term or phrase for this clause. Use quotes for exact phrases."
+          description: "The term or phrase for this clause."
           example: "Constituição Federal"
 
         boost:
@@ -124,9 +130,8 @@ properties:
           minimum: 0.0
           default: 1.5
           description: |
-            Score multiplier for `shouldContain` clauses. Ignored for other clause types.
-            Values > 1.0 increase relevance; values < 1.0 decrease it.
-          example: 2.0
+            Relative boost for `shouldContain` clauses. Ignored for other clause types.
+        example: 2.0
       required:
         - type
         - text
@@ -140,20 +145,22 @@ properties:
   citationBoost:
     type: object
     description: |
-      Optional. Boost results containing legal citations (e.g., "artigo 6º", "Lei 8.742/1993").
-      Particularly useful in legal/constitutional domains where cited documents carry more authority.
+      Optional domain-specific feature for boosting results that contain recognized
+      citations. A legal-domain deployment, for example, may use this to recognize
+      references such as articles, statutes, or case identifiers. Detection rules and
+      ranking effects are implementation-specific.
     properties:
       enabled:
         type: boolean
         default: false
-        description: "Whether to enable citation-aware scoring"
+        description: "Whether citation-aware boosting is enabled."
 
       multiplier:
         type: number
         format: float
         minimum: 1.0
         default: 1.5
-        description: "Score multiplier for documents containing detected legal citations"
+        description: "Relative boost applied to results containing recognized citations."
         example: 1.8
 
       patterns:
@@ -161,8 +168,7 @@ properties:
         items:
           type: string
         description: |
-          Optional. Custom regex patterns to detect citations beyond the defaults.
-          Default patterns include: "artigo \d+", "Lei \d+", "§ \d+", etc.
+          Optional deployment-specific patterns used to recognize citations.
         example: ["CF/\\d{2}", "Decreto \\d+"]
 
 anyOf:
