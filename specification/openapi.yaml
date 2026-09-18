@@ -7,6 +7,12 @@ info:
     This is the official OpenAPI 3.x specification for the **SAT-Graph API**,
     a formal, auditable interface for querying the Structure-Aware Temporal Graph (SAT-Graph).
 
+    **Domain neutrality:** The SAT-Graph core models structured Items, temporal Versions,
+    state-changing Actions, textual representations, classifications, and relations without
+    fixing a particular application domain. Legal information is the motivating and primary
+    reference domain used in the accompanying research and examples, but deployment-defined
+    vocabularies are not restricted to legal values unless explicitly stated by the core contract.
+
     The complete architectural framework is proposed in the paper:
     - **[An Ontology-Driven Graph RAG for Legal Norms: A Structural, Temporal, and Deterministic Approach](https://arxiv.org/abs/2508.00827)**
 
@@ -64,6 +70,8 @@ components:
       $ref: './schemas/common/ItemMetadataFilterSchema.yaml'
     ContentQuery:
       $ref: './schemas/common/ContentQuery.yaml'
+    VocabularyEntry:
+      $ref: './schemas/common/VocabularyEntry.yaml'
 
     # -------------------------------------------------------------------------
     # Entity Schemas - Core domain models (graph nodes)
@@ -334,6 +342,12 @@ paths:
     $ref: './paths/introspection/get-available-languages.yaml'
   /meta/action-types:
     $ref: './paths/introspection/get-supported-action-types.yaml'
+  /meta/version-types:
+    $ref: './paths/introspection/get-supported-version-types.yaml'
+  /meta/text-unit-aspects:
+    $ref: './paths/introspection/get-supported-text-unit-aspects.yaml'
+  /meta/relation-predicates:
+    $ref: './paths/introspection/get-supported-relation-predicates.yaml'
   /meta/implementation-guide:
     $ref: './paths/introspection/get-implementation-guide.yaml'
   /item-types/roots:
