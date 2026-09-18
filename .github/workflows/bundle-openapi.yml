@@ -1,15 +1,24 @@
-name: Bundle OpenAPI Specification
+name: Validate and Bundle OpenAPI Specification
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'specification/**'
+      - '.github/workflows/bundle-openapi.yml'
+  pull_request:
+    paths:
+      - 'specification/**'
+      - '.github/workflows/bundle-openapi.yml'
   release:
     types: [published]
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
-  bundle-and-upload:
+  validate-and-bundle:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required to upload release assets
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -19,26 +28,38 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: 'specification/package.json'
 
       - name: Install dependencies
         run: |
           cd specification
-          npm ci
+          npm install
+
+      - name: Validate source specification
+        run: |
+          cd specification
+          npm run validate
 
       - name: Bundle OpenAPI specification
         run: |
           cd specification
           npm run bundle
 
-      - name: Verify bundled file exists
+      - name: Validate bundled specification
         run: |
-          if [ ! -f specification/openapi-bundled.yaml ]; then
-            echo "Error: Bundled file was not generated"
-            exit 1
-          fi
-          echo "Bundled file size: $(wc -c < specification/openapi-bundled.yaml) bytes"
+          cd specification
+          npm run validate-bundled
+
+      - name: Upload generated bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-bundled
+          path: specification/openapi-bundled.yaml
+          retention-days: 30
+
+      - name: Verify committed bundle is synchronized
+        if: github.event_name != 'release'
+        run: |
+          git diff --exit-code -- specification/openapi-bundled.yaml
 
       - name: Upload bundled spec to release
         if: github.event_name == 'release'
@@ -50,11 +71,3 @@ jobs:
           asset_path: ./specification/openapi-bundled.yaml
           asset_name: openapi-bundled.yaml
           asset_content_type: application/x-yaml
-
-      - name: Upload bundled spec as artifact (for manual runs)
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v4
-        with:
-          name: openapi-bundled
-          path: specification/openapi-bundled.yaml
-          retention-days: 30
