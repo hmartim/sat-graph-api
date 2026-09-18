@@ -1,10 +1,20 @@
 openapi: 3.0.3
 info:
   title: SAT-Graph API
-  version: 2.0.0
+  version: 3.0.0
   description: |
     This is the official OpenAPI 3.x specification for the **SAT-Graph API**,
-    a formal, auditable interface for querying the Structure-Aware Temporal Graph (SAT-Graph).
+    a formal interface for querying the Structure-Aware Temporal Graph (SAT-Graph).
+
+    **Domain neutrality:** The SAT-Graph core models structured Items, temporal Versions,
+    state-changing Actions, textual representations, classifications, and relations without
+    fixing a particular application domain. Legal information is the motivating and primary
+    reference domain used in the accompanying research and examples, but deployment-defined
+    vocabularies are not restricted to legal values unless explicitly stated by the core contract.
+
+    Structured outputs and composable primitives allow consumers to construct verifiable
+    and auditable retrieval workflows; logging and preservation of execution traces are
+    responsibilities of the consuming application or agent harness.
 
     The complete architectural framework is proposed in the paper:
     - **[An Ontology-Driven Graph RAG for Legal Norms: A Structural, Temporal, and Deterministic Approach](https://arxiv.org/abs/2508.00827)**
@@ -27,14 +37,12 @@ info:
     - **Convenience Operations**: Optimized endpoints for common patterns
     - Implements "Future Directions" outlined in the research paper
 
-    **Design Principle:** Extensions maintain the same guarantees of composability,
-    auditability, and verifiability as the canonical core.
-
     ---
 
-    **Authentication Note:** All endpoints in this API are protected. A valid API Key
-    must be sent in the `Authorization` header on every request. Please refer to the
-    'securitySchemes' section below for details.
+    **Authentication Note:** Authentication and authorization are not part of the
+    SAT-Graph graph model or retrieval semantics. This OpenAPI profile uses API-key
+    authentication through the `Authorization` header. Other deployments may use
+    different security mechanisms while preserving the SAT-Graph API semantics.
 
     **Data Scoping Note:** The API serves data from multiple providers, called **DataSources**.
     All requests are automatically scoped to the DataSources granted to your API key.
@@ -107,20 +115,23 @@ components:
     ContentQuery:
       type: object
       description: |
-        A unified query structure for hybrid search that combines semantic (vector) and lexical (full-text) search capabilities.
-
-        This schema leverages Oracle 23ai's native hybrid search with Reciprocal Rank Fusion (RRF), allowing the database to optimally merge and rank results from both semantic and lexical searches in a single operation.
+        A unified query structure for ranked retrieval that can combine semantic and
+        lexical signals. The SAT-Graph API defines the observable search semantics;
+        the retrieval engine, index technology, fusion method, and ranking implementation
+        are deployment-specific.
 
         **Search Strategies:**
-        - `hybrid`: Combines both semantic and lexical search with database-managed ranking fusion (default)
-        - `semanticOnly`: Uses only vector similarity search
-        - `lexicalOnly`: Uses only full-text keyword search
+        - `hybrid`: Combines semantic and lexical signals in ranked retrieval (default).
+        - `semanticOnly`: Uses only semantic similarity signals.
+        - `lexicalOnly`: Uses only lexical/full-text signals for candidate retrieval and ranking. It does **not** request or guarantee exhaustive enumeration of all lexical matches.
 
-        **Basic Usage:**
-        For simple queries, only specify the queryText for the desired search type. The system will apply sensible defaults for weights and operators.
+        All strategies in this schema are search/ranking strategies. Exhaustive inspection
+        of a known Version scope is performed by explicitly enumerating that scope and
+        retrieving its TextUnits, rather than by treating search `topK` as an exhaustive
+        enumeration mechanism.
 
-        **Advanced Usage:**
-        Fine-tune the search with weights, mandatory clauses, boosting terms, and citation-aware scoring to match complex legal domain requirements.
+        Concrete deployments may implement these semantics using different search engines,
+        indexes, ranking functions, or fusion mechanisms.
       properties:
         strategy:
           type: string
@@ -131,19 +142,18 @@ components:
           default: hybrid
           description: |
             The search strategy to employ:
-            - `hybrid`: Leverage both semantic and lexical search with RRF (recommended for most use cases)
-            - `semanticOnly`: Only perform vector similarity search
-            - `lexicalOnly`: Only perform keyword/phrase full-text search
+            - `hybrid`: semantic and lexical signals both participate in ranked retrieval.
+            - `semanticOnly`: only semantic similarity participates in ranked retrieval.
+            - `lexicalOnly`: only lexical/full-text matching participates in ranked retrieval; this does not imply exhaustive enumeration.
           example: hybrid
         semantic:
           type: object
-          description: Configuration for semantic (vector embedding) search
+          description: Configuration for semantic search.
           properties:
             queryText:
               type: string
               description: |
-                The natural language query string that will be embedded and used for vector similarity search.
-                Use complete sentences or phrases that express the semantic intent.
+                Natural-language query text used to express the semantic intent of the search.
               example: políticas de garantia de renda mínima para famílias vulneráveis
             weight:
               type: number
@@ -152,29 +162,32 @@ components:
               maximum: 1
               default: 0.5
               description: |
-                The relative weight (importance) of the semantic score in hybrid search mode.
-                Should sum to 1.0 with lexical.weight for balanced results.
-                Higher values prioritize conceptual similarity over exact keyword matches.
+                Relative contribution of the semantic signal in hybrid mode. Higher values
+                give greater weight to semantic similarity. When both semantic and lexical
+                weights are supplied, deployments should interpret them consistently as
+                relative contributions to hybrid ranking.
               example: 0.7
             topK:
               type: integer
               format: int32
               minimum: 1
               description: |
-                Optional. The number of top candidates to retrieve from semantic search before RRF fusion.
-                Useful for tuning performance vs. recall trade-offs in large corpora.
+                Optional. Maximum number of semantic candidates considered before final
+                ranking or fusion. This is a candidate/ranking limit, not an exhaustive
+                enumeration request.
               example: 100
           required:
             - queryText
         lexical:
           type: object
-          description: Configuration for lexical (full-text keyword) search
+          description: Configuration for lexical/full-text search.
           properties:
             queryText:
               type: string
               description: |
-                Keywords or phrases for full-text search. Supports exact phrase matching with quotes.
-                Examples: "renda básica", "\"artigo 6º\" OR \"artigo 7º\""
+                Keywords or phrases for lexical/full-text retrieval. Exact syntax and
+                supported lexical operators are deployment-specific and should be documented
+                by the implementation.
               example: '"artigo 6º" OR "renda básica"'
             weight:
               type: number
@@ -183,24 +196,25 @@ components:
               maximum: 1
               default: 0.5
               description: |
-                The relative weight of the lexical score in hybrid search mode.
-                Should sum to 1.0 with semantic.weight for balanced results.
-                Higher values prioritize exact keyword/phrase matches.
+                Relative contribution of the lexical signal in hybrid mode. Higher values
+                give greater weight to lexical matching.
               example: 0.3
             topK:
               type: integer
               format: int32
               minimum: 1
               description: |
-                Optional. The number of top candidates to retrieve from lexical search before RRF fusion.
+                Optional. Maximum number of lexical candidates considered before final
+                ranking or fusion. This is a candidate/ranking limit, not an exhaustive
+                enumeration request.
               example: 100
           required:
             - queryText
         clauses:
           type: array
           description: |
-            Advanced clauses for mandatory, boosting, or exclusion conditions.
-            These map directly to Oracle 23ai's MUST_CONTAIN, SHOULD_CONTAIN, and exclusion operators.
+            Advanced clauses for mandatory, boosting, or exclusion conditions. The API
+            defines their observable intent; the underlying query mechanism is deployment-specific.
           items:
             type: object
             properties:
@@ -211,13 +225,13 @@ components:
                   - shouldContain
                   - mustNotContain
                 description: |
-                  - `mustContain`: Results MUST include this term/phrase (filters out non-matching documents)
-                  - `shouldContain`: Results containing this term/phrase receive a score boost
-                  - `mustNotContain`: Results containing this term/phrase are excluded
+                  - `mustContain`: results must satisfy this lexical condition.
+                  - `shouldContain`: matching results receive a relevance boost.
+                  - `mustNotContain`: matching results are excluded.
                 example: mustContain
               text:
                 type: string
-                description: The term or phrase for this clause. Use quotes for exact phrases.
+                description: The term or phrase for this clause.
                 example: Constituição Federal
               boost:
                 type: number
@@ -225,8 +239,7 @@ components:
                 minimum: 0
                 default: 1.5
                 description: |
-                  Score multiplier for `shouldContain` clauses. Ignored for other clause types.
-                  Values > 1.0 increase relevance; values < 1.0 decrease it.
+                  Relative boost for `shouldContain` clauses. Ignored for other clause types.
                 example: 2
             required:
               - type
@@ -237,33 +250,6 @@ components:
             - type: shouldContain
               text: direitos sociais
               boost: 1.8
-        citationBoost:
-          type: object
-          description: |
-            Optional. Boost results containing legal citations (e.g., "artigo 6º", "Lei 8.742/1993").
-            Particularly useful in legal/constitutional domains where cited documents carry more authority.
-          properties:
-            enabled:
-              type: boolean
-              default: false
-              description: Whether to enable citation-aware scoring
-            multiplier:
-              type: number
-              format: float
-              minimum: 1
-              default: 1.5
-              description: Score multiplier for documents containing detected legal citations
-              example: 1.8
-            patterns:
-              type: array
-              items:
-                type: string
-              description: |
-                Optional. Custom regex patterns to detect citations beyond the defaults.
-                Default patterns include: "artigo \d+", "Lei \d+", "§ \d+", etc.
-              example:
-                - CF/\d{2}
-                - Decreto \d+
       anyOf:
         - required:
             - semantic
@@ -280,12 +266,33 @@ components:
         clauses:
           - type: mustContain
             text: Constituição Federal
+    VocabularyEntry:
+      type: object
+      description: Describes one deployment-defined vocabulary value exposed through an introspection primitive. The `value` is the machine-readable token used in API requests and responses, while `label` and `description` provide human- and agent-readable semantics for that deployment.
+      required:
+        - value
+        - label
+        - description
+      properties:
+        value:
+          type: string
+          minLength: 1
+          description: The canonical machine-readable value used by the API.
+        label:
+          type: string
+          minLength: 1
+          description: A human-readable name for the vocabulary entry.
+        description:
+          type: string
+          minLength: 1
+          description: A semantic explanation of what the value means in this deployment.
     Item:
       type: object
       description: |
-        Represents a timeless, foundational entity within the SAT Graph. An 'Item' acts as a stable, version-agnostic anchor for a specific concept.
-        While its primary role is to model the formal structure of a document (as a 'Work' or 'Work Component'), it is flexible enough to represent other key entities, such as: - **Abstract Concepts:** A legal or procedural concept (e.g., 'Revocation', 'Due Process'). - **Named Entities:** A real-world entity like an organization or location (e.g., 'National Congress').
-        The 'Item' itself is just a structural and conceptual anchor. Its semantic meaning and textual content are provided by associated 'TextUnit' objects, typically with an aspect like 'description', 'summary'.
+        Represents a timeless, foundational entity within the SAT-Graph. An `Item` acts as a stable, version-agnostic anchor for a structural or conceptual entity.
+        A deployment may use Items for whole documents, document components, abstract concepts, named entities, or other domain-defined anchors. In the legal reference domain, examples include a Constitution, Article, Paragraph, legal concept, or institution.
+        The `Item` itself is a structural and conceptual anchor. Its textual representations are provided by associated `TextUnit` objects, while time-varying state is represented through `Version` objects.
+        An Item remains addressable independently of whether it currently has a valid or applicable Version. Expiration, revocation, repeal, replacement, or other temporal changes affect Versions and their temporal state; they do not by themselves remove the canonical Item.
       required:
         - id
         - typeId
@@ -293,48 +300,43 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/ID'
-          description: 'The primary, opaque identifier for this Item. The field is a string with no format restriction, allowing each implementation to choose the most appropriate strategy: UUIDs for distributed systems, deterministic hashes, or even the URN itself for simplified implementations. In the examples of this specification, the id field is populated with the URN to facilitate reading and manual tracing of relationships in JSON objects.'
+          description: The primary identifier for this Item. The field is a string with no format restriction, allowing each implementation to choose an appropriate strategy, such as UUIDs, deterministic hashes, URNs, or URIs.
         urn:
           type: string
           nullable: true
-          description: The persistent semantic identifier in the URN LEX standard (e.g., urn:lex:br:federal:constituicao:1988-10-05;art5). Represents the ontological identity of the norm, independent of its location or implementation, serving as the key for deduplication and interoperability between systems.
+          description: An optional persistent semantic identifier expressed as a URN when the deployment uses a URN-based identification scheme. The concrete namespace and syntax are deployment-specific. In the legal reference domain, URN LEX is one example.
           minLength: 1
           example: urn:lex:br:federal:constituicao:1988-10-05;1988!art5
         url:
           type: string
           format: uri
           nullable: true
-          description: The canonical electronic address (Dereferenceable URI) pointing to the official source of the text (e.g., Portal do Planalto or LexML). This field is used exclusively for human user interface (access provenance), not for logical inferences by the agent.
+          description: An optional canonical electronic address for this Item or an authoritative source associated with it. The concrete meaning is deployment-specific and is not used by the core API for graph inference.
           minLength: 1
           example: https://normas.leg.br/?urn=urn:lex:br:federal:constituicao:1988-10-05;1988!art5
         typeId:
           $ref: '#/components/schemas/ID'
-          description: |-
-            The unique identifier of the ItemType that classifies this item. This references an ItemType entity that defines the formal type within the taxonomy (e.g., "Constitution", "Article", "Paragraph").
-            The ItemType taxonomy enables validation, navigation, and rich metadata about type relationships and constraints.
+          description: The unique identifier of the ItemType that classifies this Item. The ItemType taxonomy defines the deployment's formal structural or conceptual type system. In a legal-domain implementation, example types may include Constitution, Article, or Paragraph.
           example: article
         label:
           type: string
-          description: The human-readable label or title for the item.
+          description: The human-readable label or title for the Item.
           minLength: 1
           example: Brazilian Constitution of 1988
         parentId:
           $ref: '#/components/schemas/ID'
           nullable: true
-          description: The canonical ID of the single structural parent of this item. This field is primarily relevant for 'Concept Component' items to define the document hierarchy. For other categories like 'Abstract Concept', it may be used to build a taxonomy.
+          description: The canonical, atemporal parent adopted by the implementation for this Item. This field defines the Item-level hierarchy used by Item navigation and does not encode historical structural position. Historical structural states are represented through Version-level relationships.
         metadata:
           $ref: '#/components/schemas/JSON'
           nullable: true
           description: |-
-            A flexible field for any valid JSON data. Used for storing structured, atemporal properties of the item, such as jurisdiction, publication data, or other domain-specific attributes that don't fit into the other fields.
-
-            **Best Practice:** Use internationally recognized vocabularies such as schema.org (particularly schema.org/Legislation for legal norms) to enable semantic interoperability and zero-shot understanding by AI agents. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md) for detailed guidance and examples.
-
-            This approach is exemplified in: [Legal Knowledge Graph Foundations, Part-I: URI-Addressable Abstract Works (LRMoo F1 to schema.org)](https://arxiv.org/abs/2508.00827).
+            A flexible field for any valid JSON data containing atemporal, domain-specific properties of the Item.
+            **Best Practice:** Use internationally recognized vocabularies where appropriate to improve semantic interoperability. In the legal reference domain, schema.org/Legislation is one possible vocabulary. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md) for guidance.
     Version:
       type: object
       description: |
-        Represents a specific, time-bound version of an Item (a TV/CTV). It captures the semantic state and structural position of an item at a specific point in time, but is language-agnostic and contains no direct textual content.
+        Represents a specific, time-bound version of an Item (a TV/CTV). It captures the semantic state and a specific structural state of an Item, but is language-agnostic and contains no direct textual content. The structural children and descendants associated with this Version are the Versions that compose this stored structural state; Version-level navigation traverses those relationships deterministically and does not itself perform temporal resolution. Temporal resolution is handled separately by primitives such as getValidVersions and getApplicableVersions.
       required:
         - id
         - itemId
@@ -348,7 +350,7 @@ components:
         urn:
           type: string
           nullable: true
-          description: The persistent semantic identifier in the URN LEX standard, typically extending the Item's URN with temporal information (e.g., @2020-01-15 suffix). Represents the ontological identity of this specific version, enabling precise temporal citations and version tracking across systems for interoperability.
+          description: A persistent semantic identifier for this specific Version when the deployment uses a URN-based identification scheme. In the legal reference domain, URN LEX may extend an Item identifier with temporal information to support precise version citation and interoperability.
           minLength: 1
           example: urn:lex:br:federal:constituicao:1988-10-05;1988@2020-01-15!art5
         url:
@@ -364,18 +366,17 @@ components:
           example: urn:lex:br:federal:constituicao:1988
         type:
           type: string
-          description: Distinguishes between textual legislative versions (statutory) and non-textual judicial interpretive versions. Statutory Versions (S-TV) result from legislative amendments and contain modified text. Interpretive Versions (I-TV) result from judicial decisions that alter the normative meaning without changing the statutory text—modeling the phenomenon of "interpretive drift" where courts reshape legal norms through binding precedents.
-          enum:
-            - statutory
-            - interpretive
+          description: |-
+            The deployment-defined classification of this Version. The vocabulary and semantics are implementation- and domain-specific; consumers can discover supported values through `getSupportedVersionTypes`.
+            For example, in a legal-domain implementation, Version types may include `statutory` for legislative textual states and `interpretive` for interpretive states associated with case law or another authoritative interpretation.
           example: statutory
         validityInterval:
           $ref: '#/components/schemas/TimeInterval'
-          description: The time interval during which this version was legally valid.
+          description: The time interval during which this Version is considered valid according to the temporal semantics of the deployment. In the legal reference domain, this corresponds to the period of legal validity.
         applicabilityInterval:
           $ref: '#/components/schemas/TimeInterval'
           nullable: true
-          description: The time interval during which this version can produce legal effects. Distinct from validityInterval, this captures the period when the norm is actually applicable, enabling management of complex scenarios such as temporary suspension of efficacy or tax precedence rules, where the capacity to produce effects may not coincide with the formal lifetime of the rule. Inspired by the ELI ontology's distinction between validity and application.
+          description: The time interval during which this Version is applicable or effective according to the deployment's domain semantics. It is distinct from `validityInterval` when a domain needs to represent a difference between formal validity and effective applicability. In the legal reference domain, this supports cases where a norm is valid but not yet, or no longer, producing legal effects.
         producedByActionId:
           $ref: '#/components/schemas/ID'
           nullable: true
@@ -401,11 +402,8 @@ components:
           items:
             $ref: '#/components/schemas/ID'
           description: |-
-            References to the **Actions** that used this specific version as authorizing source to modify other parts of the graph (Forward Causality). This property materializes the inverse relationship of LRMoo **R15 has used**.
-
-            Through this property, the agent can discover the effects of a norm (e.g., "The caput of Art. 1 of this Constitutional Amendment modified the caput of Article 5 of the Federal Constitution of 1988").
-
-            This is typically populated for versions of legislative commands (alteration provisions) that serve as the legal basis for modifications.
+            References to the **Actions** that used this specific version as source or provenance for changes elsewhere in the graph (Forward Causality). This property materializes the inverse relationship of LRMoo **R15 has used**.
+            In the legal reference domain, this may represent a legislative command whose content authorizes or specifies modifications to another provision.
           example:
             - urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6_cpt
         metadata:
@@ -572,32 +570,15 @@ components:
           example: pt-BR
         aspect:
           type: string
+          minLength: 1
           description: |-
-            The semantic role of the text relative to its source node, forming the core of the multi-aspect retrieval model. The `canonical` aspect is special; it represents a segment of the official text of a document (e.g. legal provision,  i.e., the content of a legal norm's component). It is associated with a `Version`. Other aspects represent secondary or descriptive texts about a node. `textualMetadata` is a representation in natural language of object's metadata and allow semantic filters in their contents (structured metadata can also be declared  in `Item` and `Version`, to ensure deterministic filters). `textualRelation` is a representation in natural language of object's relation and allow semantic filters in their contents--this approach is described in the:
-                  [SAT Graph RAG paper)](https://arxiv.org/abs/2505.00039).
-            `indexical` is a alterative identifier or name (surname) that can be used in semantic reference search--this approach is proposed in:
-                  [Poly-Vector Retrieval: Reference and Content Embeddings for Legal Documents)](https://arxiv.org/abs/2504.10508).
-
-            The enumerated values represent a baseline set of common aspects. A concrete implementation of the SAT-Graph may extend this list with additional, domain-specific aspects.
-            **Judicial/Case Law Aspects:** - `ratio`: The ratio decidendi—the core legal reasoning that carries normative force. - `facts`: The narrative of evidentiary facts essential for distinguishing cases. - `holding`: The final dispositive command or decision outcome.
-          pattern: ^[a-zA-Z]+$
-          enum:
-            - canonical
-            - description
-            - summary
-            - textualMetadata
-            - textualRelation
-            - indexical
-            - ratio
-            - facts
-            - holding
+            The deployment-defined semantic role of this TextUnit relative to its source node. Aspect vocabularies are implementation- and domain-specific; consumers can discover supported values and their meanings through `getSupportedTextUnitAspects`.
+            For example, a legal-domain implementation may define aspects such as `canonical` for primary official text, `summary` for a condensed description, `indexical` for alternative identifiers or names, and `ratio`, `facts`, or `holding` for case-law material.
           example: canonical
         content:
           type: string
           minLength: 1
-          description: |-
-            The raw textual content of this unit. This content can be a direct segment from the raw document or a segment with complete semantics-- this approach is proposed in:
-                  [Unlocking Legal Knowledge with Multi-Layered Embedding-Based Retrieval](https://arxiv.org/abs/2411.07739).
+          description: The textual content of this unit. How content is segmented, normalized, contextualized, generated, or otherwise materialized is implementation- and domain-specific and may vary by `aspect`. The API does not prescribe those materialization conventions. Consumers should consult the implementation's documentation for the conventions applicable to each aspect. Unit-specific information may be provided in `metadata`.
           example: Todo o poder emana do povo, que o exerce por meio de representantes eleitos ou diretamente, nos termos desta Constituição.
         metadata:
           $ref: '#/components/schemas/JSON'
@@ -609,10 +590,8 @@ components:
     Action:
       type: object
       description: |
-        Represents a reified event (e.g., an amendment, a revocation). 
-         
-        It is important to clarify the scope of "causality" within this framework.  For exemple, in legislative domain, we address the chain of events that determine  the textual validity of a legal provision at a specific point in time  (causality in the textual-documentary world). This is distinct from the legal-dogmatic  concept of causality, which typically refers to the relationship between a real-world  event (the operative fact) and the legal norm that applies to it.
-        It is a first-class entity that models a single, auditable causal link, connecting the source of a command to its precise effects on the version history of an Item.
+        Represents a reified event that records a causal state transition in the graph. An Action connects one or more source Versions, when available, to Versions it terminates and/or produces. Deployments define the Action vocabulary and the domain semantics associated with those transitions.
+        In the legal reference domain, Actions may represent legislative or judicial events such as amendments, enactments, revocations, interpretations, or overrulings.
       required:
         - id
         - type
@@ -621,96 +600,65 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/ID'
-          description: A unique identifier for this specific action.
+          description: A unique identifier for this specific Action.
           example: urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14!art1_cpt_alt1_art6_cpt
         parentId:
           $ref: '#/components/schemas/ID'
           nullable: true
           description: |-
-            The ID of the parent Action (macro-event) that this Action is part of.
-
-            This property models the LRMoo/CIDOC-CRM relationship **P9i forms part of**, enabling the decomposition of macro-events (e.g., "Promulgation of Constitutional Amendment 26/2000") into atomic micro-events (e.g., "The command in Art. 1 of EC 26 that modifies Art. 6 of the Constitution").
-
-            **Macro-events** serve as contextual groupers representing the global legislative or judicial act. **Micro-events** are the operational units that effectively transform the graph state through their causal triad (sourceVersionIds, terminatesVersionIds, producesVersionIds).
-
-            This field is null for top-level macro-events that have no parent.
+            The ID of the parent Action when this Action forms part of a larger event. This supports deployment-defined macro/micro event decomposition.
+            In the legal reference domain, a promulgation may be represented as a macro-event containing atomic amendment Actions as children.
           example: urn:lex:br:federal:emenda.constitucional:2000-02-14;26@2000-02-14
         type:
           type: string
           description: |-
-            The deployment's canonical Action-type value. Action ontologies are extensible and may use atomic or composite values, so clients must discover supported values through `getSupportedActionTypes` instead of validating against a hard-coded enum.
-            **Legislative Actions** create or modify statutory text: - `Amendment`: Modifies existing statutory text. - `Revocation`: Removes statutory text from validity. - `Creation`: Enacts new statutory text. - `Repeal`: Formally cancels legislation.
-            **Judicial Actions** create interpretive versions without altering statutory text: - `Interpretation`: A judicial decision that establishes or clarifies the meaning
-              of a statutory provision, creating an Interpretive Version.
-            - `Overruling`: A decision that explicitly reverses a prior judicial interpretation. - `Distinguishing`: A decision that limits the applicability of a prior precedent
-              based on factual or legal differences.
-            - `Constitutional Mutation`: A judicial reinterpretation that fundamentally alters
-              the normative scope of a constitutional provision without textual amendment.
-
-            **Hybrid Actions** bridge legislative and judicial domains: - `Legislative Override`: A legislative act specifically enacted to supersede
-              a judicial interpretation.
+            The deployment-defined Action-type value. Consumers can discover supported values and their meanings through `getSupportedActionTypes`.
+            For example, a legal-domain implementation may define values such as `Amendment`, `Revocation`, `Creation`, `Interpretation`, `Overruling`, or `Distinguishing`.
           example: INSERTION
         eventTime:
           type: string
           format: date-time
-          description: The date and time of this action, in UTC.
+          description: The date and time associated with this Action, in UTC.
           example: '2000-02-14T00:00:00Z'
         validityInterval:
           $ref: '#/components/schemas/TimeInterval'
-          description: The time interval imposed to the versions created by this action.
+          nullable: true
+          description: An optional validity interval associated with this Action according to the deployment's temporal model. Its exact domain interpretation is implementation-specific.
         applicabilityInterval:
           $ref: '#/components/schemas/TimeInterval'
           nullable: true
-          description: The time interval during which the versions created by this action can produce legal effects. Distinct from validityInterval, this captures the period when the norm is actually applicable, enabling management of complex scenarios such as temporary suspension of efficacy or tax precedence rules, where the capacity to produce effects may not coincide with the formal lifetime of the rule. Inspired by the ELI ontology's distinction between validity and application.
+          description: An optional applicability or effectiveness interval associated with this Action according to the deployment's domain semantics.
         sourceVersionIds:
           type: array
           items:
             $ref: '#/components/schemas/ID'
           description: |-
-            The IDs of the specific 'Version(s)' of the legal text that **authorize** or **command** this single change. This is the source of the causal link.
-            This array may be empty when a deployment has an action whose source provenance is unavailable or has not yet been linked. An empty array means "source provenance unavailable"; it is not evidence that the action had no legal or documentary source.
-            Multiple sources capture convergent rationale from multiple concurring opinions or related judgment components that jointly establish the binding reasoning (ratio decidendi) for an interpretive action.
-            For simple legislative actions (e.g., a single amending law), this array typically contains one element. For judicial actions where the binding interpretation emerges from multiple concurring opinions, this array captures all relevant source components.
+            The IDs of Version objects that provide source or provenance for this Action. The array may be empty when source provenance is unavailable or has not been linked.
+            In the legal reference domain, these may identify legislative provisions or decision components that authorize, explain, or support the modeled event.
           example:
             - urn:lex:br:federal:supremo.tribunal.federal:acordao:2016-02-17;hc126292@2016-02-17!majority_opinion
-            - urn:lex:br:federal:supremo.tribunal.federal:acordao:2016-02-17;hc126292@2016-02-17!concurring_opinion_1
         terminatesVersionIds:
           type: array
           items:
             $ref: '#/components/schemas/ID'
-          description: |-
-            The IDs of the 'Version(s)' whose validity is **terminated** by this action.
-
-            For **micro-events** (atomic modifications), this array typically contains 0 or 1 element following the recommended 1:1 cardinality (one terminated version for one created version). This constraint is fundamental for the Autonomous Agent, enabling deterministic diff and lineage tracking functions without alignment ambiguities.
-
-            For **macro-events** and future edge cases (e.g., fusions of two provisions into one, or complex revocations affecting multiple versions), this array may contain multiple elements.
-
-            This is empty for original enactments (Creations) that produce new versions without terminating any existing ones.
+          description: The IDs of Version objects whose validity or active state is terminated by this Action. The array may be empty when the Action does not terminate an existing Version.
           example:
             - urn:lex:br:federal:constituicao:1988-10-05;1988@1988-10-05!art6_cpt
         producesVersionIds:
           type: array
           items:
             $ref: '#/components/schemas/ID'
-          description: |-
-            The IDs of the 'Version(s)' that are **created** by this action.
-
-            For **micro-events** (atomic modifications), this array typically contains 0 or 1 element. For **macro-events** (e.g., promulgation of a new law), this array may contain multiple elements representing all versions created by the event (e.g., the complete law version plus all original article versions).
-
-            This is empty for pure Revocation or Repeal actions that terminate a version without creating a new one (e.g., when a statute is completely repealed without replacement, or when a judicial interpretation is overruled without establishing a new binding interpretation).
+          description: The IDs of Version objects produced by this Action. The array may be empty when the Action does not create a new Version.
           example:
             - urn:lex:br:federal:constituicao:1988-10-05;1988@2000-02-14!art6_cpt
         metadata:
           $ref: '#/components/schemas/JSON'
           nullable: true
-          description: |-
-            A flexible field for any valid JSON data providing more context about the action, such as its source of the assertion.
-
-            **Best Practice:** Use schema.org vocabularies (e.g., schema.org/LegislationObject) to enable semantic interoperability. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md) for guidance on structuring legislative event metadata.
+          description: A flexible field for valid JSON data providing additional context about the Action. Deployments may use domain vocabularies appropriate to their application. In the legal reference domain, schema.org vocabularies may be useful for interoperability.
     Relation:
       type: object
       description: |
-        Represents a directed, typed, and potentially time-bound link between two entities in the graph (Items or Versions). This polymorphic design allows for modeling a rich web of interactions, distinguishing between timeless conceptual links and time-bound references embedded in text. The optional 'validityInterval' allows for modeling temporal relationships that are only true for a specific period.
+        Represents a directed, typed, and potentially time-bound link between two entities in the graph (Items or Versions). This polymorphic design allows for modeling a rich web of interactions, distinguishing between timeless conceptual links and time-bound references. The optional `validityInterval` allows relationships that are only true for a specific period.
       required:
         - id
         - sourceType
@@ -735,14 +683,11 @@ components:
           example: urn:lex:br:federal:constituicao:1988-10-05;1988
         predicate:
           type: string
-          description: The type of the relationship. This defines the semantics of the link. The enumerated values represent a baseline set; a concrete implementation may extend this list with a more detailed vocabulary or ontology.
-          enum:
-            - succeeds
-            - relatedTo
-            - appliesTo
-            - cites
-            - definedIn
-          example: succeeds
+          minLength: 1
+          description: |-
+            The deployment-defined predicate that gives this relationship its semantics. Predicate vocabularies are implementation- and domain-specific; consumers can discover supported values and their meanings through `getSupportedRelationPredicates`.
+            For example, a legal-domain implementation may define predicates such as `cites`, `succeeds`, `appliesTo`, `definedIn`, or `relatedTo`.
+          example: cites
         targetType:
           type: string
           description: The type of the entity at the target of the relation.
@@ -765,8 +710,7 @@ components:
           $ref: '#/components/schemas/JSON'
           nullable: true
           description: |-
-            A flexible field for any valid JSON data providing more context about the relation, such as its own validity interval or source of the assertion.
-
+            A flexible field for any valid JSON data providing more context about the relation, such as source, confidence, or other domain-specific attributes.
             **Best Practice:** Use schema.org vocabularies to enable semantic interoperability. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md) for guidance on structuring relationship metadata.
     SearchItemsRequest:
       type: object
@@ -774,24 +718,18 @@ components:
         The request body for the searchItems operation.
 
         **Structural Scoping — `itemIds` vs `itemUrns`:**
-        Both filters perform **hierarchical traversal** — passing a root Item's identifier causes the search to include Items from all descendant Items as well. They differ in mechanism:
-        - `itemIds`: portable, works with any ID scheme; implemented via recursive SQL (e.g., `CONNECT BY` / recursive CTE on the `parent_id` column)
-        - `itemUrns`: optimization for LEX URN implementations; implemented via an index range scan (`LIKE 'urn:lex:...;10406!%'`), avoiding recursive traversal at the cost of portability
-
-        If both are provided, implementations should prefer `itemUrns` for performance when URNs are available.
+        Both filters define hierarchical structural scope. `itemIds` uses deployment
+        identifiers. `itemUrns` is available to deployments whose semantic URN scheme
+        supports structural identification or hierarchical scoping. The traversal and
+        optimization mechanism are implementation-specific. In the legal reference
+        domain, LEX URNs are one example.
       properties:
         itemIds:
           type: array
           items:
             $ref: '#/components/schemas/ID'
           description: |
-            Optional. A list of Item IDs to define the structural scope for the search.
-
-            The traversal is **hierarchical**: each provided ID is treated as a root, and the search includes Items from all its descendants as well.
-            Implemented via recursive SQL (e.g., `CONNECT BY PRIOR id = parent_id` in Oracle, or a recursive CTE in ANSI SQL).
-
-            Use this when Item IDs are known and the implementation does not use the LEX URN convention.
-            For LEX URN-based implementations, prefer `itemUrns` for better query performance.
+            Optional. A list of Item IDs treated as roots of a hierarchical structural scope.
           example:
             - urn:lex:br:federal:lei:2002-01-10;10406
             - urn:lex:br:federal:lei:1973-10-10;6015
@@ -800,15 +738,9 @@ components:
           items:
             type: string
           description: |
-            Optional. A list of Item URNs (LEX URN standard) to define the structural scope for the search.
-
-            The traversal is **hierarchical**: each URN is used as a prefix to match the target Item and all its descendants via an index range scan on the `urn` column (`LIKE 'urn:lex:...;10406!%'`).
-            This avoids recursive SQL traversal and is significantly more efficient for large norm hierarchies.
-
-            **This filter is only effective when the implementation populates the `urn` field on `Item` following the LEX URN convention**, where component URNs are formed by appending `!<component-path>` to the parent norm's URN (e.g., `urn:lex:br:federal:lei:2002-01-10;10406!art186`).
-            If `urn` is null or does not follow this convention, use `itemIds` instead.
-
-            If both `itemIds` and `itemUrns` are provided, implementations should prefer `itemUrns`.
+            Optional. Semantic URNs treated as roots of a hierarchical structural scope
+            when the deployment's URN scheme supports that behavior. The identifier scheme
+            and traversal mechanism are implementation-specific; LEX URNs are a legal-domain example.
           example:
             - urn:lex:br:federal:lei:2002-01-10;10406
             - urn:lex:br:federal:lei:1973-10-10;6015
@@ -816,13 +748,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ID'
-          description: Optional. A list of 'Theme' IDs to expand the search scope.
+          description: Optional. A list of Theme IDs to expand the search scope.
         itemTypeIds:
           type: array
           items:
             $ref: '#/components/schemas/ID'
           description: |
-            Optional. Filter search results to only items of the specified types (references to ItemType entities).
+            Optional. Filter search results to only Items of the specified types.
           example:
             - item-type:article
             - item-type:paragraph
@@ -843,83 +775,90 @@ components:
       description: |
         The request body for the searchTextUnits operation.
 
-        This endpoint performs **semantic and lexical discovery** within a defined scope. For deterministic fetching of TextUnits by specific Version IDs, use `getBatchTextUnits` instead.
+        This endpoint performs **semantic and lexical discovery** within a defined scope. All search strategies, including `lexicalOnly`, are ranked discovery strategies and do not guarantee exhaustive enumeration of all matching TextUnits. For deterministic fetching of TextUnits by specific Version IDs, use `getBatchTextUnits` instead.
+
+        For exhaustive inspection of a known Version scope, explicitly enumerate that scope, retrieve its TextUnits with `getBatchTextUnits`, and evaluate the desired criterion over the complete retrieved set.
 
         **Scoping:**
-        - Use `itemIds` and/or `themeIds` to define the structural or thematic scope
-        - Use `at` to constrain temporally (if omitted, no temporal filter is applied)
-        - If neither `itemIds`, `itemUrns`, nor `themeIds` is provided, the search applies globally across all accessible data
+        - Use `itemIds` and/or `themeIds` to define structural or thematic scope.
+        - Use `versionIds` to restrict ranked search to an exact set of Versions.
+        - Use `at` to constrain temporally; if omitted, no temporal filter is applied.
+        - Use `temporalPredicate` to select validity or applicability when `at` is provided.
+        - If none of `itemIds`, `itemUrns`, `versionIds`, or `themeIds` is provided, the search applies globally across accessible data.
+        - Multiple scope filters are intersected.
 
         **Structural Scoping — `itemIds` vs `itemUrns`:**
-        Both filters perform **hierarchical traversal** — passing a root Item's identifier causes the search to include TextUnits from all descendant Items as well. They differ in mechanism:
-        - `itemIds`: portable, works with any ID scheme; implemented via recursive SQL (e.g., `CONNECT BY` / recursive CTE on the `parent_id` column)
-        - `itemUrns`: optimization for LEX URN implementations; implemented via an index range scan (`LIKE 'urn:lex:...;10406!%'`), avoiding recursive traversal at the cost of portability
+        Both filters define hierarchical structural scope. `itemIds` uses deployment identifiers.
+        `itemUrns` is available to deployments whose semantic URN scheme supports structural
+        identification or hierarchical scoping. The traversal and optimization mechanism are
+        implementation-specific. In the legal reference domain, LEX URNs are one example.
 
-        If both are provided, implementations should prefer `itemUrns` for performance when URNs are available.
+        **Version Scoping:**
+        `versionIds` defines an exact Version scope and performs no hierarchical expansion.
 
-        **Search Query:**
-        - `contentQuery`: A unified JSON structure for hybrid search combining semantic and lexical queries with advanced filtering
-        - Required for effective discovery
-
-        **Optional Filters:**
-        - `itemTypeIds`: Filter results to only TextUnits from Items of specified types
-        - `metadataFilter`: Apply additional metadata-based filtering
+        **Temporal Filtering:**
+        - If `at` is omitted, no temporal filter is applied.
+        - If `at` is provided and `temporalPredicate` is omitted, `validity` is used.
+        - `validity` filters by `validityInterval`.
+        - `applicability` filters by `applicabilityInterval`; if absent, the implementation MUST fall back to `validityInterval`, matching `getApplicableVersions`.
+        - Supplying `temporalPredicate` without `at` is invalid and MUST result in HTTP 400.
+        - Ranked search uses the current transaction-time perspective; `observerTime` is not part of this operation.
       properties:
         itemIds:
           type: array
           items:
             $ref: '#/components/schemas/ID'
           description: |
-            Optional. A list of Item IDs to define the structural scope for the search.
-
-            The traversal is **hierarchical**: each provided ID is treated as a root, and the search includes TextUnits from all its descendant Items as well.
-            Implemented via recursive SQL (e.g., `CONNECT BY PRIOR id = parent_id` in Oracle, or a recursive CTE in ANSI SQL).
-
-            Use this when Item IDs are known and the implementation does not use the LEX URN convention.
-            For LEX URN-based implementations, prefer `itemUrns` for better query performance.
+            Optional. Item IDs treated as roots of a hierarchical structural scope.
           example:
             - urn:lex:br:federal:lei:2002-01-10;10406
-            - urn:lex:br:federal:lei:1973-10-10;6015
         itemUrns:
           type: array
           items:
             type: string
           description: |
-            Optional. A list of Item URNs (LEX URN standard) to define the structural scope for the search.
-
-            The traversal is **hierarchical**: each URN is used as a prefix to match the target Item and all its descendants via an index range scan on the `urn` column (`LIKE 'urn:lex:...;10406!%'`).
-            This avoids recursive SQL traversal and is significantly more efficient for large norm hierarchies.
-
-            **This filter is only effective when the implementation populates the `urn` field on `Item` following the LEX URN convention**, where component URNs are formed by appending `!<component-path>` to the parent norm's URN (e.g., `urn:lex:br:federal:lei:2002-01-10;10406!art186`).
-            If `urn` is null or does not follow this convention, use `itemIds` instead.
-
-            If both `itemIds` and `itemUrns` are provided, implementations should prefer `itemUrns`.
+            Optional. Semantic URNs treated as roots of a hierarchical structural scope
+            when the deployment's URN scheme supports that behavior. The identifier scheme
+            and traversal mechanism are implementation-specific; LEX URNs are a legal-domain example.
           example:
             - urn:lex:br:federal:lei:2002-01-10;10406
-            - urn:lex:br:federal:lei:1973-10-10;6015
+        versionIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ID'
+          minItems: 1
+          uniqueItems: true
+          description: |
+            Optional. Exact Version IDs defining the ranked-search candidate universe.
+            No hierarchical expansion is performed. When combined with other filters,
+            all constraints are intersected.
         itemTypeIds:
           type: array
           items:
             $ref: '#/components/schemas/ID'
-          description: |
-            Optional. Filter search results to only TextUnits from Items of the specified types (references to ItemType entities).
-            More efficient than using `metadataFilter` for type-based filtering.
-          example:
-            - item-type:article
-            - item-type:paragraph
+          description: Optional. Restricts results to TextUnits associated with Items of the specified types.
         themeIds:
           type: array
           items:
             $ref: '#/components/schemas/ID'
-          description: |
-            Optional. A list of Theme IDs to define the thematic scope for the search.
+          description: Optional. Theme IDs defining thematic scope.
         metadataFilter:
           $ref: '#/components/schemas/MetadataFilter'
         at:
           type: string
           format: date-time
           description: |
-            Optional. A UTC date-time to constrain the search to TextUnits valid at that point in time. If omitted, no temporal filter is applied and all versions are returned regardless of validity period.
+            Optional. UTC date-time at which to apply the selected temporal predicate.
+            If omitted, no temporal filter is applied.
+        temporalPredicate:
+          type: string
+          enum:
+            - validity
+            - applicability
+          default: validity
+          description: |
+            Optional. Selects the temporal predicate used when `at` is provided.
+            Supplying this parameter without `at` is invalid and MUST result in HTTP 400.
         contentQuery:
           $ref: '#/components/schemas/ContentQuery'
         language:
@@ -930,51 +869,23 @@ components:
           type: array
           items:
             type: string
-          default:
+          minItems: 1
+          uniqueItems: true
+          description: Optional. Restricts ranked search to the specified deployment-defined TextUnit aspects. If omitted, all available aspects are considered. Supported values and their meanings can be discovered through `getSupportedTextUnitAspects`.
+          example:
             - canonical
-          description: A list of textual aspects to search within (e.g., 'canonical', 'summary').
+            - summary
         topK:
           type: integer
           format: int32
           default: 10
           minimum: 1
-          description: The maximum number of results to return.
+          description: |
+            The maximum number of ranked results to return. Increasing `topK` does not convert
+            this operation into exhaustive enumeration.
         dataSources:
           $ref: '#/components/schemas/DataSourcesSchema'
           description: Optional. Scopes the search to a specific list of granted data sources.
-    GetItemHierarchyRequest:
-      type: object
-      description: |
-        Specifies the scope and filters for enumerating Item objects.
-
-        Filters are applied after scope resolution (itemIds/themeIds/depth).
-      properties:
-        itemIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/ID'
-          description: Optional. A list of 'Item' IDs to define a structural scope. The function will return these items and/or their descendants.
-        themeIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/ID'
-          description: Optional. A list of 'Theme' IDs to define a thematic scope. The function will return all member items of these themes.
-        depth:
-          type: integer
-          description: |
-            Controls traversal depth for 'itemIds' scopes. If `depth=1`, only direct children are returned. If omitted or negative, all descendants are returned recursively. This parameter is ignored for 'themeIds' scopes.
-          default: -1
-        itemTypeIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/ID'
-          description: |
-            Optional. Filter results to only items of the specified types (references to ItemType entities).
-          example:
-            - item-type:article
-            - item-type:paragraph
-        dataSources:
-          $ref: '#/components/schemas/DataSourcesSchema'
     GetRelationsRequest:
       type: object
       description: Specifies the criteria for querying Relation objects. If 'entityId' is omitted, the query runs against the entire corpus of relations.
@@ -1133,7 +1044,7 @@ components:
         observerTime:
           type: string
           format: date-time
-          description: Optional. The temporal perspective from which to view the graph (Transaction Time). If omitted, defaults to "now" (current legal truth). If provided, filters out Actions that occurred after this time, enabling historical state reconstruction.
+          description: Optional. The transaction-time perspective from which to view the graph. Only facts known or recorded by the system at or before this perspective may affect the result. This is distinct from the event time or valid time of those facts. If omitted, defaults to "now" (the current recorded knowledge perspective).
     GetBatchTextUnitsRequest:
       type: object
       description: Specifies the criteria for retrieving a batch of TextUnit objects by Version IDs.
@@ -1156,12 +1067,13 @@ components:
         aspects:
           type: array
           description: |
-            Optional. A list of textual aspects to retrieve for all Versions
-            (e.g., ["canonical", "summary"]). Defaults to ["canonical"].
+            Optional. Restricts retrieval to the specified deployment-defined TextUnit
+            aspects. If omitted, all available aspects are returned. Supported values
+            and their meanings can be discovered through `getSupportedTextUnitAspects`.
           items:
             type: string
-          default:
-            - canonical
+          minItems: 1
+          uniqueItems: true
           example:
             - canonical
             - summary
@@ -1180,7 +1092,7 @@ components:
           uniqueItems: true
     ResolvedItemCandidate:
       type: object
-      description: Represents a single candidate match when resolving a text reference to an Item, including the full entity and the confidence score.
+      description: Represents a single candidate match when resolving a text reference to an Item, including the full entity and a normalized confidence signal.
       required:
         - item
         - confidence
@@ -1191,13 +1103,13 @@ components:
         confidence:
           type: number
           format: float
-          description: A score from 0.0 to 1.0 indicating the certainty of the match.
           minimum: 0
           maximum: 1
+          description: A normalized, implementation-specific confidence signal used to rank candidates within this resolution result. It MUST NOT be interpreted as a calibrated probability or certainty measure. Comparability across different queries, deployments, or implementation states is not guaranteed unless explicitly documented.
           example: 0.95
     ResolvedThemeCandidate:
       type: object
-      description: Represents a single candidate match when resolving a text reference to a Theme, including the full entity and the confidence score.
+      description: Represents a single candidate match when resolving a text reference to a Theme, including the full entity and a normalized confidence signal.
       required:
         - theme
         - confidence
@@ -1208,13 +1120,13 @@ components:
         confidence:
           type: number
           format: float
-          description: A score from 0.0 to 1.0 indicating the certainty of the match.
           minimum: 0
           maximum: 1
+          description: A normalized, implementation-specific confidence signal used to rank candidates within this resolution result. It MUST NOT be interpreted as a calibrated probability or certainty measure. Comparability across different queries, deployments, or implementation states is not guaranteed unless explicitly documented.
           example: 0.95
     ResolvedItemTypeCandidate:
       type: object
-      description: Represents a single candidate match when resolving a text reference to an ItemType, including the full entity and the confidence score.
+      description: Represents a single candidate match when resolving a text reference to an ItemType, including the full entity and a normalized confidence signal.
       required:
         - itemType
         - confidence
@@ -1225,13 +1137,13 @@ components:
         confidence:
           type: number
           format: float
-          description: A score from 0.0 to 1.0 indicating the certainty of the match.
           minimum: 0
           maximum: 1
+          description: A normalized, implementation-specific confidence signal used to rank candidates within this resolution result. It MUST NOT be interpreted as a calibrated probability or certainty measure. Comparability across different queries, deployments, or implementation states is not guaranteed unless explicitly documented.
           example: 0.95
     SearchedTextUnitResult:
       type: object
-      description: Represents a single search result, containing a TextUnit and its relevance score.
+      description: Represents a single search result, containing a TextUnit and its normalized ranking score.
       required:
         - textUnit
         - score
@@ -1241,12 +1153,12 @@ components:
         score:
           type: number
           format: float
-          description: The relevance score of the result, typically between 0.0 and 1.0.
           minimum: 0
           maximum: 1
+          description: A normalized, implementation-specific ranking signal for this search result. It MUST NOT be interpreted as a probability or calibrated certainty measure. The value is suitable for ordering results within the response in which it is returned. Comparability across different queries, scopes, partitions, deployments, or implementation states is not guaranteed unless explicitly documented.
     SearchedItemResult:
       type: object
-      description: Represents a single search result, containing an Item and its relevance score.
+      description: Represents a single search result, containing an Item and its normalized ranking score.
       required:
         - item
         - score
@@ -1256,9 +1168,9 @@ components:
         score:
           type: number
           format: float
-          description: The relevance score of the result, typically between 0.0 and 1.0.
           minimum: 0
           maximum: 1
+          description: A normalized, implementation-specific ranking signal for this search result. It MUST NOT be interpreted as a probability or calibrated certainty measure. The value is suitable for ordering results within the response in which it is returned. Comparability across different queries, scopes, partitions, deployments, or implementation states is not guaranteed unless explicitly documented.
     ErrorResponse:
       type: object
       description: A standard format for error responses.
@@ -1316,10 +1228,8 @@ components:
       required: false
       description: |
         **Optional.** A list of identifiers for the DataSources to scope the search.
-
-        A DataSource is the system or provider where an entity originates (e.g., 'dataSource_Senate'). This parameter allows you to narrow a search to a specific subset of the DataSources you have access to.
-
-        The API will only return results from DataSources that are both *requested* in this parameter and *granted* to your API key. If this parameter is omitted, the search will run against all DataSources your key is granted to.
+        The API will only return results from DataSources that are both requested here
+        and granted to the current credential. If omitted, all granted DataSources are used.
       schema:
         type: array
         items:
@@ -1333,12 +1243,8 @@ components:
       in: header
       name: Authorization
       description: |
-        API Key-based authentication. Each consumer must provide their unique API Key
-        directly in the `Authorization` header for every request.
-
-        **Example:** `Authorization: YOUR_API_KEY`
-
-        API Keys can be obtained by contacting the system administrator.
+        API-key authentication used by this OpenAPI profile.
+        Example: `Authorization: YOUR_API_KEY`
   responses:
     BadRequest:
       description: Bad Request - The request is missing a required parameter, includes an invalid parameter value, or is otherwise malformed.
@@ -1350,7 +1256,7 @@ components:
             code: INVALID_PARAMETER
             message: The 'topK' parameter must be a positive integer.
     Unauthorized:
-      description: Unauthorized - The request lacks valid authentication credentials. The API Key is missing or invalid.
+      description: Unauthorized - The request lacks valid authentication credentials.
       content:
         application/json:
           schema:
@@ -1359,14 +1265,14 @@ components:
             code: UNAUTHORIZED
             message: Authentication credentials were not provided or are invalid.
     Forbidden:
-      description: Forbidden - The server understood the request, but is refusing to fulfill it. The API Key is valid but lacks permission for the requested resource or data source.
+      description: Forbidden - The request is authenticated but access to the requested resource or data source is denied.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             code: FORBIDDEN_DATASOURCE
-            message: The provided API Key does not have access to the 'dataSource_STF' data source.
+            message: The credential does not have access to the requested data source.
     NotFound:
       description: Not Found - The requested resource could not be found.
       content:
@@ -1375,7 +1281,7 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             code: RESOURCE_NOT_FOUND
-            message: No Item found with the specified ID.
+            message: No resource found with the specified ID.
 security:
   - ApiKeyAuth: []
 paths:
@@ -1424,7 +1330,7 @@ paths:
         - name: at
           in: query
           required: false
-          description: Optional. The specific UTC date-time for which to resolve the reference. Defaults to "now" if omitted. When provided, the Item labels and structure are evaluated as they existed at that point in time. Useful for disambiguating references when entities have been renamed or reorganized.
+          description: Optional. A UTC date-time used to temporally constrain the evidence considered during reference resolution, such as Version- or TextUnit-level evidence available for that point in time. It does not make the resolved Item or the Item hierarchy temporal. If omitted, the implementation uses its current resolution perspective.
           schema:
             type: string
             format: date-time
@@ -1627,15 +1533,40 @@ paths:
       description: |
         Performs a hybrid search to discover `TextUnit` nodes by combining semantic, lexical, and structured criteria, returning a ranked list of the most relevant results. This is the primary, optimized entry point for all standard RAG queries.
 
+        All search strategies exposed through this operation, including `lexicalOnly`, are ranked discovery strategies. This operation does not guarantee exhaustive enumeration of all lexical matches.
+
         ### Scoping
         Define the search scope using:
         - `itemIds` and/or `itemUrns` for structural boundaries (hierarchical traversal — all descendants of the provided items are included; prefer `itemUrns` for LEX URN implementations)
+        - `versionIds` for an exact Version scope, with no hierarchical expansion
         - `themeIds` for thematic boundaries
-        - `at` for temporal constraints (defaults to 'now')
-        - Omit all to search globally across accessible data
+        - `at` for temporal constraints; if omitted, no temporal filter is applied
+        - `temporalPredicate` to choose formal validity or material applicability when `at` is provided
+        - Omit all scope filters to search globally across accessible data
 
-        ### Deterministic Retrieval
-        **Important:** If you already have specific Version IDs and want a deterministic fetch (not a ranked search), use `getBatchTextUnits` instead. That endpoint is optimized for bulk retrieval without search overhead.
+        When multiple scope filters are supplied, they are intersected.
+
+        ### Historically Exact Structural Search
+        `versionIds` allows ranked search over an exact historical substructure. A typical workflow is:
+        1. resolve the container Version at reference time `t`;
+        2. call `getVersionHierarchy` to enumerate descendant Version IDs;
+        3. include the root Version ID when needed;
+        4. call `searchTextUnits` with those `versionIds`.
+
+        This preserves the existing semantics of `itemIds`, `itemUrns`, and `at`: Item-based scoping remains atemporal structural scoping, while Version-based scoping is explicit.
+
+        ### Temporal Filtering
+        If `at` is omitted, no temporal filter is applied. If `at` is provided and `temporalPredicate` is omitted, the search uses `validity`.
+
+        - `validity` filters by each Version's `validityInterval`.
+        - `applicability` filters by `applicabilityInterval`; if a Version has no explicit applicability interval, the implementation falls back to `validityInterval`, matching `getApplicableVersions`.
+        - Supplying `temporalPredicate` without `at` is invalid and returns HTTP 400.
+        - This operation uses the graph's current legal truth. Transaction-time projection via `observerTime` is not supported by ranked TextUnit search.
+
+        ### Deterministic Retrieval and Exhaustive Inspection
+        **Important:** `versionIds` scopes a ranked search; it does not make the search deterministic. If you already have specific Version IDs and want deterministic retrieval rather than ranking, use `getBatchTextUnits` instead. That endpoint is optimized for bulk retrieval without search overhead.
+
+        For exhaustive inspection of a known Version scope, enumerate that scope explicitly (for example with `getVersionHierarchy`), retrieve the corresponding TextUnits with `getBatchTextUnits`, and evaluate the desired criterion over the complete retrieved set. Exhaustiveness comes from explicit control of the admissible universe, not from increasing `topK` or selecting `lexicalOnly`.
 
         ### Filtering and Aspects
         Additional optional filters like `itemTypeIds` can further narrow results to specific structural components, enabling use cases such as searching only within articles or specific item hierarchies.
@@ -1643,13 +1574,14 @@ paths:
         The `aspects` parameter enables a truly holistic search, allowing a query to match a `Work`'s 'textual_metadata' just as easily as a `Version`'s 'canonical' text.
       x-sat-graph-agent:
         version: 1
-        when-to-use: Hybrid semantic+lexical search over provision text — the entry point for thematic, open questions with no explicit reference.
-        not-for: Enumerating all units of a container — use getItemHierarchy. A known reference — use resolveItemReference.
+        when-to-use: Hybrid semantic+lexical search over TextUnits, including ranked search within an explicit Item, Theme, or Version scope.
+        not-for: Exhaustive enumeration of lexical matches or all TextUnits in a known scope — enumerate the scope and use getBatchTextUnits. Deterministic retrieval of known Versions — use getBatchTextUnits.
         pairs-with:
           - resolveThemeReference
-          - getVersion
+          - getVersionHierarchy
+          - getBatchTextUnits
           - getItemAncestors
-        caveats: Results are scored candidates, not final legal evidence — verify version, structure, and applicability before citing.
+        caveats: Results are scored candidates, not final legal evidence. `versionIds` defines an exact Version scope but does not make ranking deterministic. `lexicalOnly` selects lexical retrieval/ranking and does not guarantee exhaustive coverage. If temporal filtering is required, supply `at`; `temporalPredicate` without `at` is invalid. Ranked search uses current legal truth and does not expose `observerTime`.
         role: search
       security:
         - ApiKeyAuth: []
@@ -2102,19 +2034,30 @@ paths:
       operationId: getBatchTextUnits
       description: |
         A batch-optimized version of getVersionTextUnits. Given a list of Version identifiers,
-        it efficiently retrieves their corresponding textual content.
+        it efficiently retrieves corresponding textual content.
 
-        This action is critical for use cases that require inspecting the content of multiple
-        versions, such as finding the exact point of a textual change within a long version history.
-        It prevents the severe performance degradation that would result from iterating and calling
-        getVersionTextUnits individually for each version.
+        This operation is also the recommended deterministic hydration step for exhaustive inspection
+        of an explicitly enumerated Version scope. Implementations MAY impose operational limits on
+        batch size. If a request exceeds an implementation-specific limit, the operation MUST fail
+        explicitly; it MUST NOT silently truncate the requested Version set or return a partial batch
+        as if it were complete.
+
+        Implementations may document how requested Version IDs that cannot be resolved are handled,
+        particularly when partial batch results are possible.
+
+        When consumers inspect or apply local lexical criteria to returned `content`, they should
+        account for implementation-specific materialization conventions of the requested aspects.
+        Segmentation, normalization, contextualization, generation, and related conventions are not
+        prescribed by the SAT-Graph API and may be documented by the implementation.
       x-sat-graph-agent:
         version: 1
-        when-to-use: Retrieve canonical text for several known Versions in one call — the precise tool once version IDs are resolved.
-        not-for: Text of a single version by traversal — use getVersionTextUnits.
+        when-to-use: Retrieve TextUnits for several known Versions in one call — the precise hydration tool once the Version IDs defining the admissible universe are resolved.
+        not-for: Text of a single Version — use getVersionTextUnits.
         pairs-with:
           - getValidVersions
           - getItemVersions
+          - getVersionHierarchy
+        caveats: Implementations may impose batch-size limits. Interpretation of returned content should follow the implementation's documented materialization conventions for the requested aspects.
         role: hydration
       security:
         - ApiKeyAuth: []
@@ -2127,7 +2070,7 @@ paths:
               $ref: '#/components/schemas/GetBatchTextUnitsRequest'
       responses:
         '200':
-          description: A list of the requested TextUnit objects.
+          description: A list of TextUnit objects matching the requested Version IDs, language, and aspects within the accepted batch.
           content:
             application/json:
               schema:
@@ -2192,7 +2135,11 @@ paths:
       description: |
         Deterministically retrieves all `TextUnit` objects associated with a single, known `Version`,
         optionally filtered by language and one or more textual aspects. If `aspects` is omitted,
-        returns all aspects (canonical, summary, description, etc.) available for that Version.
+        returns all aspects available for that Version.
+
+        If the Version exists but no TextUnits satisfy the requested language and/or aspects,
+        the operation returns `200 OK` with an empty array. A `404` indicates that the requested
+        Version itself does not exist.
 
         This is a direct-access, primary-key-based lookup, not a search operation.
 
@@ -2200,7 +2147,7 @@ paths:
         This action is fundamentally different from `searchTextUnits`. While the latter is a
         probabilistic discovery tool, `getVersionTextUnits` is a deterministic fetch. It serves
         the critical use case where an agent has already identified a specific `Version`
-        (e.g., via `getValidVersions`) and requires its complete textual content.
+        (e.g., via `getValidVersions`) and requires its textual content.
       x-sat-graph-agent:
         version: 1
         when-to-use: Retrieve the text units of one Version, optionally by language and aspects.
@@ -2232,9 +2179,10 @@ paths:
           required: false
           description: |
             Optional. Filters results to TextUnits whose semantic role is one of the supplied values.
-            Common values include `canonical` (the authoritative legal text), `summary` (a condensed
-            description), `indexical` (popular names or aliases), and `textual_metadata` (linearized
-            structured attributes). If omitted, TextUnits of all aspects are returned.
+            Supported values are deployment-defined and can be discovered through
+            `getSupportedTextUnitAspects`. In the legal reference domain, examples may include
+            `canonical`, `summary`, `indexical`, `ratio`, `facts`, or `holding`.
+            If omitted, TextUnits of all aspects are returned.
           schema:
             type: array
             minItems: 1
@@ -2246,7 +2194,7 @@ paths:
             - summary
       responses:
         '200':
-          description: Successfully retrieved the TextUnits for the specified Version.
+          description: Successfully retrieved matching TextUnits for the specified Version. The array may be empty if no TextUnits satisfy the optional filters.
           content:
             application/json:
               schema:
@@ -2258,7 +2206,11 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          description: Not Found - The requested Version does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /themes/by-items:
     post:
       tags:
@@ -2328,97 +2280,41 @@ paths:
       summary: Gets all Versions of an Item that were valid at a specific time.
       operationId: getValidVersions
       description: |
-        This function acts as the unified entry point for determining the normative state. It executes
-        a strict temporal query without imposing arbitrary hierarchies between statutory and judicial entities.
+        Deterministically returns all Versions of an Item whose `validityInterval`
+        contains the requested valid-time instant, evaluated from an optional
+        transaction-time perspective.
 
         ### Temporal Query Logic
 
-        The primitive implements **bi-temporal semantics**, distinguishing between:
-        - **Valid Time** (`time`): When was the legal fact valid in the real world?
-        - **Transaction Time** (`observerTime`): When did the system know about this fact?
+        The primitive distinguishes two temporal dimensions:
+        - **Valid Time** (`at`): the modeled-domain time for which Version validity is evaluated.
+        - **Transaction Time** (`observerTime`): the recorded-knowledge perspective from which the graph is observed.
 
-        **Default Behavior (observerTime = null):**
-        Returns the "Current Legal Truth" about the past, considering all events known to the system today,
-        including retroactive annulments (ex tunc). This is the typical mode for legal research.
+        If `observerTime` is omitted, the current recorded knowledge perspective is used.
+        If `observerTime` is supplied, only facts known or recorded by the system at or
+        before that transaction-time perspective may affect the result. This perspective
+        is distinct from event time and valid time.
 
-        **Historical Mode (observerTime provided):**
-        Returns the "Historical Truth" - what was known at a specific point in time. The system filters the
-        graph, ignoring any legislative or judicial events that occurred after the observer time. This
-        enables reproducing the exact state of legal knowledge available at a past moment.
+        The query returns all Versions whose validity interval encompasses the target instant
+        (`validityStart <= at < validityEnd`, with an open end treated as unbounded).
+        Multiple Versions may coexist for the same Item when the deployment's domain model
+        permits overlapping valid states.
 
-        The query returns **all** versions of the Item whose validity interval encompasses the target date
-        (`validityStart <= targetDate < validityEnd`), filtered by the observer's temporal perspective.
+        ### Legal reference-domain example
 
-        ### Result Scenarios
-
-        1. **Statutory Stability**:
-           - If the statute has not been interpreted by a high court, the list returns the single active
-             **Statutory Version**.
-
-        2. **Interpretive Overlay**:
-           - If a judicial decision has provided a binding interpretation, BOTH versions are returned:
-             - The **Statutory Version** (S-TV) remains active (its `validityInterval` end remains `null`)
-             - The **Interpretive Version** (I-TV) overlays the statutory text
-           - The list returns `[S-TV, I-TV]` (|V_valid| = 2)
-           - The Agent receives both the literal text (for citation/context) and the binding
-             interpretation (for applying the law), while using the *ratio decidendi* from the I-TV.
-           - **Key insight**: Interpretive Actions have `terminatesVersionIds: []`, creating an
-             overlay rather than a replacement.
-
-        3. **Jurisprudential Divergence**:
-           - In split decisions (e.g., conflicting interpretations by different court panels), multiple
-             Interpretive Versions may be active simultaneously.
-           - The list returns `[S-TV, I-TV₁, I-TV₂, ...]` (|V_valid| ≥ 3)
-           - Agents can inspect the `Action` metadata of each version to identify the specific judicial
-             authority responsible (e.g., "1st Panel" vs "2nd Panel").
-
-        ### Discussion
-        This endpoint implements pure temporal logic: it queries versions based solely on validity intervals,
-        without additional filtering rules. Multiple versions can coexist simultaneously (overlaying model):
-        - Statutory Versions remain active as authoritative text for citation and general legal context
-        - Interpretive Versions overlay (not replace) statutory text, providing binding interpretations
-        - The agent (application logic) decides how to apply multiple versions to answer specific questions
-
-        This design ensures the graph remains a neutral, deterministic representation of legal events,
-        with no built-in hierarchical preferences between statutory and judicial norms.
-
-        ### Bi-temporal Query Examples
-
-        **Example 1: Current Legal Truth (default — `at` omitted)**
-        ```
-        GET /items/{itemId}/valid-versions
-        ```
-        Returns versions valid right now, considering ALL known events (including retroactive effects).
-
-        **Example 2: Point-in-Time Legal Truth**
-        ```
-        GET /items/{itemId}/valid-versions?at=2010-01-01
-        ```
-        Returns versions valid on 2010-01-01, considering ALL known events (including a 2018 retroactive
-        annulment). If a law was annulled ex tunc in 2018, it will NOT appear in results.
-
-        **Example 3: Historical Truth**
-        ```
-        GET /items/{itemId}/valid-versions?at=2010-01-01&observerTime=2010-01-01
-        ```
-        Returns versions valid on 2010-01-01, considering ONLY events known by 2010-01-01. If a law was
-        annulled ex tunc in 2018, it WILL appear in results (the annulment was unknown at the time).
-
-        **Example 4: Professional Liability Analysis**
-        ```
-        GET /items/{itemId}/valid-versions?at=2015-06-01&observerTime=2015-06-01
-        ```
-        Reproduces the exact legal knowledge available to a lawyer on 2015-06-01, essential for evaluating
-        whether professional advice was reasonable based on information available at the time.
+        In a legal implementation, a statutory textual Version and one or more interpretive
+        Versions may coexist at the same valid time. The API returns the Versions that satisfy
+        the temporal predicate and does not impose a legal hierarchy or select which one an
+        application should treat as controlling.
       x-sat-graph-agent:
         version: 1
-        when-to-use: After anchoring an Item, to get the version(s) formally valid at a date. Omit `at` for the current legal truth; may return multiple overlaid versions.
-        not-for: Material applicability / effects such as vacatio legis (use getApplicableVersions); full amendment history (use getItemVersions).
+        when-to-use: After anchoring an Item, retrieve the Version or Versions formally valid at a date.
+        not-for: Applicability/effectiveness semantics — use getApplicableVersions; full Version history — use getItemVersions.
         pairs-with:
           - resolveItemReference
           - getApplicableVersions
           - getBatchTextUnits
-        caveats: '`observerTime` sets the temporal perspective: omit for the current truth about the past (including retroactive effects); set it for what was known at a past date.'
+        caveats: '`observerTime` selects a transaction-time perspective; omit it to use the current recorded knowledge perspective.'
         role: temporal
       security:
         - ApiKeyAuth: []
@@ -2426,15 +2322,15 @@ paths:
         - name: itemId
           in: path
           required: true
-          description: The canonical ID of the Item whose valid versions are being requested.
+          description: The canonical ID of the Item whose valid Versions are requested.
           schema:
             $ref: '#/components/schemas/ID'
         - name: at
           in: query
           required: false
           description: |
-            Optional. The specific UTC date-time for which to check validity (Valid Time).
-            If omitted, defaults to the current system time ("now").
+            Optional. The UTC date-time for which validity is evaluated.
+            If omitted, defaults to the current system time.
           schema:
             type: string
             format: date-time
@@ -2442,14 +2338,14 @@ paths:
         - name: observerTime
           in: query
           required: false
-          description: 'Optional. The temporal perspective from which to view the graph (Transaction Time). If omitted, defaults to "now" (current legal truth, including retroactive effects). If provided, the system filters out any Actions that occurred after this time, returning the historical state of knowledge. Use cases: (1) Legal historical research, (2) Professional liability analysis (what could be known at the time?), (3) Reproducing past legal opinions.'
+          description: Optional. The transaction-time perspective from which to view the graph. Only facts known or recorded by the system at or before this perspective may affect the result. If omitted, the current recorded knowledge perspective is used.
           schema:
             type: string
             format: date-time
           example: '2015-06-01T12:00:00Z'
       responses:
         '200':
-          description: Successfully retrieved the Version objects valid at the specified time. Returns an array that may contain one or more versions.
+          description: Successfully retrieved the Version objects valid at the specified time. The array may contain one or more Versions.
           content:
             application/json:
               schema:
@@ -2463,7 +2359,7 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
-          description: Not Found - Either the Item with the given ID does not exist, or it existed but had no version that was valid at the specified time.
+          description: Not Found - Either the Item does not exist or no Version is valid at the specified time.
           content:
             application/json:
               schema:
@@ -2499,38 +2395,38 @@ paths:
         ### Temporal Query Logic
 
         The primitive implements **bi-temporal semantics**, distinguishing between:
-        - **Valid Time** (`at`): When was the legal fact applicable in the real world?
-        - **Transaction Time** (`observerTime`): When did the system know about this fact?
+        - **Valid Time** (`at`): When was the fact applicable in the modeled domain?
+        - **Transaction Time** (`observerTime`): From which recorded knowledge perspective is the graph observed?
 
         **Default Behavior (observerTime = null):**
-        Returns the "Current Legal Truth" about applicability, considering all events known to the
-        system today, including retroactive modifications.
+        Returns the current recorded knowledge perspective about applicability, including
+        retroactive effects already known to the system.
 
         **Historical Mode (observerTime provided):**
-        Returns the "Historical Truth" — what applicability state was known at a specific point
-        in time. The system filters the graph, ignoring any events that occurred after the
-        observer time.
+        Returns the applicability state from the specified transaction-time perspective.
+        Only facts known or recorded by the system at or before `observerTime` may affect
+        the result. This perspective is distinct from the event time or valid time of those facts.
+        Providing an explicit `observerTime` enables reproducible temporal queries against a
+        fixed knowledge perspective.
 
         The query returns **all** versions of the Item whose applicability interval encompasses
         the target date (`applicabilityStart <= targetDate < applicabilityEnd`), filtered by the
         observer's temporal perspective.
 
         ### Relationship to other endpoints
-        - **`getValidVersions`**: queries by `validityInterval`. Use for "which versions were
-          formally in force at time T?"
-        - **`getApplicableVersions`**: queries by `applicabilityInterval`. Use for "which versions
-          were materially applicable at time T?"
+        - **`getValidVersions`**: queries by `validityInterval`.
+        - **`getApplicableVersions`**: queries by `applicabilityInterval`.
         - **`getItemVersions`**: returns every version ever created, with optional interval
           filtering, without point-in-time semantics.
       x-sat-graph-agent:
         version: 1
-        when-to-use: The version(s) materially applicable (producing effects) at a date — for vacatio legis, transitional regimes, staggered effect.
+        when-to-use: The version(s) materially applicable at a date.
         not-for: Formal validity — use getValidVersions. Full history — use getItemVersions.
         pairs-with:
           - resolveItemReference
           - getValidVersions
           - getBatchTextUnits
-        caveats: '`observerTime` sets the temporal perspective: omit for current truth about the past; set it for what was known at a past date.'
+        caveats: '`observerTime` sets the transaction-time perspective: omit for the current recorded knowledge perspective; set it to observe a fixed historical perspective.'
         role: temporal
       security:
         - ApiKeyAuth: []
@@ -2554,7 +2450,7 @@ paths:
         - name: observerTime
           in: query
           required: false
-          description: Optional. The temporal perspective from which to view the graph (Transaction Time). If omitted, defaults to "now" (current legal truth, including retroactive effects). If provided, the system filters out any Actions that occurred after this time, returning the historical state of knowledge.
+          description: Optional. The transaction-time perspective from which to view the graph. Only facts known or recorded by the system at or before this perspective may affect the result. This is distinct from the event time or valid time of those facts. If omitted, defaults to "now" (the current recorded knowledge perspective).
           schema:
             type: string
             format: date-time
@@ -2824,6 +2720,10 @@ paths:
       description: |
         Enumerates and returns **Item IDs** for all items within the structural hierarchy of a specified Item. This is an efficient operation optimized for traversing hierarchies and collecting item references without the overhead of returning full Item objects.
 
+        Item-level navigation is **atemporal**: it traverses the canonical Item hierarchy adopted by the implementation and does not filter descendants by whether they currently have a valid or applicable Version. Revocation, repeal, expiration, or the absence of a currently valid/applicable Version does not by itself remove an Item from this traversal.
+
+        Historical structural position is not reconstructed by this operation. Use Version-level navigation (`getVersionChildren`, `getVersionHierarchy`, `getVersionParents`, `getVersionAncestors`) when the structure of a specific Version state is required.
+
         ### Use Cases
         This action is ideal for:
         - Traversing structural hierarchies to collect all descendant IDs
@@ -2832,17 +2732,18 @@ paths:
         - Hierarchical navigation with minimal payload overhead
 
         ### Discussion
-        This action's purpose is **structural enumeration and navigation**, not search filtering. It is the correct tool for tasks like collecting all items in a subtree for further processing. For performing content-based searches within a scope, agents should pass the scope's ID directly to the search functions (`searchTextUnits`, `searchItems`), as this is significantly more performant.
+        This action's purpose is **structural enumeration and navigation**, not search filtering or temporal resolution. It is the correct tool for tasks like collecting all Items in a canonical subtree for further processing. For performing content-based searches within a scope, agents should pass the scope's ID directly to the search functions (`searchTextUnits`, `searchItems`), as this is significantly more performant.
 
         **Efficiency Note:** Returns only IDs (strings) rather than full Item objects, making it ideal for hierarchical traversal workflows where IDs are subsequently used in batch operations.
       x-sat-graph-agent:
         version: 1
-        when-to-use: 'Structural enumeration: collect all descendant Item IDs of a container (mereological completeness) with a cheap ID-only payload.'
-        not-for: Content search within a scope (pass the scope ID to searchTextUnits/searchItems); hydrated objects for a single level (use getItemChildren).
+        when-to-use: 'Atemporal structural enumeration: collect all descendant Item IDs of a canonical container with a cheap ID-only payload.'
+        not-for: Historical structural reconstruction — use Version-level navigation. Content search within a scope (pass the scope ID to searchTextUnits/searchItems); hydrated objects for a single level (use getItemChildren).
         pairs-with:
           - resolveItemReference
           - getBatchItems
           - getBatchValidVersions
+        caveats: Item-level navigation does not filter by temporal status. An Item can appear even when it has no currently valid or applicable Version.
         role: structural
       security:
         - ApiKeyAuth: []
@@ -2863,7 +2764,7 @@ paths:
             default: -1
       responses:
         '200':
-          description: A list of Item IDs (strings) within the hierarchy, ordered by hierarchical depth and position.
+          description: A list of descendant Item IDs (strings) in the canonical atemporal hierarchy, ordered by hierarchical depth and position.
           content:
             application/json:
               schema:
@@ -2886,15 +2787,15 @@ paths:
       operationId: getVersionChildren
       description: |
         Given a Version ID, this action returns the list of its immediate structural children
-        (component Versions that comprise this Version).
+        (component Versions that comprise this stored Version state).
 
         This is a **deterministic action**: Given the same `versionId`, it will always return
         the same set of children Versions.
 
-        **Temporal Aggregation:** Under the SAT-Graph's aggregation model, a Version is composed
-        by aggregating the most recent valid versions of all its child components at the time
-        of its creation. Some children may be newly created while others are reused from previous
-        states (unchanged components).
+        The endpoint traverses the structural relationships recorded for the supplied Version.
+        It does not prescribe how an implementation ingests, constructs, propagates, or reuses
+        those relationships, and it does not independently resolve the temporal status of child
+        Versions during traversal.
 
         This endpoint is designed for efficient structural navigation without loading potentially
         large child arrays into every Version response.
@@ -2942,10 +2843,9 @@ paths:
         Given a Version ID, this action returns all Version objects that structurally contain
         this Version as a direct component — i.e., all its parent Versions across the entire graph.
 
-        **Temporal Reuse:** Under the SAT-Graph's aggregation model, an unchanged child Version
-        can be reused by multiple parent Versions over time. For example, an unchanged paragraph
-        may be a direct component of 100+ different Constitution amendment versions simultaneously
-        present in the graph.
+        **Temporal Reuse:** A child Version may be reused by multiple parent Versions over time.
+        For example, in the legal reference domain, an unchanged paragraph may appear as a direct
+        component of many successive document Versions.
 
         **Without `at` (default):** Returns all structural parents across the entire history. This is
         a fully deterministic operation — given the same `versionId`, it always returns the same set.
@@ -2954,8 +2854,7 @@ paths:
         at the specified point in time. This is the single-hop equivalent of `getVersionAncestors`,
         and is useful when only the immediate parent is needed rather than the full ancestor chain.
 
-        **Root Versions:** If the Version has no structural parents (i.e., it is a root Work),
-        an empty array is returned.
+        **Root Versions:** If the Version has no structural parents, an empty array is returned.
       x-sat-graph-agent:
         version: 1
         when-to-use: The structural parent Versions of a specific Version.
@@ -3073,27 +2972,36 @@ paths:
       summary: Gets all Version IDs within the hierarchy of a given Version.
       operationId: getVersionHierarchy
       description: |
-        Enumerates and returns all descendant Version IDs within the structural hierarchy of a specified Version. This is useful for understanding the version tree and tracking how versions relate to each other through their parent-child relationships in the temporal graph.
+        Enumerates and returns all descendant Version IDs within the structural hierarchy of a specified Version.
+
+        A Version represents a specific structural state of an Item. The descendants returned by this operation are the descendant Versions that compose that stored Version state. Traversal is deterministic for the supplied `versionId` and does not perform temporal resolution.
 
         ### Use Cases
         This action is ideal for:
-        - Traversing version hierarchies to collect all descendant version IDs
-        - Understanding version lineages and structural relationships
-        - Building version ID lists for batch operations (e.g., `getBatchTexts`)
-        - Analyzing how versions of nested items evolve together
-        - Efficient batch processing where only version IDs are needed
+        - Traversing a Version's stored structural hierarchy to collect all descendant Version IDs
+        - Understanding the composition of a specific Version state
+        - Building Version ID lists for batch operations (e.g., `getBatchTextUnits` or `getBatchVersions`)
+        - Building an exact Version scope for ranked search with `searchTextUnits(versionIds=...)`
+        - Efficient batch processing where only Version IDs are needed
 
         ### Discussion
-        This action's purpose is **structural enumeration and navigation** of the version tree, not version filtering. It provides the agent with a deterministic tool for exploring version relationships, distinct from probabilistic search. A Version can have multiple parent Versions (due to graph optimizations where unchanged versions are reused under multiple parent structures), so the returned set represents all descendants reachable through any parent-child path. For content-based analysis, agents should pass the resulting version IDs to batch operations like `getBatchTexts`, as this is more performant.
+        This action's purpose is **structural enumeration and navigation** of a Version state, not temporal resolution or version filtering. Temporal resolution occurs separately, for example through `getValidVersions` or `getApplicableVersions`; once a Version has been selected, this operation traverses the structural relationships stored for that Version.
+
+        Version-level structural navigation does not independently evaluate the `validityInterval` or `applicabilityInterval` of descendant Versions. Consumers that need the temporal status of individual descendants can retrieve or resolve those Versions separately.
+
+        A Version can be reused by multiple parent Versions over time. This does not make downward traversal ambiguous: the supplied parent Version determines the structural children and descendants that compose that Version state. Upward navigation can require temporal context to select among multiple historical parents; use `getVersionParents` or `getVersionAncestors` for that purpose.
 
         **Efficiency Note:** Returns only Version ID strings rather than full Version objects, making it ideal for hierarchical traversal workflows where IDs are subsequently used in batch operations.
       x-sat-graph-agent:
         version: 1
-        when-to-use: Enumerate all descendant Version IDs within a Version's structure.
-        not-for: The stable item subtree — use getItemHierarchy.
+        when-to-use: Enumerate all descendant Version IDs that compose a specific Version state.
+        not-for: Temporal resolution — use getValidVersions/getApplicableVersions. The stable Item subtree — use getItemHierarchy.
         pairs-with:
           - getValidVersions
+          - getApplicableVersions
           - getBatchVersions
+          - getBatchTextUnits
+          - searchTextUnits
         role: structural
       security:
         - ApiKeyAuth: []
@@ -3114,7 +3022,7 @@ paths:
             default: -1
       responses:
         '200':
-          description: A list of Version IDs (strings) within the hierarchy, ordered by hierarchical depth and position.
+          description: A list of descendant Version IDs (strings) that compose the supplied Version state, ordered by hierarchical depth and position.
           content:
             application/json:
               schema:
@@ -3605,16 +3513,19 @@ paths:
     get:
       tags:
         - Introspection & Metadata Actions
-      summary: Gets the list of all supported action types.
+      summary: Gets the Action types supported by this deployment.
       operationId: getSupportedActionTypes
       description: |
-        Returns the Action-type values recognized by the deployment's graph ontology.
+        Returns the deployment-defined Action-type vocabulary together with a label
+        and semantic description for each value. Action types are not fixed by the
+        SAT-Graph core and may vary by implementation and domain.
 
         ### Discussion
-        This action provides the canonical list of values that can be used in the `actionTypes` filter of other functions like `getItemHistory`. It allows a client application to dynamically build filtering interfaces without hardcoding ontology-specific values.
+        This action allows consumers to discover valid Action-type values and their
+        deployment-specific meaning without hardcoding ontology-specific vocabularies.
       x-sat-graph-agent:
         version: 1
-        when-to-use: Discover the canonical Action-type vocabulary before building a causal query.
+        when-to-use: Discover the Action-type vocabulary and the meaning of each value before building a causal query.
         pairs-with:
           - queryActions
           - getItemHistory
@@ -3623,18 +3534,170 @@ paths:
         - ApiKeyAuth: []
       responses:
         '200':
-          description: A list of supported action type strings.
+          description: The supported Action-type vocabulary.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  type: string
-                  example: INSERTION
-                example:
-                  - INSERTION
-                  - TEXT_CHANGE
-                  - REVOCATION
+                  $ref: '#/components/schemas/VocabularyEntry'
+              example:
+                - value: INSERTION
+                  label: Insertion
+                  description: 'Legal-domain example: an Action that introduces new textual or structural content.'
+                - value: REVOCATION
+                  label: Revocation
+                  description: 'Legal-domain example: an Action that terminates the validity of a Version without replacing it.'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /meta/version-types:
+    get:
+      tags:
+        - Introspection & Metadata Actions
+      summary: Gets the Version types supported by this deployment.
+      operationId: getSupportedVersionTypes
+      description: |
+        Returns the deployment-defined Version-type vocabulary together with a label
+        and semantic description for each value. Version types are not fixed by the
+        SAT-Graph core and may vary by implementation and domain.
+      x-sat-graph-agent:
+        version: 1
+        when-to-use: Discover the Version-type vocabulary and the meaning of each value in this deployment.
+        role: introspection
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: The supported Version-type vocabulary.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VocabularyEntry'
+              example:
+                - value: statutory
+                  label: Statutory Version
+                  description: 'Legal-domain example: a Version representing the textual state established by legislation.'
+                - value: interpretive
+                  label: Interpretive Version
+                  description: 'Legal-domain example: a Version representing an interpretive state associated with case law or another authoritative interpretation.'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /meta/text-unit-aspects:
+    get:
+      tags:
+        - Introspection & Metadata Actions
+      summary: Gets the TextUnit aspects supported by this deployment.
+      operationId: getSupportedTextUnitAspects
+      description: |
+        Returns the deployment-defined TextUnit aspect vocabulary together with a
+        label and semantic description for each value. Aspect vocabularies are not
+        fixed by the SAT-Graph core and may vary by implementation and domain.
+      x-sat-graph-agent:
+        version: 1
+        when-to-use: Discover which TextUnit aspects are available and what each aspect means in this deployment.
+        pairs-with:
+          - searchTextUnits
+          - getVersionTextUnits
+          - getBatchTextUnits
+        role: introspection
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: The supported TextUnit-aspect vocabulary.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VocabularyEntry'
+              example:
+                - value: canonical
+                  label: Canonical Text
+                  description: 'Legal-domain example: the primary official textual representation associated with the source node.'
+                - value: ratio
+                  label: Ratio Decidendi
+                  description: 'Legal-domain example: the controlling reasoning associated with a judicial decision.'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /meta/relation-predicates:
+    get:
+      tags:
+        - Introspection & Metadata Actions
+      summary: Gets the Relation predicates supported by this deployment.
+      operationId: getSupportedRelationPredicates
+      description: |
+        Returns the deployment-defined Relation-predicate vocabulary together with a
+        label and semantic description for each value. Relation predicates are not
+        fixed by the SAT-Graph core and may vary by implementation and domain.
+      x-sat-graph-agent:
+        version: 1
+        when-to-use: Discover which Relation predicates are available and what each predicate means in this deployment.
+        pairs-with:
+          - getRelations
+        role: introspection
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: The supported Relation-predicate vocabulary.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VocabularyEntry'
+              example:
+                - value: cites
+                  label: Cites
+                  description: 'Legal-domain example: the source entity cites the target entity.'
+                - value: succeeds
+                  label: Succeeds
+                  description: 'Example: the source entity succeeds or replaces the target in a deployment-defined relationship.'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /meta/implementation-guide:
+    get:
+      tags:
+        - Introspection & Metadata Actions
+      summary: Gets deployment-specific guidance for using this SAT-Graph implementation.
+      operationId: getImplementationGuide
+      description: |
+        Returns deployment-specific documentation describing conventions that are useful
+        when consuming this SAT-Graph implementation, such as TextUnit materialization,
+        metadata interpretation, supported domain conventions, and recommended use of
+        API primitives.
+
+        The guide complements the SAT-Graph core contract but does not redefine or
+        override core API semantics.
+
+        The response is deployment-provided content. Consumers should apply their own
+        trust and security policies before using any part of it as agent instructions;
+        the guide is intended to describe conventions and recommended usage, not to act
+        as a channel for arbitrary commands to the consumer or its agent.
+      x-sat-graph-agent:
+        version: 1
+        when-to-use: Discover deployment-specific conventions that affect how returned SAT-Graph data should be interpreted or used.
+        role: introspection
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Deployment-specific implementation guide in Markdown.
+          content:
+            text/markdown:
+              schema:
+                type: string
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
