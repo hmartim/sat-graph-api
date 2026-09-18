@@ -1,18 +1,20 @@
 get:
   tags:
     - "Introspection & Metadata Actions"
-  summary: "Gets the list of all supported action types."
+  summary: "Gets the Action types supported by this deployment."
   operationId: "getSupportedActionTypes"
   description: |
-    Returns the Action-type values recognized by the deployment's graph ontology.
+    Returns the deployment-defined Action-type vocabulary together with a label
+    and semantic description for each value. Action types are not fixed by the
+    SAT-Graph core and may vary by implementation and domain.
 
     ### Discussion
-    This action provides the canonical list of values that can be used in the `actionTypes` filter of other functions like `getItemHistory`. It allows a client application to dynamically build filtering interfaces without hardcoding ontology-specific values.
+    This action allows consumers to discover valid Action-type values and their
+    deployment-specific meaning without hardcoding ontology-specific vocabularies.
   x-sat-graph-agent:
     version: 1
     when-to-use: >-
-      Discover the canonical Action-type vocabulary before building a causal
-      query.
+      Discover the Action-type vocabulary and the meaning of each value before building a causal query.
     pairs-with: [queryActions, getItemHistory]
     role: introspection
 
@@ -21,15 +23,20 @@ get:
 
   responses:
     '200':
-      description: "A list of supported action type strings."
+      description: "The supported Action-type vocabulary."
       content:
         application/json:
           schema:
             type: array
             items:
-              type: string
-              example: "INSERTION"
-            example: ["INSERTION", "TEXT_CHANGE", "REVOCATION"]
+              $ref: '../../openapi.yaml#/components/schemas/VocabularyEntry'
+          example:
+            - value: "INSERTION"
+              label: "Insertion"
+              description: "Legal-domain example: an Action that introduces new textual or structural content."
+            - value: "REVOCATION"
+              label: "Revocation"
+              description: "Legal-domain example: an Action that terminates the validity of a Version without replacing it."
     '401':
       $ref: '../../openapi.yaml#/components/responses/Unauthorized'
     '403':
