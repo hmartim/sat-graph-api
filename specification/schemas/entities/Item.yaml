@@ -2,30 +2,28 @@
 # OpenAPI 3.x Schema for the 'Item' Data Model
 #
 # This file defines the schema for the 'Item' object, which represents a timeless,
-# structural entity within the SAT-Graph. An 'Item' is the abstract representation
-# of a document (like a legal norm) or one of its hierarchical components.
-# In the SAT-Graph ontology, it corresponds to the 'Work' or 'Component Work' concepts.
+# structural or conceptual entity within the SAT-Graph.
 #
 # It is intentionally atemporal and does not contain textual content itself; that
 # is handled by the 'Version' and 'TextUnit' models.
 #
 type: object
 description: >
-  Represents a timeless, foundational entity within the SAT Graph. An 'Item'
-  acts as a stable, version-agnostic anchor for a specific concept.
+  Represents a timeless, foundational entity within the SAT-Graph. An `Item`
+  acts as a stable, version-agnostic anchor for a structural or conceptual entity.
 
-  While its primary role is to model the formal structure of a document (as a 'Work' or
-  'Work Component'), it is flexible enough to represent other key entities, such as:
-  - **Abstract Concepts:** A legal or procedural concept (e.g., 'Revocation', 'Due Process').
-  - **Named Entities:** A real-world entity like an organization or location (e.g., 'National Congress').
+  A deployment may use Items for whole documents, document components, abstract
+  concepts, named entities, or other domain-defined anchors. In the legal reference
+  domain, examples include a Constitution, Article, Paragraph, legal concept, or institution.
 
-  The 'Item' itself is just a structural and conceptual anchor. Its semantic meaning and
-  textual content are provided by associated 'TextUnit' objects, typically with an
-  aspect like 'description', 'summary'.
+  The `Item` itself is a structural and conceptual anchor. Its textual representations
+  are provided by associated `TextUnit` objects, while time-varying state is represented
+  through `Version` objects.
 
   An Item remains addressable independently of whether it currently has a valid or
-  applicable Version. Revocation, repeal, expiration, or other temporal changes affect
-  Versions and their temporal state; they do not by themselves remove the canonical Item.
+  applicable Version. Expiration, revocation, repeal, replacement, or other temporal
+  changes affect Versions and their temporal state; they do not by themselves remove
+  the canonical Item.
 required:
   - id
   - typeId
@@ -34,20 +32,16 @@ properties:
   id:
     $ref: '../core/ID.yaml'
     description: >-
-      The primary, opaque identifier for this Item. The field is a string with no
-      format restriction, allowing each implementation to choose the most appropriate
-      strategy: UUIDs for distributed systems, deterministic hashes, or even the URN
-      itself for simplified implementations. In the examples of this specification,
-      the id field is populated with the URN to facilitate reading and manual tracing
-      of relationships in JSON objects.
+      The primary identifier for this Item. The field is a string with no format
+      restriction, allowing each implementation to choose an appropriate strategy,
+      such as UUIDs, deterministic hashes, URNs, or URIs.
   urn:
     type: string
     nullable: true
     description: >-
-      The persistent semantic identifier in the URN LEX standard
-      (e.g., urn:lex:br:federal:constituicao:1988-10-05;art5). Represents the
-      ontological identity of the norm, independent of its location or implementation,
-      serving as the key for deduplication and interoperability between systems.
+      An optional persistent semantic identifier expressed as a URN when the deployment
+      uses a URN-based identification scheme. The concrete namespace and syntax are
+      deployment-specific. In the legal reference domain, URN LEX is one example.
     minLength: 1
     example: "urn:lex:br:federal:constituicao:1988-10-05;1988!art5"
   url:
@@ -55,51 +49,40 @@ properties:
     format: uri
     nullable: true
     description: >-
-      The canonical electronic address (Dereferenceable URI) pointing to the official
-      source of the text (e.g., Portal do Planalto or LexML). This field is used
-      exclusively for human user interface (access provenance), not for logical
-      inferences by the agent.
+      An optional canonical electronic address for this Item or an authoritative source
+      associated with it. The concrete meaning is deployment-specific and is not used by
+      the core API for graph inference.
     minLength: 1
     example: "https://normas.leg.br/?urn=urn:lex:br:federal:constituicao:1988-10-05;1988!art5"
   typeId:
     $ref: '../core/ID.yaml'
     description: >-
-      The unique identifier of the ItemType that classifies this item. This references
-      an ItemType entity that defines the formal type within the taxonomy (e.g.,
-      "Constitution", "Article", "Paragraph").
-
-      The ItemType taxonomy enables validation, navigation, and rich metadata about
-      type relationships and constraints.
+      The unique identifier of the ItemType that classifies this Item. The ItemType
+      taxonomy defines the deployment's formal structural or conceptual type system.
+      In a legal-domain implementation, example types may include Constitution,
+      Article, or Paragraph.
     example: "article"
   label:
     type: string
-    description: "The human-readable label or title for the item."
+    description: "The human-readable label or title for the Item."
     minLength: 1
     example: "Brazilian Constitution of 1988"
   parentId:
     $ref: '../core/ID.yaml'
     nullable: true
     description: >-
-      The canonical, atemporal structural parent adopted by the implementation for
-      this Item. This field defines the Item-level hierarchy used by Item navigation
-      and does not encode the Item's historical structural position. Historical
-      structural states are represented through Version-level relationships.
-      For non-document Item categories, implementations may use this field according
-      to the hierarchy semantics of that category.
+      The canonical, atemporal parent adopted by the implementation for this Item.
+      This field defines the Item-level hierarchy used by Item navigation and does
+      not encode historical structural position. Historical structural states are
+      represented through Version-level relationships.
   metadata:
     $ref: '../core/JSON.yaml'
     nullable: true
     description: >-
-      A flexible field for any valid JSON data. Used for storing structured,
-      atemporal properties of the item, such as jurisdiction, publication data,
-      or other domain-specific attributes that don't fit into the other fields.
+      A flexible field for any valid JSON data containing atemporal, domain-specific
+      properties of the Item.
 
-
-      **Best Practice:** Use internationally recognized vocabularies such as schema.org
-      (particularly schema.org/Legislation for legal norms) to enable semantic interoperability
-      and zero-shot understanding by AI agents. See [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md)
-      for detailed guidance and examples.
-
-
-      This approach is exemplified in:
-      [Legal Knowledge Graph Foundations, Part-I: URI-Addressable Abstract Works (LRMoo F1 to schema.org)](https://arxiv.org/abs/2508.00827).
+      **Best Practice:** Use internationally recognized vocabularies where appropriate
+      to improve semantic interoperability. In the legal reference domain,
+      schema.org/Legislation is one possible vocabulary. See
+      [Metadata Best Practices](../../docs/METADATA_BEST_PRACTICES.md) for guidance.
