@@ -4,12 +4,7 @@ post:
   operationId: "getBatchTextUnits"
   description: |
     A batch-optimized version of getVersionTextUnits. Given a list of Version identifiers,
-    it efficiently retrieves their corresponding textual content.
-
-    This action is critical for use cases that require inspecting the content of multiple
-    versions, such as finding the exact point of a textual change within a long version history.
-    It prevents the severe performance degradation that would result from iterating and calling
-    getVersionTextUnits individually for each version.
+    it efficiently retrieves corresponding textual content.
 
     This operation is also the recommended deterministic hydration step for exhaustive inspection
     of an explicitly enumerated Version scope. Implementations MAY impose operational limits on
@@ -17,22 +12,23 @@ post:
     explicitly; it MUST NOT silently truncate the requested Version set or return a partial batch
     as if it were complete.
 
+    Implementations may document how requested Version IDs that cannot be resolved are handled,
+    particularly when partial batch results are possible.
+
     When consumers inspect or apply local lexical criteria to returned `content`, they should
-    account for the implementation-specific materialization conventions of the requested aspects.
+    account for implementation-specific materialization conventions of the requested aspects.
     Segmentation, normalization, contextualization, generation, and related conventions are not
-    prescribed by the SAT-Graph API and should be documented by the implementation.
+    prescribed by the SAT-Graph API and may be documented by the implementation.
   x-sat-graph-agent:
     version: 1
     when-to-use: >-
       Retrieve TextUnits for several known Versions in one call — the precise
       hydration tool once the Version IDs defining the admissible universe are resolved.
-    not-for: Text of a single version by traversal — use getVersionTextUnits.
+    not-for: Text of a single Version — use getVersionTextUnits.
     pairs-with: [getValidVersions, getItemVersions, getVersionHierarchy]
     caveats: >-
-      Implementations may impose batch-size limits, but requests exceeding such
-      limits must fail explicitly and must never be silently truncated. Interpretation
-      of returned content must follow the implementation's documented materialization
-      conventions for the requested aspects.
+      Implementations may impose batch-size limits. Interpretation of returned content
+      should follow the implementation's documented materialization conventions for the requested aspects.
     role: hydration
 
   security:
@@ -46,7 +42,7 @@ post:
           $ref: '../../schemas/requests/GetBatchTextUnitsRequest.yaml'
   responses:
     '200':
-      description: "A complete list of TextUnit objects matching the requested Version IDs, language, and aspects within the accepted batch."
+      description: "A list of TextUnit objects matching the requested Version IDs, language, and aspects within the accepted batch."
       content:
         application/json:
           schema:
