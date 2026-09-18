@@ -4,100 +4,43 @@ get:
   summary: "Gets all Versions of an Item that were valid at a specific time."
   operationId: "getValidVersions"
   description: |
-    This function acts as the unified entry point for determining the normative state. It executes
-    a strict temporal query without imposing arbitrary hierarchies between statutory and judicial entities.
+    Deterministically returns all Versions of an Item whose `validityInterval`
+    contains the requested valid-time instant, evaluated from an optional
+    transaction-time perspective.
 
     ### Temporal Query Logic
 
-    The primitive implements **bi-temporal semantics**, distinguishing between:
-    - **Valid Time** (`time`): When was the legal fact valid in the real world?
-    - **Transaction Time** (`observerTime`): From which recorded knowledge perspective is the graph observed?
+    The primitive distinguishes two temporal dimensions:
+    - **Valid Time** (`at`): the modeled-domain time for which Version validity is evaluated.
+    - **Transaction Time** (`observerTime`): the recorded-knowledge perspective from which the graph is observed.
 
-    **Default Behavior (observerTime = null):**
-    Returns the "Current Legal Truth" about the past, considering all facts known to the system today,
-    including retroactive effects.
+    If `observerTime` is omitted, the current recorded knowledge perspective is used.
+    If `observerTime` is supplied, only facts known or recorded by the system at or
+    before that transaction-time perspective may affect the result. This perspective
+    is distinct from event time and valid time.
 
-    **Historical Mode (observerTime provided):**
-    Returns the historical knowledge perspective recorded at the specified transaction time. Only facts
-    known or recorded by the system at or before `observerTime` may affect the result. This perspective
-    is distinct from the event time or valid time of those facts. Providing an explicit `observerTime`
-    enables reproducible temporal queries against a fixed knowledge perspective.
+    The query returns all Versions whose validity interval encompasses the target instant
+    (`validityStart <= at < validityEnd`, with an open end treated as unbounded).
+    Multiple Versions may coexist for the same Item when the deployment's domain model
+    permits overlapping valid states.
 
-    The query returns **all** versions of the Item whose validity interval encompasses the target date
-    (`validityStart <= targetDate < validityEnd`), filtered by the observer's temporal perspective.
+    ### Legal reference-domain example
 
-    ### Result Scenarios
-
-    1. **Statutory Stability**:
-       - If the statute has not been interpreted by a high court, the list returns the single active
-         **Statutory Version**.
-
-    2. **Interpretive Overlay**:
-       - If a judicial decision has provided a binding interpretation, BOTH versions are returned:
-         - The **Statutory Version** (S-TV) remains active (its `validityInterval` end remains `null`)
-         - The **Interpretive Version** (I-TV) overlays the statutory text
-       - The list returns `[S-TV, I-TV]` (|V_valid| = 2)
-       - The Agent receives both the literal text (for citation/context) and the binding
-         interpretation (for applying the law), while using the *ratio decidendi* from the I-TV.
-       - **Key insight**: Interpretive Actions have `terminatesVersionIds: []`, creating an
-         overlay rather than a replacement.
-
-    3. **Jurisprudential Divergence**:
-       - In split decisions (e.g., conflicting interpretations by different court panels), multiple
-         Interpretive Versions may be active simultaneously.
-       - The list returns `[S-TV, I-TV₁, I-TV₂, ...]` (|V_valid| ≥ 3)
-       - Agents can inspect the `Action` metadata of each version to identify the specific judicial
-         authority responsible (e.g., "1st Panel" vs "2nd Panel").
-
-    ### Discussion
-    This endpoint implements pure temporal logic: it queries versions based solely on validity intervals,
-    without additional filtering rules. Multiple versions can coexist simultaneously (overlaying model):
-    - Statutory Versions remain active as authoritative text for citation and general legal context
-    - Interpretive Versions overlay (not replace) statutory text, providing binding interpretations
-    - The agent (application logic) decides how to apply multiple versions to answer specific questions
-
-    This design ensures the graph remains a neutral, deterministic representation of legal events,
-    with no built-in hierarchical preferences between statutory and judicial norms.
-
-    ### Bi-temporal Query Examples
-
-    **Example 1: Current Legal Truth (default — `at` omitted)**
-    ```
-    GET /items/{itemId}/valid-versions
-    ```
-    Returns versions valid right now, considering ALL known events (including retroactive effects).
-
-    **Example 2: Point-in-Time Legal Truth**
-    ```
-    GET /items/{itemId}/valid-versions?at=2010-01-01
-    ```
-    Returns versions valid on 2010-01-01, considering ALL known events (including a 2018 retroactive
-    annulment). If a law was annulled ex tunc in 2018, it will NOT appear in results.
-
-    **Example 3: Historical Truth**
-    ```
-    GET /items/{itemId}/valid-versions?at=2010-01-01&observerTime=2010-01-01
-    ```
-    Returns versions valid on 2010-01-01 from the knowledge perspective recorded at
-    `observerTime=2010-01-01`.
-
-    **Example 4: Professional Liability Analysis**
-    ```
-    GET /items/{itemId}/valid-versions?at=2015-06-01&observerTime=2015-06-01
-    ```
-    Reproduces the recorded knowledge perspective for 2015-06-01.
+    In a legal implementation, a statutory textual Version and one or more interpretive
+    Versions may coexist at the same valid time. The API returns the Versions that satisfy
+    the temporal predicate and does not impose a legal hierarchy or select which one an
+    application should treat as controlling.
 
   x-sat-graph-agent:
     version: 1
     when-to-use: >-
-      After anchoring an Item, to get the version(s) formally valid at a date.
-      Omit `at` for the current legal truth; may return multiple overlaid versions.
+      After anchoring an Item, retrieve the Version or Versions formally valid at a date.
     not-for: >-
-      Material applicability / effects such as vacatio legis (use getApplicableVersions);
-      full amendment history (use getItemVersions).
+      Applicability/effectiveness semantics — use getApplicableVersions; full Version
+      history — use getItemVersions.
     pairs-with: [resolveItemReference, getApplicableVersions, getBatchTextUnits]
     caveats: >-
-      `observerTime` sets the transaction-time perspective: omit for the current recorded knowledge perspective; set it to observe a fixed historical perspective.
+      `observerTime` selects a transaction-time perspective; omit it to use the current recorded knowledge perspective.
     role: temporal
 
   security:
@@ -107,15 +50,15 @@ get:
     - name: itemId
       in: path
       required: true
-      description: "The canonical ID of the Item whose valid versions are being requested."
+      description: "The canonical ID of the Item whose valid Versions are requested."
       schema:
         $ref: '../../openapi.yaml#/components/schemas/ID'
     - name: at
       in: query
       required: false
       description: |
-        Optional. The specific UTC date-time for which to check validity (Valid Time).
-        If omitted, defaults to the current system time ("now").
+        Optional. The UTC date-time for which validity is evaluated.
+        If omitted, defaults to the current system time.
       schema:
         type: string
         format: date-time
@@ -126,8 +69,7 @@ get:
       description: >-
         Optional. The transaction-time perspective from which to view the graph.
         Only facts known or recorded by the system at or before this perspective may
-        affect the result. This is distinct from the event time or valid time of those
-        facts. If omitted, defaults to "now" (the current recorded knowledge perspective).
+        affect the result. If omitted, the current recorded knowledge perspective is used.
       schema:
         type: string
         format: date-time
@@ -135,7 +77,7 @@ get:
 
   responses:
     '200':
-      description: "Successfully retrieved the Version objects valid at the specified time. Returns an array that may contain one or more versions."
+      description: "Successfully retrieved the Version objects valid at the specified time. The array may contain one or more Versions."
       content:
         application/json:
           schema:
@@ -143,7 +85,7 @@ get:
             items:
               $ref: '../../openapi.yaml#/components/schemas/Version'
     '404':
-      description: "Not Found - Either the Item with the given ID does not exist, or it existed but had no version that was valid at the specified time."
+      description: "Not Found - Either the Item does not exist or no Version is valid at the specified time."
       content:
         application/json:
           schema:
