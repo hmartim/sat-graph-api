@@ -7,10 +7,9 @@ get:
     Given a Version ID, this action returns all Version objects that structurally contain
     this Version as a direct component — i.e., all its parent Versions across the entire graph.
 
-    **Temporal Reuse:** Under the SAT-Graph's aggregation model, an unchanged child Version
-    can be reused by multiple parent Versions over time. For example, an unchanged paragraph
-    may be a direct component of 100+ different Constitution amendment versions simultaneously
-    present in the graph.
+    **Temporal Reuse:** A child Version may be reused by multiple parent Versions over time.
+    For example, in the legal reference domain, an unchanged paragraph may appear as a direct
+    component of many successive document Versions.
 
     **Without `at` (default):** Returns all structural parents across the entire history. This is
     a fully deterministic operation — given the same `versionId`, it always returns the same set.
@@ -19,8 +18,7 @@ get:
     at the specified point in time. This is the single-hop equivalent of `getVersionAncestors`,
     and is useful when only the immediate parent is needed rather than the full ancestor chain.
 
-    **Root Versions:** If the Version has no structural parents (i.e., it is a root Work),
-    an empty array is returned.
+    **Root Versions:** If the Version has no structural parents, an empty array is returned.
   x-sat-graph-agent:
     version: 1
     when-to-use: The structural parent Versions of a specific Version.
