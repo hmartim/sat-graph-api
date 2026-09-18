@@ -1,0 +1,39 @@
+get:
+  tags:
+    - "Introspection & Metadata Actions"
+  summary: "Gets deployment-specific guidance for using this SAT-Graph implementation."
+  operationId: "getImplementationGuide"
+  description: |
+    Returns deployment-specific documentation describing conventions that are useful
+    when consuming this SAT-Graph implementation, such as TextUnit materialization,
+    metadata interpretation, supported domain conventions, and recommended use of
+    API primitives.
+
+    The guide complements the SAT-Graph core contract but does not redefine or
+    override core API semantics.
+
+    The response is deployment-provided content. Consumers should apply their own
+    trust and security policies before using any part of it as agent instructions;
+    the guide is intended to describe conventions and recommended usage, not to act
+    as a channel for arbitrary commands to the consumer or its agent.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Discover deployment-specific conventions that affect how returned SAT-Graph
+      data should be interpreted or used.
+    role: introspection
+
+  security:
+    - ApiKeyAuth: []
+
+  responses:
+    '200':
+      description: "Deployment-specific implementation guide in Markdown."
+      content:
+        text/markdown:
+          schema:
+            type: string
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
