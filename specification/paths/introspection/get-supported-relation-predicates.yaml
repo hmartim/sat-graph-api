@@ -1,0 +1,39 @@
+get:
+  tags:
+    - "Introspection & Metadata Actions"
+  summary: "Gets the Relation predicates supported by this deployment."
+  operationId: "getSupportedRelationPredicates"
+  description: |
+    Returns the deployment-defined Relation-predicate vocabulary together with a
+    label and semantic description for each value. Relation predicates are not
+    fixed by the SAT-Graph core and may vary by implementation and domain.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Discover which Relation predicates are available and what each predicate means in this deployment.
+    pairs-with: [getRelations]
+    role: introspection
+
+  security:
+    - ApiKeyAuth: []
+
+  responses:
+    '200':
+      description: "The supported Relation-predicate vocabulary."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../../openapi.yaml#/components/schemas/VocabularyEntry'
+          example:
+            - value: "cites"
+              label: "Cites"
+              description: "Legal-domain example: the source entity cites the target entity."
+            - value: "succeeds"
+              label: "Succeeds"
+              description: "Example: the source entity succeeds or replaces the target in a deployment-defined relationship."
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
