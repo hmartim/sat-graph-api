@@ -1,0 +1,39 @@
+get:
+  tags:
+    - "Introspection & Metadata Actions"
+  summary: "Gets the TextUnit aspects supported by this deployment."
+  operationId: "getSupportedTextUnitAspects"
+  description: |
+    Returns the deployment-defined TextUnit aspect vocabulary together with a
+    label and semantic description for each value. Aspect vocabularies are not
+    fixed by the SAT-Graph core and may vary by implementation and domain.
+  x-sat-graph-agent:
+    version: 1
+    when-to-use: >-
+      Discover which TextUnit aspects are available and what each aspect means in this deployment.
+    pairs-with: [searchTextUnits, getVersionTextUnits, getBatchTextUnits]
+    role: introspection
+
+  security:
+    - ApiKeyAuth: []
+
+  responses:
+    '200':
+      description: "The supported TextUnit-aspect vocabulary."
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../../openapi.yaml#/components/schemas/VocabularyEntry'
+          example:
+            - value: "canonical"
+              label: "Canonical Text"
+              description: "Legal-domain example: the primary official textual representation associated with the source node."
+            - value: "ratio"
+              label: "Ratio Decidendi"
+              description: "Legal-domain example: the controlling reasoning associated with a judicial decision."
+    '401':
+      $ref: '../../openapi.yaml#/components/responses/Unauthorized'
+    '403':
+      $ref: '../../openapi.yaml#/components/responses/Forbidden'
